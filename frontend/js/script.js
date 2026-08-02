@@ -313,76 +313,32 @@ function calculateOutstanding() {
 
 function validateCustomerForm() {
 
-    const fields = {
+    const name = document.getElementById("customerName");
+    const mobile = document.getElementById("mobile");
+    const billAmount = document.getElementById("billAmount");
 
-    todayRecovery: formatCurrency(todayTotal),
-
-    totalRecovery: formatCurrency(totalRecoveryAmount),
-
-    pendingRecovery: formatCurrency(pendingTotal),
-
-    totalTransactions: transactionCount,
-
-    monthlyCollection: formatCurrency(monthlyAmount),
-
-    summaryRecovery: formatCurrency(totalRecoveryAmount),
-
-    summaryPending: formatCurrency(pendingTotal),
-
-    summaryToday: formatCurrency(todayTotal),
-
-    reportTotalCustomers: customers.length,
-
-    reportTotalRecovery: formatCurrency(totalRecoveryAmount),
-
-    reportMonthlyRecovery: formatCurrency(monthlyAmount),
-
-    reportPending: formatCurrency(pendingTotal),
-
-    reportTotalRecords: transactionCount,
-
-    reportAmount: formatCurrency(totalRecoveryAmount),
-
-    reportPendingBalance: formatCurrency(pendingTotal),
-
-    todayCollection: formatCurrency(todayTotal),
-
-    thisMonthCollection: formatCurrency(monthlyAmount),
-
-    reportOutstanding: formatCurrency(pendingTotal)
-
-};
-
+    if (!name || name.value.trim() === "") {
+        alert("Please Enter Customer Name");
+        if (name) name.focus();
+        return false;
     }
 
     if (!mobile || mobile.value.trim() === "") {
-
         alert("Please Enter Mobile Number");
-
-        mobile.focus();
-
+        if (mobile) mobile.focus();
         return false;
-
     }
 
     if (mobile.value.trim().length < 10) {
-
         alert("Mobile Number Must Be 10 Digits");
-
         mobile.focus();
-
         return false;
-
     }
 
     if (billAmount && billAmount.value.trim() === "") {
-
         alert("Please Enter Bill Amount");
-
         billAmount.focus();
-
         return false;
-
     }
 
     return true;
@@ -981,90 +937,65 @@ function saveRecovery() {
     const amount = document.getElementById("recoveryAmount");
     const date = document.getElementById("recoveryDate");
     const remarks = document.getElementById("recoveryRemarks");
+    const paymentMode = document.getElementById("paymentMode");
+    const receiptNo = document.getElementById("receiptNo");
+    const collectedBy = document.getElementById("collectedBy");
 
     if (!customerId || !amount || !date) {
-
         return;
-
     }
 
     if (customerId.value === "") {
-
         alert("Please Select Customer");
-
         return;
-
     }
 
     if (amount.value === "") {
-
         alert("Please Enter Recovery Amount");
-
         return;
-
     }
 
     const recovery = {
-
         id: Date.now(),
-
         customerId: customerId.value,
-
         amount: Number(amount.value),
-
         date: date.value,
-
+        paymentMode: paymentMode ? paymentMode.value : "Cash",
+        receiptNo: receiptNo ? receiptNo.value : "",
+        collectedBy: collectedBy ? collectedBy.value : "",
         remarks: remarks ? remarks.value : ""
-
     };
 
     recoveries.push(recovery);
 
-    localStorage.setItem(
-
-        "recoveries",
-
-        JSON.stringify(recoveries)
-
-    );
+    localStorage.setItem("recoveries", JSON.stringify(recoveries));
 
     // Outstanding Update
-
-    const customer = customers.find(
-
-        c => c.id == customerId.value
-
-    );
+    const customer = customers.find(c => c.id == customerId.value);
 
     if (customer) {
-
-        customer.outstanding =
-
-            Math.max(
-
-                0,
-
-                Number(customer.outstanding) -
-
-                Number(amount.value)
-
-            );
-
-        localStorage.setItem(
-
-            "customers",
-
-            JSON.stringify(customers)
-
+        customer.outstanding = Math.max(
+            0,
+            Number(customer.outstanding) - Number(amount.value)
         );
-
+        localStorage.setItem("customers", JSON.stringify(customers));
     }
 
+    // Reset form fields
+    amount.value = "";
+    if (remarks) remarks.value = "";
+    if (receiptNo) receiptNo.value = "";
+    if (paymentMode) paymentMode.selectedIndex = 0;
+    if (collectedBy) collectedBy.selectedIndex = 0;
+    customerId.value = "";
+
     loadRecoveryTable();
-
     updateDashboard();
-
     updateRecoverySummary();
+
+    if (typeof loadReports === "function") {
+        loadReports();
+    }
 
     alert("Recovery Saved Successfully.");
 
@@ -1082,33 +1013,63 @@ function loadRecoveryTable() {
 
     tbody.innerHTML = "";
 
+    const role = localStorage.getItem("currentRole") || "Admin";
+
     recoveries.forEach((item, index) => {
 
-        const customer = customers.find(
+        const customer = customers.find(c => c.id == item.customerId);
 
-            c => c.id == item.customerId
-
-        );
+        const deleteBtn = role === "Admin"
+            ? `<button class="action-btn delete-btn" onclick="deleteRecovery(${index})" title="Delete">🗑️</button>`
+            : "";
 
         tbody.innerHTML += `
-
         <tr>
-
             <td>${index + 1}</td>
-
             <td>${customer ? customer.name : "-"}</td>
-
-            <td>₹${item.amount}</td>
-
-            <td>${item.date}</td>
-
-            <td>${item.remarks}</td>
-
+            <td>₹${Number(item.amount || 0).toLocaleString("en-IN")}</td>
+            <td>${item.paymentMode || "-"}</td>
+            <td>${item.receiptNo || "-"}</td>
+            <td>${item.date || "-"}</td>
+            <td>${item.collectedBy || "-"}</td>
+            <td>${item.remarks || "-"}</td>
+            <td>${deleteBtn}</td>
         </tr>
-
         `;
 
     });
+
+}
+
+function deleteRecovery(index) {
+
+    const role = localStorage.getItem("currentRole") || "Admin";
+
+    if (role !== "Admin") {
+        alert("Only Admin Can Delete Records.");
+        return;
+    }
+
+    if (!confirm("Delete this recovery entry?")) return;
+
+    const item = recoveries[index];
+
+    // Restore outstanding to customer
+    if (item) {
+        const customer = customers.find(c => c.id == item.customerId);
+        if (customer) {
+            customer.outstanding = Number(customer.outstanding || 0) + Number(item.amount || 0);
+            localStorage.setItem("customers", JSON.stringify(customers));
+        }
+    }
+
+    recoveries.splice(index, 1);
+    localStorage.setItem("recoveries", JSON.stringify(recoveries));
+
+    loadRecoveryTable();
+    updateDashboard();
+    updateRecoverySummary();
+    if (typeof loadReports === "function") loadReports();
 
 }
 
@@ -1152,7 +1113,27 @@ function loadRecoveryCustomers() {
 // Load Reports
 // ================================
 
-function loadReports() {
+function loadReportCustomers() {
+
+    const select = document.getElementById("reportCustomer");
+
+    if (!select) return;
+
+    const current = select.value;
+
+    select.innerHTML = `<option value="">All Customers</option>`;
+
+    customers.forEach(customer => {
+        select.innerHTML += `<option value="${customer.id}">${customer.name}</option>`;
+    });
+
+    if (current) {
+        select.value = current;
+    }
+
+}
+
+function renderReportRows(list) {
 
     const tbody = document.getElementById("reportBody");
 
@@ -1160,83 +1141,196 @@ function loadReports() {
 
     tbody.innerHTML = "";
 
-    recoveries.forEach((item, index) => {
+    list.forEach((item, index) => {
 
         const customer = customers.find(c => c.id == item.customerId);
 
+        const status = customer && Number(customer.outstanding) > 0
+            ? `<span class="badge badge-warning">Pending</span>`
+            : `<span class="badge badge-success">Paid</span>`;
+
         tbody.innerHTML += `
-
         <tr>
-
             <td>${index + 1}</td>
-
             <td>${customer ? customer.name : "-"}</td>
-
-            <td>${customer ? customer.mobile : "-"}</td>
-
-            <td>₹${item.amount}</td>
-
-            <td>${item.date}</td>
-
-            <td>${item.remarks}</td>
-
+            <td>${customer ? (customer.mobile || "-") : "-"}</td>
+            <td>${customer ? (customer.village || "-") : "-"}</td>
+            <td>₹${Number(item.amount || 0).toLocaleString("en-IN")}</td>
+            <td>${item.paymentMode || "-"}</td>
+            <td>${item.date || "-"}</td>
+            <td>${item.collectedBy || "-"}</td>
+            <td>${status}</td>
         </tr>
-
         `;
 
     });
+
+    // Update filtered stats if elements exist
+    const totalRecords = document.getElementById("reportTotalRecords");
+    const reportAmount = document.getElementById("reportAmount");
+
+    if (totalRecords) {
+        totalRecords.innerHTML = list.length;
+    }
+
+    if (reportAmount) {
+        let sum = 0;
+        list.forEach(i => sum += Number(i.amount || 0));
+        reportAmount.innerHTML = formatCurrency(sum);
+    }
 
 }
 
-// ================================
-// Filter Report By Date
-// ================================
+function loadReports() {
+
+    customers = JSON.parse(localStorage.getItem("customers")) || [];
+    recoveries = JSON.parse(localStorage.getItem("recoveries")) || [];
+
+    loadReportCustomers();
+    renderReportRows(recoveries);
+    updateRecoverySummary();
+    updateReportExtraStats();
+
+}
+
+function getFilteredRecoveries() {
+
+    customers = JSON.parse(localStorage.getItem("customers")) || [];
+    recoveries = JSON.parse(localStorage.getItem("recoveries")) || [];
+
+    const fromDate = document.getElementById("fromDate");
+    const toDate = document.getElementById("toDate");
+    const reportCustomer = document.getElementById("reportCustomer");
+    const reportSearch = document.getElementById("reportSearch");
+
+    let list = recoveries.slice();
+
+    // Customer filter
+    if (reportCustomer && reportCustomer.value) {
+        list = list.filter(r => String(r.customerId) === String(reportCustomer.value));
+    }
+
+    // Date range
+    if (fromDate && fromDate.value) {
+        list = list.filter(r => r.date >= fromDate.value);
+    }
+
+    if (toDate && toDate.value) {
+        list = list.filter(r => r.date <= toDate.value);
+    }
+
+    // Text search
+    if (reportSearch && reportSearch.value.trim() !== "") {
+        const keyword = reportSearch.value.trim().toLowerCase();
+        list = list.filter(r => {
+            const customer = customers.find(c => c.id == r.customerId);
+            const name = customer ? (customer.name || "").toLowerCase() : "";
+            const mobile = customer ? (customer.mobile || "").toLowerCase() : "";
+            const village = customer ? (customer.village || "").toLowerCase() : "";
+            return name.includes(keyword) || mobile.includes(keyword) || village.includes(keyword);
+        });
+    }
+
+    return list;
+
+}
+
+function filterReport() {
+
+    const list = getFilteredRecoveries();
+    renderReportRows(list);
+    updateReportExtraStats(list);
+
+}
+
+function searchReport() {
+
+    filterReport();
+
+}
 
 function filterReportByDate() {
 
-    const filterDate = document.getElementById("filterDate");
+    filterReport();
 
-    const tbody = document.getElementById("reportBody");
+}
 
-    if (!filterDate || !tbody) return;
+function exportReport() {
 
-    tbody.innerHTML = "";
+    const list = getFilteredRecoveries();
 
-    const result = recoveries.filter(
+    if (list.length === 0) {
+        alert("No data to export.");
+        return;
+    }
 
-        recovery => recovery.date === filterDate.value
+    let csv = "No,Customer,Mobile,Village,Amount,Payment Mode,Date,Collected By,Remarks\n";
 
-    );
-
-    result.forEach((item, index) => {
-
-        const customer = customers.find(
-
-            c => c.id == item.customerId
-
-        );
-
-        tbody.innerHTML += `
-
-        <tr>
-
-            <td>${index + 1}</td>
-
-            <td>${customer ? customer.name : "-"}</td>
-
-            <td>${customer ? customer.mobile : "-"}</td>
-
-            <td>₹${item.amount}</td>
-
-            <td>${item.date}</td>
-
-            <td>${item.remarks}</td>
-
-        </tr>
-
-        `;
-
+    list.forEach((item, index) => {
+        const customer = customers.find(c => c.id == item.customerId);
+        const name = customer ? (customer.name || "-") : "-";
+        const mobile = customer ? (customer.mobile || "-") : "-";
+        const village = customer ? (customer.village || "-") : "-";
+        csv += `${index + 1},"${name}","${mobile}","${village}",${item.amount},"${item.paymentMode || "-"}","${item.date || "-"}","${item.collectedBy || "-"}","${(item.remarks || "").replace(/"/g, '""')}"\n`;
     });
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "VO-Recovery-Report.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+
+}
+
+function updateReportExtraStats(list) {
+
+    list = list || recoveries;
+
+    // Top customer by recovery amount
+    const totals = {};
+    list.forEach(item => {
+        const id = item.customerId;
+        totals[id] = (totals[id] || 0) + Number(item.amount || 0);
+    });
+
+    let topId = null;
+    let topAmt = 0;
+    Object.keys(totals).forEach(id => {
+        if (totals[id] > topAmt) {
+            topAmt = totals[id];
+            topId = id;
+        }
+    });
+
+    const topCustomer = document.getElementById("topCustomer");
+    const highestCollection = document.getElementById("highestCollection");
+    const activeCustomers = document.getElementById("activeCustomers");
+    const pendingCustomers = document.getElementById("pendingCustomers");
+
+    if (topCustomer) {
+        if (topId) {
+            const c = customers.find(x => x.id == topId);
+            topCustomer.innerHTML = c ? c.name : "-";
+        } else {
+            topCustomer.innerHTML = "-";
+        }
+    }
+
+    if (highestCollection) {
+        highestCollection.innerHTML = formatCurrency(topAmt);
+    }
+
+    if (activeCustomers) {
+        const activeIds = new Set(list.map(r => String(r.customerId)));
+        activeCustomers.innerHTML = activeIds.size;
+    }
+
+    if (pendingCustomers) {
+        const pending = customers.filter(c => Number(c.outstanding || 0) > 0).length;
+        pendingCustomers.innerHTML = pending;
+    }
 
 }
 
@@ -1333,7 +1427,18 @@ function updateRecoverySummary(){
         monthlyCollection: formatCurrency(monthlyAmount),
         summaryRecovery: formatCurrency(totalRecoveryAmount),
         summaryPending: formatCurrency(pendingTotal),
-        summaryToday: formatCurrency(todayTotal)
+        summaryToday: formatCurrency(todayTotal),
+
+        reportTotalCustomers: customers.length,
+        reportTotalRecovery: formatCurrency(totalRecoveryAmount),
+        reportMonthlyRecovery: formatCurrency(monthlyAmount),
+        reportPending: formatCurrency(pendingTotal),
+        reportTotalRecords: transactionCount,
+        reportAmount: formatCurrency(totalRecoveryAmount),
+        reportPendingBalance: formatCurrency(pendingTotal),
+        todayCollection: formatCurrency(todayTotal),
+        thisMonthCollection: formatCurrency(monthlyAmount),
+        reportOutstanding: formatCurrency(pendingTotal)
     };
 
     Object.keys(fields).forEach(id => {
@@ -1819,7 +1924,6 @@ window.addEventListener("load", function () {
 if (document.getElementById("reportBody")) {
 
     loadReports();
-    updateRecoverySummary();
 
 }
 
