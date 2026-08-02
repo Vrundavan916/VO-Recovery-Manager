@@ -313,17 +313,45 @@ function calculateOutstanding() {
 
 function validateCustomerForm() {
 
-    const customerName = document.getElementById("customerName");
-    const mobile = document.getElementById("mobile");
-    const billAmount = document.getElementById("billAmount");
+    const fields = {
 
-    if (!customerName || customerName.value.trim() === "") {
+    todayRecovery: formatCurrency(todayTotal),
 
-        alert("Please Enter Customer Name");
+    totalRecovery: formatCurrency(totalRecoveryAmount),
 
-        customerName.focus();
+    pendingRecovery: formatCurrency(pendingTotal),
 
-        return false;
+    totalTransactions: transactionCount,
+
+    monthlyCollection: formatCurrency(monthlyAmount),
+
+    summaryRecovery: formatCurrency(totalRecoveryAmount),
+
+    summaryPending: formatCurrency(pendingTotal),
+
+    summaryToday: formatCurrency(todayTotal),
+
+    reportTotalCustomers: customers.length,
+
+    reportTotalRecovery: formatCurrency(totalRecoveryAmount),
+
+    reportMonthlyRecovery: formatCurrency(monthlyAmount),
+
+    reportPending: formatCurrency(pendingTotal),
+
+    reportTotalRecords: transactionCount,
+
+    reportAmount: formatCurrency(totalRecoveryAmount),
+
+    reportPendingBalance: formatCurrency(pendingTotal),
+
+    todayCollection: formatCurrency(todayTotal),
+
+    thisMonthCollection: formatCurrency(monthlyAmount),
+
+    reportOutstanding: formatCurrency(pendingTotal)
+
+};
 
     }
 
