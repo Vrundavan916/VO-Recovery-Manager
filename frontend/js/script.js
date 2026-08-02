@@ -866,6 +866,76 @@ function loadRecentCustomers() {
 }
 
 // ================================
+// Today's Follow-up Table (Dashboard)
+// ================================
+
+function loadDashboardFollowups() {
+
+    const tbody = document.getElementById("followupTable");
+
+    if (!tbody) return;
+
+    tbody.innerHTML = "";
+
+    const today = new Date().toISOString().split("T")[0];
+
+    customers
+        .filter(customer => customer.followup === today)
+        .forEach((customer, index) => {
+
+            tbody.innerHTML += `
+
+            <tr>
+                <td>${index + 1}</td>
+                <td>${customer.name}</td>
+                <td>${customer.mobile}</td>
+                <td>${customer.village}</td>
+                <td>₹${customer.outstanding}</td>
+                <td>${customer.followup}</td>
+            </tr>
+
+            `;
+
+        });
+
+}
+
+// ================================
+// Recent Recovery Table (Dashboard)
+// ================================
+
+function loadDashboardRecentRecovery() {
+
+    const tbody = document.getElementById("recoveryTable");
+
+    if (!tbody) return;
+
+    tbody.innerHTML = "";
+
+    recoveries
+        .slice(-5)
+        .reverse()
+        .forEach((item, index) => {
+
+            const customer = customers.find(c => c.id == item.customerId);
+
+            tbody.innerHTML += `
+
+            <tr>
+                <td>${index + 1}</td>
+                <td>${customer ? customer.name : "-"}</td>
+                <td>₹${item.amount}</td>
+                <td>${item.date}</td>
+                <td>${item.remarks || "-"}</td>
+            </tr>
+
+            `;
+
+        });
+
+}
+
+// ================================
 // END OF PART 6
 // ================================// ==========================================================
 // VO RECOVERY MANAGER
@@ -965,6 +1035,8 @@ function saveRecovery() {
     loadRecoveryTable();
 
     updateDashboard();
+
+    updateRecoverySummary();
 
     alert("Recovery Saved Successfully.");
 
@@ -1189,6 +1261,62 @@ function getTotalRecovery() {
     });
 
     return total;
+
+}
+
+// ================================
+// Recovery Page Summary Cards
+// ================================
+
+function updateRecoverySummary(){
+
+    customers = JSON.parse(localStorage.getItem("customers")) || [];
+    recoveries = JSON.parse(localStorage.getItem("recoveries")) || [];
+
+    const today = new Date().toISOString().split("T")[0];
+
+    let todayTotal = 0;
+
+    recoveries.forEach(item => {
+
+        if(item.date === today){
+            todayTotal += Number(item.amount || 0);
+        }
+
+    });
+
+    let pendingTotal = 0;
+
+    customers.forEach(customer => {
+
+        pendingTotal += Number(customer.outstanding || 0);
+
+    });
+
+    const totalRecoveryAmount = getTotalRecovery();
+    const monthlyAmount = getMonthlyCollection();
+    const transactionCount = recoveries.length;
+
+    const fields = {
+        todayRecovery: formatCurrency(todayTotal),
+        totalRecovery: formatCurrency(totalRecoveryAmount),
+        pendingRecovery: formatCurrency(pendingTotal),
+        totalTransactions: transactionCount,
+        monthlyCollection: formatCurrency(monthlyAmount),
+        summaryRecovery: formatCurrency(totalRecoveryAmount),
+        summaryPending: formatCurrency(pendingTotal),
+        summaryToday: formatCurrency(todayTotal)
+    };
+
+    Object.keys(fields).forEach(id => {
+
+        const el = document.getElementById(id);
+
+        if(el){
+            el.innerHTML = fields[id];
+        }
+
+    });
 
 }
 
@@ -1637,12 +1765,18 @@ window.addEventListener("load", function () {
 
         loadRecentCustomers();
 
+        loadDashboardFollowups();
+
+        loadDashboardRecentRecovery();
+
     }
 
     // Recovery Page
     if (document.getElementById("recoveryBody")) {
 
         loadRecoveryTable();
+
+        updateRecoverySummary();
 
     }
 
