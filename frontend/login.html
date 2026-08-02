@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VO Recovery Manager - Login</title>
+
+<link rel="stylesheet" href="css/style.css">
+
+<style>
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:linear-gradient(135deg,#2563eb,#1e3a8a);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+
+.login-box{
+    width:380px;
+    background:#fff;
+    padding:35px;
+    border-radius:15px;
+    box-shadow:0 15px 35px rgba(0,0,0,.3);
+    text-align:center;
+}
+
+.login-box h1{
+    margin-bottom:10px;
+    color:#2563eb;
+}
+
+.login-box p{
+    color:#666;
+    margin-bottom:20px;
+}
+
+input{
+    width:100%;
+    padding:14px;
+    margin:10px 0;
+    border:1px solid #ccc;
+    border-radius:8px;
+    font-size:16px;
+    box-sizing:border-box;
+}
+
+button{
+    width:100%;
+    padding:14px;
+    border:none;
+    border-radius:8px;
+    background:#2563eb;
+    color:#fff;
+    font-size:17px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#1d4ed8;
+}
+
+.footer{
+    margin-top:20px;
+    font-size:13px;
+    color:#888;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="login-box">
+
+<h1>VO Recovery Manager</h1>
+
+<p>Vrundavan Ornaments Pvt. Ltd.</p>
+
+<input type="text" id="username" placeholder="Username">
+
+<input type="password" id="password" placeholder="Password" onkeypress="if(event.key==='Enter'){login();}">
+
+<button onclick="login()">LOGIN</button>
+
+<p class="footer">
+Powered by BK Design Hub
+</p>
+
+<p id="debugBox" style="color:red;font-size:12px;white-space:pre-wrap;text-align:left;"></p>
+
+</div>
+
+<script>
+
+window.onerror = function(msg, url, line){
+    document.getElementById("debugBox").innerText =
+        "JS Error: " + msg + " (line " + line + ")";
+};
+
+function getUsers(){
+    let users = JSON.parse(localStorage.getItem("users"));
+    if(!users){
+        const oldCreds = JSON.parse(localStorage.getItem("credentials"));
+        if(oldCreds){
+            users = [{ username: oldCreds.username, password: oldCreds.password, role: "Admin" }];
+        } else {
+            users = [{ username: "admin", password: "1234", role: "Admin" }];
+        }
+        localStorage.setItem("users", JSON.stringify(users));
+    }
+    return users;
+}
+
+function login(){
+
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const users = getUsers();
+    const matched = users.find(u => u.username === username && u.password === password);
+
+    if(matched){
+
+        localStorage.setItem("isLoggedIn", "true");
+        localStorage.setItem("currentUser", matched.username);
+        localStorage.setItem("currentRole", matched.role);
+        window.location.href = "dashboard.html";
+
+    } else {
+
+        alert("Invalid Username or Password");
+
+    }
+
+}
+
+</script>
+
+</body>
+</html>

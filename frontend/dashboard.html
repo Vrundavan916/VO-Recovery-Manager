@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Dashboard | VO Recovery Manager</title>
+
+<link rel="stylesheet" href="css/style.css">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+</head>
+
+<body>
+
+<div class="wrapper">
+
+<!-- =========================
+SIDEBAR START
+========================= -->
+
+<aside class="sidebar">
+
+<div class="logo">
+
+<h2>VO RM</h2>
+
+<p>Recovery Manager</p>
+
+</div>
+
+<ul class="menu">
+
+<li>
+
+<a href="dashboard.html" class="active">
+
+<i class="fa-solid fa-house"></i>
+
+<span>Dashboard</span>
+
+</a>
+
+</li>
+
+<li>
+
+<a href="customers.html">
+
+<i class="fa-solid fa-users"></i>
+
+<span>Customers</span>
+
+</a>
+
+</li>
+
+<li>
+
+<a href="recovery.html">
+
+<i class="fa-solid fa-money-bill-wave"></i>
+
+<span>Recovery</span>
+
+</a>
+
+</li>
+
+<li>
+
+<a href="reports.html">
+
+<i class="fa-solid fa-chart-column"></i>
+
+<span>Reports</span>
+
+</a>
+
+</li>
+
+<li>
+
+<a href="settings.html">
+
+<i class="fa-solid fa-gear"></i>
+
+<span>Settings</span>
+
+</a>
+
+</li>
+
+<li>
+
+<a href="#" onclick="logout()">
+
+<i class="fa-solid fa-right-from-bracket"></i>
+
+<span>Logout</span>
+
+</a>
+
+</li>
+
+</ul>
+
+</aside>
+
+<!-- =========================
+SIDEBAR END
+========================= -->
+
+<!-- =========================
+MAIN CONTENT START
+========================= -->
+
+<main class="main-content"><!-- =========================
+TOPBAR START
+========================= -->
+
+<header class="topbar">
+
+<div>
+
+<h1 class="page-title">
+
+Dashboard
+
+</h1>
+
+<p class="page-subtitle">
+
+Welcome to VO Recovery Manager
+
+</p>
+
+</div>
+
+<div class="user-info">
+
+<i class="fa-solid fa-user-shield"></i>
+
+<span id="userRoleBadge">Administrator</span>
+
+</div>
+
+</header>
+
+<!-- =========================
+TOPBAR END
+========================= -->
+
+<!-- =========================
+DASHBOARD CARDS START
+========================= -->
+
+<div class="dashboard-grid">
+
+<!-- Total Customers -->
+
+<div class="card blue">
+
+<i class="fa-solid fa-users"></i>
+
+<h3>Total Customers</h3>
+
+<h1 id="totalCustomers">0</h1>
+
+<small>Total Registered Customers</small>
+
+</div>
+
+<!-- Outstanding -->
+
+<div class="card red">
+
+<i class="fa-solid fa-wallet"></i>
+
+<h3>Total Outstanding</h3>
+
+<h1 id="totalOutstanding">
+
+₹0
+
+</h1>
+
+<small>Pending Collection</small>
+
+</div>
+
+<!-- Today's Follow-up -->
+
+<div class="card orange">
+
+<i class="fa-solid fa-calendar-check"></i>
+
+<h3>Today's Follow-up</h3>
+
+<h1 id="todayFollowup">
+
+0
+
+</h1>
+
+<small>Customers to Contact</small>
+
+</div>
+
+<!-- Today's Recovery -->
+
+<div class="card green">
+
+<i class="fa-solid fa-indian-rupee-sign"></i>
+
+<h3>Today's Recovery</h3>
+
+<h1 id="todayRecovery">
+
+₹0
+
+</h1>
+
+<small>Today's Collection</small>
+
+</div>
+
+</div>
+
+<!-- =========================
+DASHBOARD CARDS END
+========================= --><!-- =========================
+RECENT CUSTOMERS START
+========================= -->
+
+<section class="table-section fade">
+
+<div class="summary-bar">
+
+<div>
+
+<h2>
+
+Recent Customers
+
+</h2>
+
+<span>
+
+Last 5 Added Customers
+
+</span>
+
+</div>
+
+<a href="customers.html" class="add-btn">
+
+<i class="fa-solid fa-users"></i>
+
+View All Customers
+
+</a>
+
+</div>
+
+<div class="table-responsive">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>#</th>
+
+<th>Customer Name</th>
+
+<th>Mobile</th>
+
+<th>Village</th>
+
+<th>Outstanding</th>
+
+<th>Status</th>
+
+</tr>
+
+</thead>
+
+<tbody id="recentCustomers">
+
+<!-- Data Loaded From script.js -->
+
+</tbody>
+
+</table>
+
+</div>
+
+</section>
+
+<!-- =========================
+RECENT CUSTOMERS END
+========================= -->
+
+<br><!-- =========================
+TODAY'S FOLLOW-UP START
+========================= -->
+
+<section class="table-section fade">
+
+<div class="summary-bar">
+
+<div>
+
+<h2>
+
+Today's Follow-up
+
+</h2>
+
+<span>
+
+Customers to Contact Today
+
+</span>
+
+</div>
+
+<span class="badge badge-warning">
+
+Today's Schedule
+
+</span>
+
+</div>
+
+<div class="table-responsive">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>#</th>
+
+<th>Customer Name</th>
+
+<th>Mobile</th>
+
+<th>Village</th>
+
+<th>Outstanding</th>
+
+<th>Follow-up Date</th>
+
+</tr>
+
+</thead>
+
+<tbody id="followupTable">
+
+<!-- Loaded by script.js -->
+
+</tbody>
+
+</table>
+
+</div>
+
+</section>
+
+<br>
+
+<!-- =========================
+TODAY'S FOLLOW-UP END
+========================= -->
+
+<!-- =========================
+RECENT RECOVERY START
+========================= -->
+
+<section class="table-section fade">
+
+<div class="summary-bar">
+
+<div>
+
+<h2>
+
+Recent Recovery
+
+</h2>
+
+<span>
+
+Latest Payment Collection
+
+</span>
+
+</div>
+
+<span class="badge badge-success">
+
+Today's Collection
+
+</span>
+
+</div>
+
+<div class="table-responsive">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>#</th>
+
+<th>Customer Name</th>
+
+<th>Amount</th>
+
+<th>Date</th>
+
+<th>Remarks</th>
+
+</tr>
+
+</thead>
+
+<tbody id="recoveryTable">
+
+<!-- Loaded by script.js -->
+
+</tbody>
+
+</table>
+
+</div>
+
+</section>
+
+<!-- =========================
+RECENT RECOVERY END
+========================= --><!-- =========================
+QUICK ACTIONS START
+========================= -->
+
+<section class="content-box fade">
+
+<div class="summary-bar">
+
+<div>
+
+<h2>
+
+Quick Actions
+
+</h2>
+
+<span>
+
+Frequently Used Options
+
+</span>
+
+</div>
+
+</div>
+
+<div class="quick-actions">
+
+<a href="customers.html" class="action-card">
+
+<i class="fa-solid fa-user-plus"></i>
+
+<h4>Add Customer</h4>
+
+<p>Create New Customer</p>
+
+</a>
+
+<a href="recovery.html" class="action-card">
+
+<i class="fa-solid fa-money-bill-wave"></i>
+
+<h4>Add Recovery</h4>
+
+<p>Receive Payment</p>
+
+</a>
+
+<a href="reports.html" class="action-card">
+
+<i class="fa-solid fa-chart-line"></i>
+
+<h4>View Reports</h4>
+
+<p>Daily & Monthly Reports</p>
+
+</a>
+
+<a href="settings.html" class="action-card">
+
+<i class="fa-solid fa-gear"></i>
+
+<h4>Settings</h4>
+
+<p>System Configuration</p>
+
+</a>
+
+</div>
+
+</section>
+
+<!-- =========================
+SYSTEM INFORMATION
+========================= -->
+
+<section class="content-box fade">
+
+<div class="summary-bar">
+
+<div>
+
+<h2>
+
+System Information
+
+</h2>
+
+<span>
+
+VO Recovery Manager v1.0
+
+</span>
+
+</div>
+
+</div>
+
+<table>
+
+<tbody>
+
+<tr>
+
+<td><strong>Company</strong></td>
+
+<td>Vrundavan Ornaments Pvt. Ltd.</td>
+
+</tr>
+
+<tr>
+
+<td><strong>Application</strong></td>
+
+<td>VO Recovery Manager</td>
+
+</tr>
+
+<tr>
+
+<td><strong>Developer</strong></td>
+
+<td>BK Design Hub</td>
+
+</tr>
+
+<tr>
+
+<td><strong>Status</strong></td>
+
+<td>
+
+<span class="badge badge-success">
+
+System Online
+
+</span>
+
+</td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</section>
+
+<!-- =========================
+FOOTER START
+========================= -->
+
+<footer class="footer">
+
+© 2026 VO Recovery Manager |
+Powered by <strong>BK Design Hub</strong>
+
+</footer><!-- =========================
+MAIN CONTENT END
+========================= -->
+
+</main>
+
+<!-- =========================
+WRAPPER END
+========================= -->
+
+</div>
+
+<!-- =========================
+JAVASCRIPT
+========================= -->
+
+<script src="js/script.js"></script>
+
+<script>
+
+// Auto Refresh Dashboard Every 30 Seconds
+
+setInterval(function(){
+
+    if(typeof refreshProject === "function"){
+
+        refreshProject();
+
+    }
+
+},30000);
+
+</script>
+
+</body>
+
+</html>
