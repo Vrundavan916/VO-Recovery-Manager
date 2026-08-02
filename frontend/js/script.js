@@ -1788,11 +1788,12 @@ window.addEventListener("load", function () {
     }
 
     // Reports
-    if (document.getElementById("reportBody")) {
+if (document.getElementById("reportBody")) {
 
-        loadReports();
+    loadReports();
+    updateRecoverySummary();
 
-    }
+}
 
     // Settings Page - Prefill Current Credentials
     if (document.getElementById("adminUsername")) {
