@@ -552,113 +552,78 @@ Backup & Restore Project Data
 <div class="dashboard-grid">
 
 <div class="card blue">
-
 <i class="fa-solid fa-download"></i>
-
-<h3>Backup Data</h3>
-
-<p>Create Backup of All Data</p>
-
+<h3>Local Backup</h3>
+<p>Download JSON file</p>
 <br>
-
-<button
-
-type="button"
-
-class="add-btn"
-
-onclick="backupData()">
-
-Download Backup
-
+<button type="button" class="add-btn" onclick="backupData()">
+Download JSON
 </button>
-
 </div>
 
 <div class="card green">
-
-<i class="fa-solid fa-upload"></i>
-
-<h3>Restore Data</h3>
-
-<p>Import Previous Backup</p>
-
+<i class="fa-solid fa-cloud-arrow-up"></i>
+<h3>Firebase Full Backup</h3>
+<p>Save to Firebase Console</p>
 <br>
-
-<input
-
-type="file"
-
-id="restoreFile"
-
-accept=".json">
-
-<br><br>
-
-<button
-
-type="button"
-
-class="add-btn"
-
-onclick="restoreData()">
-
-Restore Backup
-
+<button type="button" class="add-btn" style="background:#16a34a;" onclick="firebaseFullBackup()">
+☁ Cloud Backup
 </button>
-
 </div>
 
 <div class="card orange">
-
-<i class="fa-solid fa-file-export"></i>
-
-<h3>Export Reports</h3>
-
-<p>Export Customer & Recovery Data</p>
-
+<i class="fa-solid fa-cloud-arrow-down"></i>
+<h3>Firebase Restore</h3>
+<p>Restore latest cloud backup</p>
 <br>
-
-<button
-
-type="button"
-
-class="add-btn"
-
-onclick="exportReport()">
-
-Export Data
-
+<button type="button" class="add-btn" style="background:#f59e0b;" onclick="firebaseFullRestore()">
+☁ Cloud Restore
 </button>
+</div>
 
+<div class="card blue">
+<i class="fa-solid fa-upload"></i>
+<h3>Restore JSON File</h3>
+<p>Import local backup file</p>
+<br>
+<input type="file" id="restoreFile" accept=".json" onchange="restoreData(event)">
+</div>
+
+<div class="card orange">
+<i class="fa-solid fa-file-export"></i>
+<h3>Export Reports</h3>
+<p>Export recovery CSV</p>
+<br>
+<button type="button" class="add-btn" onclick="exportReport()">
+Export Data
+</button>
 </div>
 
 <div class="card red">
-
 <i class="fa-solid fa-trash"></i>
-
 <h3>Clear All Data</h3>
-
-<p>Delete All Customer Records</p>
-
+<p>Delete all local records</p>
 <br>
-
-<button
-
-type="button"
-
-class="add-btn"
-
-style="background:#dc2626;"
-
-onclick="clearAllData()">
-
+<button type="button" class="add-btn" style="background:#dc2626;" onclick="clearAllData()">
 Delete Data
-
 </button>
+</div>
 
 </div>
 
+<div class="content-box" style="margin-top:20px;">
+<div class="summary-bar">
+<div>
+<h2>Firebase Status</h2>
+<span>Cloud connection</span>
+</div>
+</div>
+<p><strong>Status:</strong> <span id="firebaseStatus">Checking...</span></p>
+<p><strong>Database:</strong> <span id="dbStatusBadge" class="badge badge-warning">Local Storage</span></p>
+<p><strong>Last Cloud Backup:</strong> <span id="lastBackupDate">-</span></p>
+<p style="margin-top:10px;color:#64748b;font-size:14px;">
+Firebase Console → Firestore Database → collections: <code>customers</code>, <code>recoveries</code>, <code>users</code>, <code>settings</code>, <code>backups</code>
+</p>
 </div>
 
 </section>
@@ -1188,6 +1153,13 @@ WRAPPER END
 <!-- =========================
 JAVASCRIPT
 ========================= -->
+
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/firebase-db.js"></script>
 
 <script src="js/script.js"></script>
 

@@ -93,14 +93,20 @@ Powered by BK Design Hub
 
 </div>
 
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/firebase-db.js"></script>
+
 <script>
 
 window.onerror = function(msg, url, line){
-    document.getElementById("debugBox").innerText =
-        "JS Error: " + msg + " (line " + line + ")";
+    const box = document.getElementById("debugBox");
+    if (box) box.innerText = "JS Error: " + msg + " (line " + line + ")";
 };
 
-function getUsers(){
+function getUsersLocal(){
     let users = JSON.parse(localStorage.getItem("users"));
     if(!users){
         const oldCreds = JSON.parse(localStorage.getItem("credentials"));
@@ -114,24 +120,41 @@ function getUsers(){
     return users;
 }
 
-function login(){
+async function login(){
 
     const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value.trim();
-    const users = getUsers();
+
+    // Try Firebase users first
+    if (typeof initFirebase === "function") {
+        initFirebase();
+    }
+
+    let users = getUsersLocal();
+
+    if (typeof loadUsersFromFirebase === "function" && typeof fbReady !== "undefined") {
+        try {
+            if (typeof isFirebaseConfigured === "function" && isFirebaseConfigured()) {
+                const cloudUsers = await loadUsersFromFirebase();
+                if (cloudUsers && cloudUsers.length) {
+                    users = cloudUsers;
+                    localStorage.setItem("users", JSON.stringify(users));
+                }
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
     const matched = users.find(u => u.username === username && u.password === password);
 
     if(matched){
-
         localStorage.setItem("isLoggedIn", "true");
         localStorage.setItem("currentUser", matched.username);
         localStorage.setItem("currentRole", matched.role);
         window.location.href = "dashboard.html";
-
     } else {
-
         alert("Invalid Username or Password");
-
     }
 
 }
