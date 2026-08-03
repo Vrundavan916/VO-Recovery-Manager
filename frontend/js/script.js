@@ -1982,20 +1982,26 @@ if (document.getElementById("reportBody")) {
         const account = users.find(u => u.username === currentUsername) || users[0];
 
         if (account) {
-
             document.getElementById("adminUsername").value = account.username;
-
         }
 
         if (document.getElementById("recoveryEmail") && settings.recoveryEmail) {
-
             document.getElementById("recoveryEmail").value = settings.recoveryEmail;
-
         }
 
         loadUserList();
 
     }
+
+    // Prefill company branding fields
+    if (document.getElementById("companyName") && settings.company) {
+        document.getElementById("companyName").value = settings.company;
+    }
+    if (document.getElementById("logoPreview") && settings.logoDataUrl) {
+        document.getElementById("logoPreview").src = settings.logoDataUrl;
+        document.getElementById("logoPreview").style.display = "block";
+    }
+
 
 });
 
@@ -2046,6 +2052,63 @@ function refreshProject() {
 // ================================
 // App Version
 // ================================
+
+
+
+// ================================
+// Company Branding (Multi-Jeweller)
+// ================================
+
+function previewCompanyLogo(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const preview = document.getElementById("logoPreview");
+        if (preview) {
+            preview.src = e.target.result;
+            preview.style.display = "block";
+        }
+        settings = JSON.parse(localStorage.getItem("settings")) || {};
+        settings.logoDataUrl = e.target.result;
+        localStorage.setItem("settings", JSON.stringify(settings));
+        if (typeof cloudSyncAll === "function") cloudSyncAll();
+    };
+    reader.readAsDataURL(file);
+}
+
+function saveCompanyBranding() {
+    settings = JSON.parse(localStorage.getItem("settings")) || {};
+    const companyField = document.getElementById("companyName");
+    const phoneField = document.getElementById("companyMobile") || document.getElementById("contactNumber");
+    const emailField = document.getElementById("companyEmail") || document.getElementById("emailAddress");
+    const addressField = document.getElementById("companyAddress");
+    const softwareField = document.getElementById("softwareName");
+
+    if (companyField && companyField.value.trim()) {
+        settings.company = companyField.value.trim();
+    }
+    if (phoneField && phoneField.value.trim()) {
+        settings.phone = phoneField.value.trim();
+    }
+    if (emailField && emailField.value.trim()) {
+        settings.email = emailField.value.trim();
+    }
+    if (addressField && addressField.value.trim()) {
+        settings.address = addressField.value.trim();
+    }
+    if (softwareField && softwareField.value.trim()) {
+        settings.softwareName = softwareField.value.trim();
+    }
+
+    localStorage.setItem("settings", JSON.stringify(settings));
+    if (typeof cloudSyncAll === "function") cloudSyncAll();
+    alert("Company branding saved. Login page પર logo/name દેખાશે.");
+}
+
+window.previewCompanyLogo = previewCompanyLogo;
+window.saveCompanyBranding = saveCompanyBranding;
+
 
 const APP_INFO = {
 
