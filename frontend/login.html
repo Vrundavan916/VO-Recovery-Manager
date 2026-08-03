@@ -85,6 +85,10 @@ button:hover{
 
 <button onclick="login()">LOGIN</button>
 
+<button type="button" onclick="resetLogin()" style="margin-top:10px;background:#64748b;font-size:14px;">
+Reset Login (admin / 1234)
+</button>
+
 <p class="footer">
 Powered by BK Design Hub
 </p>
@@ -106,18 +110,31 @@ window.onerror = function(msg, url, line){
     if (box) box.innerText = "JS Error: " + msg + " (line " + line + ")";
 };
 
+function ensureDefaultAdmin(users){
+    if (!Array.isArray(users)) users = [];
+    const hasAdmin = users.some(u => u.username === "admin");
+    if (!hasAdmin) {
+        users.push({ username: "admin", password: "1234", role: "Admin" });
+    }
+    if (users.length === 0) {
+        users = [{ username: "admin", password: "1234", role: "Admin" }];
+    }
+    localStorage.setItem("users", JSON.stringify(users));
+    return users;
+}
+
 function getUsersLocal(){
     let users = JSON.parse(localStorage.getItem("users"));
-    if(!users){
+    if (!users || !Array.isArray(users) || users.length === 0) {
         const oldCreds = JSON.parse(localStorage.getItem("credentials"));
-        if(oldCreds){
+        if (oldCreds && oldCreds.username) {
             users = [{ username: oldCreds.username, password: oldCreds.password, role: "Admin" }];
         } else {
             users = [{ username: "admin", password: "1234", role: "Admin" }];
         }
         localStorage.setItem("users", JSON.stringify(users));
     }
-    return users;
+    return ensureDefaultAdmin(users);
 }
 
 async function login(){
@@ -125,38 +142,77 @@ async function login(){
     const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value.trim();
 
-    // Try Firebase users first
-    if (typeof initFirebase === "function") {
-        initFirebase();
+    if (!username || !password) {
+        alert("Username અને Password નાખો");
+        return;
     }
 
+    // Init Firebase (optional)
+    try {
+        if (typeof initFirebase === "function") initFirebase();
+    } catch (e) {
+        console.error(e);
+    }
+
+    // 1) Local users first
     let users = getUsersLocal();
 
-    if (typeof loadUsersFromFirebase === "function" && typeof fbReady !== "undefined") {
-        try {
-            if (typeof isFirebaseConfigured === "function" && isFirebaseConfigured()) {
-                const cloudUsers = await loadUsersFromFirebase();
-                if (cloudUsers && cloudUsers.length) {
-                    users = cloudUsers;
-                    localStorage.setItem("users", JSON.stringify(users));
-                }
+    // 2) Try merge Firebase users (do NOT wipe local if cloud empty/fails)
+    try {
+        if (typeof isFirebaseConfigured === "function" && isFirebaseConfigured() && typeof loadUsersFromFirebase === "function") {
+            if (typeof initFirebase === "function") initFirebase();
+            const cloudUsers = await loadUsersFromFirebase();
+            if (cloudUsers && cloudUsers.length > 0) {
+                // Merge by username (cloud overrides same username)
+                const map = {};
+                users.forEach(u => { map[u.username] = u; });
+                cloudUsers.forEach(u => { map[u.username] = u; });
+                users = Object.values(map);
+                users = ensureDefaultAdmin(users);
+                localStorage.setItem("users", JSON.stringify(users));
             }
-        } catch (e) {
-            console.error(e);
         }
+    } catch (e) {
+        console.error("Firebase users load failed, using local", e);
     }
 
     const matched = users.find(u => u.username === username && u.password === password);
 
-    if(matched){
+    if (matched) {
         localStorage.setItem("isLoggedIn", "true");
         localStorage.setItem("currentUser", matched.username);
-        localStorage.setItem("currentRole", matched.role);
+        localStorage.setItem("currentRole", matched.role || "Admin");
         window.location.href = "dashboard.html";
     } else {
-        alert("Invalid Username or Password");
+        const names = users.map(u => u.username).join(", ");
+        alert("Invalid Username or Password\n\nAvailable users: " + (names || "none") + "\n\nReset માટે નીચે Reset Login દબાવો.");
     }
 
+}
+
+function resetLogin(){
+    if (!confirm("Login reset કરશો?\n\nUsername: admin\nPassword: 1234")) return;
+
+    const users = [{ username: "admin", password: "1234", role: "Admin" }];
+    localStorage.setItem("users", JSON.stringify(users));
+    localStorage.removeItem("credentials");
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("currentUser");
+    localStorage.removeItem("currentRole");
+
+    // Also push to Firebase if available
+    try {
+        if (typeof initFirebase === "function") initFirebase();
+        if (typeof syncUsersToFirebase === "function") {
+            syncUsersToFirebase(users);
+        }
+    } catch (e) {
+        console.error(e);
+    }
+
+    document.getElementById("username").value = "admin";
+    document.getElementById("password").value = "1234";
+    alert("Reset થયું!\n\nUsername: admin\nPassword: 1234\n\nહવે LOGIN દબાવો.");
 }
 
 </script>
