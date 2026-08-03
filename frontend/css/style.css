@@ -1338,3 +1338,95 @@ border:none;
 /* =========================================================
    END OF STYLE.CSS
 =========================================================*/
+/* =========================================================
+   PRINT - REPORTS (Multi-Jeweller)
+========================================================= */
+
+@media print {
+
+    @page {
+        size: A4 landscape;
+        margin: 12mm;
+    }
+
+    body {
+        background: #fff !important;
+        color: #000 !important;
+    }
+
+    .sidebar,
+    .topbar,
+    .add-btn,
+    .action-btn,
+    .quick-actions,
+    .menu,
+    .user-info,
+    button,
+    .footer,
+    input,
+    select,
+    label,
+    .search-box {
+        display: none !important;
+    }
+
+    .wrapper {
+        display: block !important;
+    }
+
+    .main-content {
+        margin: 0 !important;
+        width: 100% !important;
+        padding: 0 !important;
+    }
+
+    .table-section,
+    .content-box,
+    .card {
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+        page-break-inside: avoid;
+    }
+
+    table {
+        width: 100% !important;
+        min-width: 0 !important;
+        font-size: 11px !important;
+    }
+
+    thead {
+        background: #2563eb !important;
+        color: #fff !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    thead th {
+        padding: 8px !important;
+    }
+
+    tbody td {
+        padding: 6px !important;
+        border-bottom: 1px solid #ddd !important;
+    }
+
+    .print-header {
+        display: block !important;
+        text-align: center;
+        margin-bottom: 16px;
+    }
+
+    .print-header h1 {
+        font-size: 20px;
+        margin: 0;
+    }
+
+    .print-header p {
+        margin: 4px 0;
+        font-size: 12px;
+    }
+}
+
+.print-header {
+    display: none;
+}
