@@ -57,6 +57,10 @@ function saveUsers(users){
 
     localStorage.setItem("users", JSON.stringify(users));
 
+    if (typeof syncUsersToFirebase === "function") {
+        syncUsersToFirebase(users);
+    }
+
 }
 
 // ================================
@@ -432,6 +436,10 @@ function saveCustomer() {
 
     updateDashboard();
 
+    if (typeof cloudSyncAll === "function") {
+        cloudSyncAll();
+    }
+
     alert("Customer Saved Successfully.");
 
 }
@@ -620,24 +628,27 @@ function deleteCustomer(index){
     const role = localStorage.getItem("currentRole") || "Admin";
 
     if(role !== "Admin"){
-
         alert("Only Admin Can Delete Records.");
         return;
-
     }
 
     if(confirm("Delete this customer permanently?")){
 
-        customers.splice(index,1);
+        const removed = customers[index];
 
-        localStorage.setItem(
-            "customers",
-            JSON.stringify(customers)
-        );
+        customers.splice(index, 1);
+
+        localStorage.setItem("customers", JSON.stringify(customers));
 
         loadCustomers();
-
         updateDashboard();
+
+        if (removed && typeof cloudDeleteCustomer === "function") {
+            cloudDeleteCustomer(removed.id);
+        }
+        if (typeof cloudSyncAll === "function") {
+            cloudSyncAll();
+        }
 
     }
 
@@ -997,6 +1008,10 @@ function saveRecovery() {
         loadReports();
     }
 
+    if (typeof cloudSyncAll === "function") {
+        cloudSyncAll();
+    }
+
     alert("Recovery Saved Successfully.");
 
 }
@@ -1063,6 +1078,8 @@ function deleteRecovery(index) {
         }
     }
 
+    const removedId = item ? item.id : null;
+
     recoveries.splice(index, 1);
     localStorage.setItem("recoveries", JSON.stringify(recoveries));
 
@@ -1070,6 +1087,13 @@ function deleteRecovery(index) {
     updateDashboard();
     updateRecoverySummary();
     if (typeof loadReports === "function") loadReports();
+
+    if (removedId && typeof cloudDeleteRecovery === "function") {
+        cloudDeleteRecovery(removedId);
+    }
+    if (typeof cloudSyncAll === "function") {
+        cloudSyncAll();
+    }
 
 }
 
@@ -1515,38 +1539,47 @@ function formatDate(date){
 
 function backupData(){
 
-    const backup={
-
-        customers:customers,
-
-        recoveries:recoveries,
-
-        settings:settings,
-
-        backupDate:new Date()
-
+    // Local JSON download
+    const backup = {
+        customers: customers,
+        recoveries: recoveries,
+        settings: settings,
+        users: (typeof getUsers === "function") ? getUsers() : [],
+        backupDate: new Date().toISOString()
     };
 
-    const data=JSON.stringify(backup,null,2);
-
-    const blob=new Blob([data],{
-
-        type:"application/json"
-
-    });
-
-    const url=URL.createObjectURL(blob);
-
-    const a=document.createElement("a");
-
-    a.href=url;
-
-    a.download="VO-Recovery-Backup.json";
-
+    const data = JSON.stringify(backup, null, 2);
+    const blob = new Blob([data], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "VO-Recovery-Backup.json";
     a.click();
-
     URL.revokeObjectURL(url);
 
+    // Also full backup to Firebase Console
+    if (typeof fullBackupToFirebase === "function") {
+        fullBackupToFirebase();
+    } else {
+        alert("Local JSON backup downloaded.");
+    }
+
+}
+
+function firebaseFullBackup() {
+    if (typeof fullBackupToFirebase === "function") {
+        fullBackupToFirebase();
+    } else {
+        alert("Firebase module not loaded.");
+    }
+}
+
+function firebaseFullRestore() {
+    if (typeof restoreFromFirebaseLatest === "function") {
+        restoreFromFirebaseLatest();
+    } else {
+        alert("Firebase module not loaded.");
+    }
 }
 
 // ================================
@@ -1555,44 +1588,49 @@ function backupData(){
 
 function restoreData(event){
 
-    const file=event.target.files[0];
+    const input = event && event.target ? event.target : document.getElementById("restoreFile");
+    const file = input && input.files ? input.files[0] : null;
 
-    if(!file) return;
+    if(!file) {
+        alert("Please select a backup JSON file.");
+        return;
+    }
 
-    const reader=new FileReader();
+    const reader = new FileReader();
 
-    reader.onload=function(e){
+    reader.onload = function(e){
 
-        const backup=JSON.parse(e.target.result);
+        try {
+            const backup = JSON.parse(e.target.result);
 
-        customers=backup.customers||[];
+            customers = backup.customers || [];
+            recoveries = backup.recoveries || [];
+            settings = backup.settings || {};
 
-        recoveries=backup.recoveries||[];
+            localStorage.setItem("customers", JSON.stringify(customers));
+            localStorage.setItem("recoveries", JSON.stringify(recoveries));
+            localStorage.setItem("settings", JSON.stringify(settings));
 
-        settings=backup.settings||{};
+            if (backup.users && backup.users.length) {
+                localStorage.setItem("users", JSON.stringify(backup.users));
+            }
 
-        localStorage.setItem(
-            "customers",
-            JSON.stringify(customers)
-        );
+            if (typeof loadCustomers === "function") loadCustomers();
+            if (typeof loadRecoveryTable === "function") loadRecoveryTable();
+            if (typeof loadReports === "function") loadReports();
+            if (typeof updateDashboard === "function") updateDashboard();
+            if (typeof updateRecoverySummary === "function") updateRecoverySummary();
 
-        localStorage.setItem(
-            "recoveries",
-            JSON.stringify(recoveries)
-        );
+            // Push restored data to Firebase as well
+            if (typeof fullBackupToFirebase === "function") {
+                fullBackupToFirebase();
+            }
 
-        localStorage.setItem(
-            "settings",
-            JSON.stringify(settings)
-        );
-
-        loadCustomers();
-
-        loadRecoveryTable();
-
-        updateDashboard();
-
-        alert("Backup Restored Successfully.");
+            alert("Backup Restored Successfully.");
+        } catch (err) {
+            alert("Invalid backup file.");
+            console.error(err);
+        }
 
     };
 
@@ -1606,27 +1644,23 @@ function restoreData(event){
 
 function clearAllData(){
 
-    if(confirm("Delete ALL Data Permanently?")){
+    if(confirm("Delete ALL Data Permanently?\n\nLocal data clear થશે. Firebase cloud data અલગથી manage કરો.")){
 
         localStorage.removeItem("customers");
-
         localStorage.removeItem("recoveries");
-
         localStorage.removeItem("settings");
 
-        customers=[];
+        customers = [];
+        recoveries = [];
+        settings = {};
 
-        recoveries=[];
+        if (typeof loadCustomers === "function") loadCustomers();
+        if (typeof loadRecoveryTable === "function") loadRecoveryTable();
+        if (typeof loadReports === "function") loadReports();
+        if (typeof updateDashboard === "function") updateDashboard();
+        if (typeof updateRecoverySummary === "function") updateRecoverySummary();
 
-        settings={};
-
-        loadCustomers();
-
-        loadRecoveryTable();
-
-        updateDashboard();
-
-        alert("All Data Cleared.");
+        alert("All Local Data Cleared.");
 
     }
 
@@ -1720,6 +1754,10 @@ function saveSettings(){
     if(currentPasswordField) currentPasswordField.value = "";
     if(newPasswordField) newPasswordField.value = "";
     if(confirmPasswordField) confirmPasswordField.value = "";
+
+    if (typeof cloudSyncAll === "function") {
+        cloudSyncAll();
+    }
 
     alert("Settings Saved Successfully.");
 
@@ -1866,12 +1904,21 @@ function getCompanyName(){
 // Auto Initialize Project
 // ================================
 
-window.addEventListener("load", function () {
+window.addEventListener("load", async function () {
+
+    // Firebase boot (pull cloud data if configured)
+    if (typeof firebaseBoot === "function") {
+        try {
+            await firebaseBoot();
+        } catch (e) {
+            console.error(e);
+        }
+    }
 
     // Login Check
     checkLogin();
 
-    // Reload Local Storage
+    // Reload Local Storage (may already be updated by Firebase pull)
     customers = JSON.parse(
         localStorage.getItem("customers")
     ) || [];
