@@ -290,11 +290,18 @@ type="file"
 
 id="companyLogo"
 
-accept="image/*">
+accept="image/*"
+
+onchange="previewCompanyLogo(event)">
 
 </div>
 
 </div>
+
+<button type="button" class="add-btn" onclick="saveCompanyBranding()" style="margin-top:15px;">
+Save Company Info
+</button>
+
 
 <!-- =========================
 END OF PART 2
@@ -313,6 +320,14 @@ ADMIN SETTINGS START
 <div>
 
 <h2>
+
+
+<div class="full-width" style="margin-top:15px;">
+<label>Company Logo (Login Page)</label>
+<input type="file" id="companyLogoFile" accept="image/*" onchange="previewCompanyLogo(event)">
+<small style="color:#64748b;">Login page અને print header પર દેખાશે</small>
+<img id="logoPreview" src="assets/logo.png" style="max-height:80px;margin-top:10px;border-radius:8px;" onerror="this.style.display='none'">
+</div>
 
 Administrator Settings
 

@@ -3,98 +3,140 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VO Recovery Manager - Login</title>
-
+<title>Login | VO Recovery Manager</title>
 <link rel="stylesheet" href="css/style.css">
-
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 <style>
-body{
+body.login-body{
     margin:0;
-    font-family:Arial,sans-serif;
-    background:linear-gradient(135deg,#2563eb,#1e3a8a);
+    min-height:100vh;
     display:flex;
     justify-content:center;
     align-items:center;
-    height:100vh;
+    background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 45%,#2563eb 100%);
+    font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+    padding:20px;
 }
-
-.login-box{
-    width:380px;
+.login-card{
+    width:100%;
+    max-width:420px;
     background:#fff;
-    padding:35px;
-    border-radius:15px;
-    box-shadow:0 15px 35px rgba(0,0,0,.3);
+    border-radius:20px;
+    padding:36px 32px 28px;
+    box-shadow:0 25px 50px rgba(0,0,0,.35);
     text-align:center;
 }
-
-.login-box h1{
-    margin-bottom:10px;
+.login-logo{
+    width:90px;
+    height:90px;
+    object-fit:contain;
+    margin:0 auto 12px;
+    border-radius:16px;
+    background:#f8fafc;
+    padding:8px;
+    border:1px solid #e2e8f0;
+}
+.login-company{
+    font-size:18px;
+    font-weight:700;
+    color:#0f172a;
+    margin:0 0 4px;
+}
+.login-software{
+    font-size:13px;
+    color:#64748b;
+    margin:0 0 22px;
+}
+.login-card h2{
+    margin:0 0 18px;
     color:#2563eb;
+    font-size:22px;
 }
-
-.login-box p{
-    color:#666;
-    margin-bottom:20px;
+.login-card label{
+    display:block;
+    text-align:left;
+    font-weight:600;
+    color:#334155;
+    margin:12px 0 6px;
+    font-size:14px;
 }
-
-input{
+.login-card input{
     width:100%;
-    padding:14px;
-    margin:10px 0;
-    border:1px solid #ccc;
-    border-radius:8px;
-    font-size:16px;
+    padding:13px 14px;
+    border:1px solid #cbd5e1;
+    border-radius:10px;
+    font-size:15px;
     box-sizing:border-box;
+    outline:none;
 }
-
-button{
+.login-card input:focus{
+    border-color:#2563eb;
+    box-shadow:0 0 0 3px rgba(37,99,235,.15);
+}
+.btn-login{
     width:100%;
+    margin-top:20px;
     padding:14px;
     border:none;
-    border-radius:8px;
+    border-radius:10px;
     background:#2563eb;
     color:#fff;
-    font-size:17px;
+    font-size:16px;
+    font-weight:600;
     cursor:pointer;
 }
-
-button:hover{
-    background:#1d4ed8;
-}
-
-.footer{
-    margin-top:20px;
+.btn-login:hover{ background:#1d4ed8; }
+.btn-reset{
+    width:100%;
+    margin-top:10px;
+    padding:11px;
+    border:none;
+    border-radius:10px;
+    background:#64748b;
+    color:#fff;
     font-size:13px;
-    color:#888;
+    cursor:pointer;
 }
+.btn-forgot{
+    margin-top:12px;
+    background:none;
+    border:none;
+    color:#2563eb;
+    font-size:13px;
+    cursor:pointer;
+    text-decoration:underline;
+}
+.login-footer{
+    margin-top:18px;
+    font-size:12px;
+    color:#94a3b8;
+}
+#debugBox{ color:#ef4444; font-size:12px; text-align:left; white-space:pre-wrap; margin-top:10px; }
 </style>
-
 </head>
+<body class="login-body">
 
-<body>
+<div class="login-card">
+    <img id="companyLogo" class="login-logo" src="assets/logo.png" alt="Company Logo"
+         onerror="this.src='../assets/logo.png'; this.onerror=function(){this.style.display='none';};">
+    <p class="login-company" id="companyNameText">Vrundavan Ornaments Pvt. Ltd.</p>
+    <p class="login-software" id="softwareNameText">VO Recovery Manager</p>
 
-<div class="login-box">
+    <h2><i class="fa-solid fa-lock"></i> Login</h2>
 
-<h1>VO Recovery Manager</h1>
+    <label>Username</label>
+    <input type="text" id="username" placeholder="Enter username" autocomplete="username">
 
-<p>Vrundavan Ornaments Pvt. Ltd.</p>
+    <label>Password</label>
+    <input type="password" id="password" placeholder="Enter password" autocomplete="current-password"
+           onkeypress="if(event.key==='Enter'){login();}">
 
-<input type="text" id="username" placeholder="Username">
+    <button class="btn-login" onclick="login()">LOGIN</button>
+    <button class="btn-reset" type="button" onclick="resetLogin()">Reset Login (admin / 1234)</button>
+    <button class="btn-forgot" type="button" onclick="forgotPassword()">Forgot / Change Password (Firebase)</button>
 
-<input type="password" id="password" placeholder="Password" onkeypress="if(event.key==='Enter'){login();}">
-
-<button onclick="login()">LOGIN</button>
-
-<button type="button" onclick="resetLogin()" style="margin-top:10px;background:#64748b;font-size:14px;">
-Reset Login (admin / 1234)
-</button>
-
-<p class="footer">
-Powered by BK Design Hub
-</p>
-
-<p id="debugBox" style="color:red;font-size:12px;white-space:pre-wrap;text-align:left;"></p>
-
+    <p class="login-footer">Powered by BK Design Hub · Multi-Jeweller Edition</p>
+    <p id="debugBox"></p>
 </div>
 
 <!-- Firebase SDK -->
@@ -104,16 +146,26 @@ Powered by BK Design Hub
 <script src="js/firebase-db.js"></script>
 
 <script>
-
 window.onerror = function(msg, url, line){
     const box = document.getElementById("debugBox");
     if (box) box.innerText = "JS Error: " + msg + " (line " + line + ")";
 };
 
+// Load company branding from local settings / defaults
+(function loadBranding(){
+    try {
+        const s = JSON.parse(localStorage.getItem("settings") || "{}");
+        if (s.company) document.getElementById("companyNameText").innerText = s.company;
+        if (s.softwareName) document.getElementById("softwareNameText").innerText = s.softwareName;
+        if (s.logoDataUrl) {
+            document.getElementById("companyLogo").src = s.logoDataUrl;
+        }
+    } catch(e){}
+})();
+
 function ensureDefaultAdmin(users){
     if (!Array.isArray(users)) users = [];
-    const hasAdmin = users.some(u => u.username === "admin");
-    if (!hasAdmin) {
+    if (!users.some(u => u.username === "admin")) {
         users.push({ username: "admin", password: "1234", role: "Admin" });
     }
     if (users.length === 0) {
@@ -138,84 +190,105 @@ function getUsersLocal(){
 }
 
 async function login(){
-
     const username = document.getElementById("username").value.trim();
     const password = document.getElementById("password").value.trim();
-
     if (!username || !password) {
         alert("Username અને Password નાખો");
         return;
     }
+    try { if (typeof initFirebase === "function") initFirebase(); } catch(e){}
 
-    // Init Firebase (optional)
-    try {
-        if (typeof initFirebase === "function") initFirebase();
-    } catch (e) {
-        console.error(e);
-    }
-
-    // 1) Local users first
     let users = getUsersLocal();
-
-    // 2) Try merge Firebase users (do NOT wipe local if cloud empty/fails)
     try {
-        if (typeof isFirebaseConfigured === "function" && isFirebaseConfigured() && typeof loadUsersFromFirebase === "function") {
-            if (typeof initFirebase === "function") initFirebase();
+        if (typeof isFirebaseConfigured === "function" && isFirebaseConfigured()) {
             const cloudUsers = await loadUsersFromFirebase();
             if (cloudUsers && cloudUsers.length > 0) {
-                // Merge by username (cloud overrides same username)
                 const map = {};
-                users.forEach(u => { map[u.username] = u; });
-                cloudUsers.forEach(u => { map[u.username] = u; });
-                users = Object.values(map);
-                users = ensureDefaultAdmin(users);
-                localStorage.setItem("users", JSON.stringify(users));
+                users.forEach(u => map[u.username] = u);
+                cloudUsers.forEach(u => map[u.username] = u);
+                users = ensureDefaultAdmin(Object.values(map));
             }
         }
-    } catch (e) {
-        console.error("Firebase users load failed, using local", e);
-    }
+    } catch(e){ console.error(e); }
 
     const matched = users.find(u => u.username === username && u.password === password);
-
     if (matched) {
         localStorage.setItem("isLoggedIn", "true");
         localStorage.setItem("currentUser", matched.username);
         localStorage.setItem("currentRole", matched.role || "Admin");
         window.location.href = "dashboard.html";
     } else {
-        const names = users.map(u => u.username).join(", ");
-        alert("Invalid Username or Password\n\nAvailable users: " + (names || "none") + "\n\nReset માટે નીચે Reset Login દબાવો.");
+        alert("Invalid Username or Password\n\nReset Login દબાવો અથવા Forgot Password વાપરો.");
     }
-
 }
 
 function resetLogin(){
-    if (!confirm("Login reset કરશો?\n\nUsername: admin\nPassword: 1234")) return;
-
+    if (!confirm("Login reset?\n\nUsername: admin\nPassword: 1234")) return;
     const users = [{ username: "admin", password: "1234", role: "Admin" }];
     localStorage.setItem("users", JSON.stringify(users));
     localStorage.removeItem("credentials");
     localStorage.removeItem("isLoggedIn");
     localStorage.removeItem("currentUser");
     localStorage.removeItem("currentRole");
-
-    // Also push to Firebase if available
     try {
         if (typeof initFirebase === "function") initFirebase();
-        if (typeof syncUsersToFirebase === "function") {
-            syncUsersToFirebase(users);
-        }
-    } catch (e) {
-        console.error(e);
-    }
-
+        if (typeof syncUsersToFirebase === "function") syncUsersToFirebase(users);
+    } catch(e){}
     document.getElementById("username").value = "admin";
     document.getElementById("password").value = "1234";
-    alert("Reset થયું!\n\nUsername: admin\nPassword: 1234\n\nહવે LOGIN દબાવો.");
+    alert("Reset OK\n\nadmin / 1234\n\nFirebase પર પણ sync થયું (connected હોય તો).");
 }
 
-</script>
+async function forgotPassword(){
+    const username = prompt("Username નાખો (જેનો password બદલવો છે):", "admin");
+    if (!username) return;
+    const newPass = prompt("નવો Password (min 4 characters):");
+    if (!newPass || newPass.length < 4) {
+        alert("Password ઓછામાં ઓછા 4 characters જોઈએ");
+        return;
+    }
+    const confirmPass = prompt("નવો Password ફરી નાખો:");
+    if (newPass !== confirmPass) {
+        alert("Password match નથી થતો");
+        return;
+    }
 
+    let users = getUsersLocal();
+    try {
+        if (typeof initFirebase === "function") initFirebase();
+        if (typeof isFirebaseConfigured === "function" && isFirebaseConfigured()) {
+            const cloudUsers = await loadUsersFromFirebase();
+            if (cloudUsers && cloudUsers.length) {
+                const map = {};
+                users.forEach(u => map[u.username] = u);
+                cloudUsers.forEach(u => map[u.username] = u);
+                users = Object.values(map);
+            }
+        }
+    } catch(e){}
+
+    const idx = users.findIndex(u => u.username === username);
+    if (idx === -1) {
+        // create as admin if admin username
+        if (username === "admin") {
+            users.push({ username: "admin", password: newPass, role: "Admin" });
+        } else {
+            alert("User મળ્યો નથી: " + username);
+            return;
+        }
+    } else {
+        users[idx].password = newPass;
+    }
+
+    localStorage.setItem("users", JSON.stringify(users));
+    try {
+        if (typeof syncUsersToFirebase === "function") {
+            await syncUsersToFirebase(users);
+        }
+    } catch(e){ console.error(e); }
+
+    alert("Password update થયો!\n\nUser: " + username + "\n\nLocal + Firebase (connected હોય તો) બંનેમાં save થયું.");
+}
+</script>
 </body>
 </html>

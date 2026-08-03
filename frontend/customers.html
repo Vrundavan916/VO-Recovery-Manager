@@ -198,6 +198,20 @@ Add Customer
 
 </button>
 
+<button type="button" class="add-btn" style="background:#16a34a;margin-left:8px;" onclick="downloadCustomerTemplate()">
+<i class="fa-solid fa-file-excel"></i> Download Excel Template
+</button>
+
+<label class="add-btn" style="background:#0ea5e9;margin-left:8px;display:inline-block;cursor:pointer;">
+<i class="fa-solid fa-upload"></i> Upload Excel
+<input type="file" accept=".xlsx,.xls,.csv" onchange="handleCustomerExcelUpload(event)" style="display:none;">
+</label>
+
+<button type="button" class="add-btn" style="background:#64748b;margin-left:8px;" onclick="exportCustomersToExcel()">
+<i class="fa-solid fa-download"></i> Export Excel
+</button>
+
+
 </div>
 
 <!-- =========================
@@ -805,6 +819,8 @@ JAVASCRIPT
 <script src="js/firebase-config.js"></script>
 <script src="js/firebase-db.js"></script>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="js/excel-import.js"></script>
 <script src="js/script.js"></script>
 
 <script>

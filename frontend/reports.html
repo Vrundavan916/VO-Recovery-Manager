@@ -122,6 +122,14 @@ MAIN CONTENT START
 
 <main class="main-content">
 
+<div class="print-header">
+<img src="assets/logo.png" alt="Logo" style="height:60px;margin:0 auto 8px;" onerror="this.style.display='none'">
+<h1 id="printCompanyName">Vrundavan Ornaments Pvt. Ltd.</h1>
+<p id="printSoftwareName">VO Recovery Manager — Recovery Report</p>
+<p id="printDateLine"></p>
+</div>
+
+
 <!-- =========================
 END OF PART 1
 ========================= --><!-- =========================
@@ -1036,6 +1044,16 @@ setInterval(function(){
 
 },30000);
 
+
+try {
+  const s = JSON.parse(localStorage.getItem("settings")||"{}");
+  if (s.company) {
+    const el = document.getElementById("printCompanyName");
+    if (el) el.innerText = s.company;
+  }
+  const d = document.getElementById("printDateLine");
+  if (d) d.innerText = "Printed: " + new Date().toLocaleString("en-IN");
+} catch(e){}
 </script>
 
 </body>
