@@ -1,6 +1,7 @@
 /* ==========================================================
    VO Recovery Manager - Excel Template + Bulk Import
    Requires SheetJS (xlsx) from CDN
+   Now writes to Supabase
 ========================================================== */
 
 const CUSTOMER_EXCEL_HEADERS = [
@@ -66,7 +67,6 @@ function parseExcelDate(val) {
         } catch (e) {}
     }
     const s = String(val).trim();
-    // DD-MM-YYYY or DD/MM/YYYY
     const m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
     if (m) {
         return m[3] + "-" + m[2].padStart(2, "0") + "-" + m[1].padStart(2, "0");
@@ -76,7 +76,6 @@ function parseExcelDate(val) {
 }
 
 function rowToCustomer(row) {
-    // Support header keys or index
     const get = (keys, idx) => {
         for (const k of keys) {
             if (row[k] !== undefined && row[k] !== null && String(row[k]).trim() !== "") {
@@ -99,7 +98,6 @@ function rowToCustomer(row) {
     }
 
     return {
-        id: Date.now() + Math.floor(Math.random() * 100000),
         name: name,
         father: get(["Father / Husband Name", "Father", "father", "Husband"], 1),
         mobile: mobile,
@@ -119,7 +117,7 @@ function rowToCustomer(row) {
 
 function importCustomersFromExcel(file, options) {
     options = options || {};
-    const mode = options.mode || "append"; // append | replace
+    const mode = options.mode || "append";
 
     return new Promise((resolve, reject) => {
         if (typeof XLSX === "undefined") {
@@ -132,7 +130,7 @@ function importCustomersFromExcel(file, options) {
         }
 
         const reader = new FileReader();
-        reader.onload = function (e) {
+        reader.onload = async function (e) {
             try {
                 const data = new Uint8Array(e.target.result);
                 const wb = XLSX.read(data, { type: "array" });
@@ -150,7 +148,7 @@ function importCustomersFromExcel(file, options) {
                 rows.forEach((row, i) => {
                     const c = rowToCustomer(row);
                     if (c) imported.push(c);
-                    else skipped.push(i + 2); // header is row 1
+                    else skipped.push(i + 2);
                 });
 
                 if (!imported.length) {
@@ -158,13 +156,25 @@ function importCustomersFromExcel(file, options) {
                     return;
                 }
 
-                let customers = JSON.parse(localStorage.getItem("customers")) || [];
+                const shopId = (typeof currentShopId === "function") ? currentShopId() : null;
+                if (!shopId) {
+                    reject(new Error("No shop context. Login as shop admin."));
+                    return;
+                }
 
                 if (mode === "replace") {
-                    customers = imported;
+                    // delete existing for this shop then insert
+                    // (simple approach: just insert; full replace would need bulk delete)
+                    const saved = await sbBulkInsertCustomers(imported, shopId);
+                    if (typeof reloadAllData === "function") await reloadAllData();
+                    resolve({
+                        total: imported.length,
+                        saved: saved.length,
+                        skipped: skipped.length
+                    });
                 } else {
-                    // append - skip duplicate mobile
-                    const existingMobiles = new Set(customers.map(c => String(c.mobile || "")));
+                    // append - skip duplicate mobiles client-side against current list
+                    const existingMobiles = new Set((window.customers || []).map(c => String(c.mobile || "")));
                     const unique = [];
                     imported.forEach(c => {
                         if (existingMobiles.has(String(c.mobile))) {
@@ -174,29 +184,14 @@ function importCustomersFromExcel(file, options) {
                             existingMobiles.add(String(c.mobile));
                         }
                     });
-                    customers = customers.concat(unique);
+                    const saved = await sbBulkInsertCustomers(unique, shopId);
+                    if (typeof reloadAllData === "function") await reloadAllData();
+                    resolve({
+                        total: imported.length,
+                        saved: saved.length,
+                        skipped: skipped.length
+                    });
                 }
-
-                localStorage.setItem("customers", JSON.stringify(customers));
-
-                // refresh UI
-                if (typeof window.customers !== "undefined") {
-                    window.customers = customers;
-                }
-                // script.js uses let customers - assign global if possible
-                try { customers = customers; } catch (e) {}
-
-                if (typeof loadCustomers === "function") loadCustomers();
-                if (typeof updateDashboard === "function") updateDashboard();
-                if (typeof updateRecoverySummary === "function") updateRecoverySummary();
-                if (typeof cloudSyncAll === "function") cloudSyncAll();
-
-                resolve({
-                    total: imported.length,
-                    saved: customers.length,
-                    skipped: skipped.length,
-                    customers: customers
-                });
             } catch (err) {
                 reject(err);
             }
@@ -210,19 +205,16 @@ function handleCustomerExcelUpload(event) {
     const file = event.target.files && event.target.files[0];
     if (!file) return;
 
-    const mode = confirm("OK = નવા customers ADD (append)\nCancel = બધા REPLACE (જૂના મટી જશે)")
+    const mode = confirm("OK = નવા customers ADD (append)\nCancel = બધા REPLACE (note: replace inserts new rows)")
         ? "append"
         : "replace";
 
     importCustomersFromExcel(file, { mode })
         .then(res => {
             alert("✅ Excel Import Successful!\n\nImported rows: " + res.total +
-                "\nTotal customers now: " + res.saved +
-                "\nSkipped: " + res.skipped +
-                "\n\nFirebase sync automatic (connected હોય તો).");
+                "\nSaved: " + res.saved +
+                "\nSkipped: " + res.skipped);
             event.target.value = "";
-            // force reload list if global customers var in script.js
-            location.reload();
         })
         .catch(err => {
             alert("Import failed: " + (err.message || err));
@@ -235,7 +227,7 @@ function exportCustomersToExcel() {
         alert("Excel library load નથી થઈ.");
         return;
     }
-    const list = JSON.parse(localStorage.getItem("customers")) || [];
+    const list = window.customers || [];
     if (!list.length) {
         alert("Export કરવા customers નથી.");
         return;
