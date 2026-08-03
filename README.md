@@ -1,56 +1,34 @@
-VO Recovery Manager
+# VO Recovery Manager
 
-Version: V0.01
+**Version:** Multi-Jeweller Edition (Firebase + Excel)
 
-A professional Recovery Management Software designed for jewellery businesses to manage outstanding payments, customer follow-ups, recovery tracking, and reports.
+Jewellery recovery management software for multiple jewellers.
 
-Developed For
-
-Vrundavan Ornaments Pvt. Ltd.
-
-Powered By
-
-BK Design Hub
-
-Features
-
-- Secure Login
+## Features
+- Secure Login (Local + Firebase users)
+- Company Logo & Name on Login
 - Customer Management
+- **Excel Template Download / Bulk Upload / Export**
 - Outstanding Recovery
-- Daily Follow-up Dashboard
-- Employee-wise Recovery
-- Excel Import
-- Reports & Analytics
-- Backup & Restore
-- Audit Log
+- Reports + Improved Print
+- Firebase Full Backup & Restore
+- Forgot / Reset Password (Firebase sync)
+- Multi-user roles
 
-Project Status
+## Default Login
+- Username: `admin`
+- Password: `1234`
 
-🚧 Under Development (V0.01)
+## Excel Import (Customers)
+1. Customers page → **Download Excel Template**
+2. Fill rows in Excel
+3. **Upload Excel** (Append or Replace)
+4. Data saves Local + Firebase (if connected)
 
-Roadmap
+## Firebase
+See `FIREBASE_SETUP.md` and `frontend/js/firebase-config.js`
 
-Phase 1
+## Developed For
+Multi-jeweller businesses (configurable company name/logo in Settings)
 
-- Login System
-- Dashboard
-- Customer Master
-- Recovery Entry
-
-Phase 2
-
-- Reports
-- Excel Import
-- Employee Management
-- Backup System
-
-Phase 3
-
-- WhatsApp Reminder
-- SMS Integration
-- Advanced Reports
-- Multi-Branch Support
-
----
-
-© 2026 BK Design Hub. All Rights Reserved.
+Powered by **BK Design Hub**
