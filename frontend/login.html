@@ -133,17 +133,22 @@ body.login-body{
 
     <button class="btn-login" onclick="login()">LOGIN</button>
     <button class="btn-reset" type="button" onclick="resetLogin()">Reset Login (admin / 1234)</button>
-    <button class="btn-forgot" type="button" onclick="forgotPassword()">Forgot / Change Password (Firebase)</button>
+    <button class="btn-forgot" type="button" onclick="forgotPassword()">Forgot / Change Password</button>
+
+    <p style="margin-top:16px;font-size:13px;color:#64748b;">
+        New jewellery shop?
+        <a href="register.html" style="color:#2563eb;font-weight:600;text-decoration:none;">Register Company</a>
+    </p>
 
     <p class="login-footer">Powered by BK Design Hub · Multi-Jeweller Edition</p>
     <p id="debugBox"></p>
 </div>
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-<script src="js/firebase-config.js"></script>
-<script src="js/firebase-db.js"></script>
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/supabase-db.js"></script>
+<script src="js/script.js"></script>
 
 <script>
 window.onerror = function(msg, url, line){
@@ -151,144 +156,25 @@ window.onerror = function(msg, url, line){
     if (box) box.innerText = "JS Error: " + msg + " (line " + line + ")";
 };
 
-// Load company branding from local settings / defaults
+// Optional: show default branding (no localStorage)
 (function loadBranding(){
     try {
-        const s = JSON.parse(localStorage.getItem("settings") || "{}");
-        if (s.company) document.getElementById("companyNameText").innerText = s.company;
-        if (s.softwareName) document.getElementById("softwareNameText").innerText = s.softwareName;
-        if (s.logoDataUrl) {
-            document.getElementById("companyLogo").src = s.logoDataUrl;
-        }
+        // defaults already in HTML; can enhance later from settings
     } catch(e){}
 })();
 
-function ensureDefaultAdmin(users){
-    if (!Array.isArray(users)) users = [];
-    if (!users.some(u => u.username === "admin")) {
-        users.push({ username: "admin", password: "1234", role: "Admin" });
-    }
-    if (users.length === 0) {
-        users = [{ username: "admin", password: "1234", role: "Admin" }];
-    }
-    localStorage.setItem("users", JSON.stringify(users));
-    return users;
-}
-
-function getUsersLocal(){
-    let users = JSON.parse(localStorage.getItem("users"));
-    if (!users || !Array.isArray(users) || users.length === 0) {
-        const oldCreds = JSON.parse(localStorage.getItem("credentials"));
-        if (oldCreds && oldCreds.username) {
-            users = [{ username: oldCreds.username, password: oldCreds.password, role: "Admin" }];
-        } else {
-            users = [{ username: "admin", password: "1234", role: "Admin" }];
-        }
-        localStorage.setItem("users", JSON.stringify(users));
-    }
-    return ensureDefaultAdmin(users);
-}
-
-async function login(){
-    const username = document.getElementById("username").value.trim();
-    const password = document.getElementById("password").value.trim();
-    if (!username || !password) {
-        alert("Username અને Password નાખો");
-        return;
-    }
-    try { if (typeof initFirebase === "function") initFirebase(); } catch(e){}
-
-    let users = getUsersLocal();
-    try {
-        if (typeof isFirebaseConfigured === "function" && isFirebaseConfigured()) {
-            const cloudUsers = await loadUsersFromFirebase();
-            if (cloudUsers && cloudUsers.length > 0) {
-                const map = {};
-                users.forEach(u => map[u.username] = u);
-                cloudUsers.forEach(u => map[u.username] = u);
-                users = ensureDefaultAdmin(Object.values(map));
-            }
-        }
-    } catch(e){ console.error(e); }
-
-    const matched = users.find(u => u.username === username && u.password === password);
-    if (matched) {
-        localStorage.setItem("isLoggedIn", "true");
-        localStorage.setItem("currentUser", matched.username);
-        localStorage.setItem("currentRole", matched.role || "Admin");
-        window.location.href = "dashboard.html";
-    } else {
-        alert("Invalid Username or Password\n\nReset Login દબાવો અથવા Forgot Password વાપરો.");
-    }
-}
-
 function resetLogin(){
-    if (!confirm("Login reset?\n\nUsername: admin\nPassword: 1234")) return;
-    const users = [{ username: "admin", password: "1234", role: "Admin" }];
-    localStorage.setItem("users", JSON.stringify(users));
-    localStorage.removeItem("credentials");
-    localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("currentUser");
-    localStorage.removeItem("currentRole");
-    try {
-        if (typeof initFirebase === "function") initFirebase();
-        if (typeof syncUsersToFirebase === "function") syncUsersToFirebase(users);
-    } catch(e){}
+    if (!confirm("Reset form to default credentials hint?\n\nDefault logins:\nsuperadmin / 1234\nadmin / 1234\nrj_admin / 1234\ngp_admin / 1234")) return;
     document.getElementById("username").value = "admin";
     document.getElementById("password").value = "1234";
-    alert("Reset OK\n\nadmin / 1234\n\nFirebase પર પણ sync થયું (connected હોય તો).");
+    alert("Form reset.\n\nUse:\n• superadmin / 1234  (all shops)\n• admin / 1234  (Vrundavan)\n• rj_admin / 1234  (Raj Jewellers)\n• gp_admin / 1234  (Golden Palace)");
 }
 
 async function forgotPassword(){
-    const username = prompt("Username નાખો (જેનો password બદલવો છે):", "admin");
-    if (!username) return;
-    const newPass = prompt("નવો Password (min 4 characters):");
-    if (!newPass || newPass.length < 4) {
-        alert("Password ઓછામાં ઓછા 4 characters જોઈએ");
-        return;
-    }
-    const confirmPass = prompt("નવો Password ફરી નાખો:");
-    if (newPass !== confirmPass) {
-        alert("Password match નથી થતો");
-        return;
-    }
-
-    let users = getUsersLocal();
-    try {
-        if (typeof initFirebase === "function") initFirebase();
-        if (typeof isFirebaseConfigured === "function" && isFirebaseConfigured()) {
-            const cloudUsers = await loadUsersFromFirebase();
-            if (cloudUsers && cloudUsers.length) {
-                const map = {};
-                users.forEach(u => map[u.username] = u);
-                cloudUsers.forEach(u => map[u.username] = u);
-                users = Object.values(map);
-            }
-        }
-    } catch(e){}
-
-    const idx = users.findIndex(u => u.username === username);
-    if (idx === -1) {
-        // create as admin if admin username
-        if (username === "admin") {
-            users.push({ username: "admin", password: newPass, role: "Admin" });
-        } else {
-            alert("User મળ્યો નથી: " + username);
-            return;
-        }
-    } else {
-        users[idx].password = newPass;
-    }
-
-    localStorage.setItem("users", JSON.stringify(users));
-    try {
-        if (typeof syncUsersToFirebase === "function") {
-            await syncUsersToFirebase(users);
-        }
-    } catch(e){ console.error(e); }
-
-    alert("Password update થયો!\n\nUser: " + username + "\n\nLocal + Firebase (connected હોય તો) બંનેમાં save થયું.");
+    alert("Password change is available after login in Settings page.\n\nDefault Super Admin: superadmin / 1234\nContact Super Admin to reset other accounts.");
 }
+
+// Override login button text reference if needed
 </script>
 </body>
 </html>

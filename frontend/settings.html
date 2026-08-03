@@ -578,8 +578,8 @@ Download JSON
 
 <div class="card green">
 <i class="fa-solid fa-cloud-arrow-up"></i>
-<h3>Firebase Full Backup</h3>
-<p>Save to Firebase Console</p>
+<h3>Supabase Full Backup</h3>
+<p>Save to Supabase Console</p>
 <br>
 <button type="button" class="add-btn" style="background:#16a34a;" onclick="firebaseFullBackup()">
 ☁ Cloud Backup
@@ -588,7 +588,7 @@ Download JSON
 
 <div class="card orange">
 <i class="fa-solid fa-cloud-arrow-down"></i>
-<h3>Firebase Restore</h3>
+<h3>Supabase Restore</h3>
 <p>Restore latest cloud backup</p>
 <br>
 <button type="button" class="add-btn" style="background:#f59e0b;" onclick="firebaseFullRestore()">
@@ -629,7 +629,7 @@ Delete Data
 <div class="content-box" style="margin-top:20px;">
 <div class="summary-bar">
 <div>
-<h2>Firebase Status</h2>
+<h2>Supabase Status</h2>
 <span>Cloud connection</span>
 </div>
 </div>
@@ -637,7 +637,7 @@ Delete Data
 <p><strong>Database:</strong> <span id="dbStatusBadge" class="badge badge-warning">Local Storage</span></p>
 <p><strong>Last Cloud Backup:</strong> <span id="lastBackupDate">-</span></p>
 <p style="margin-top:10px;color:#64748b;font-size:14px;">
-Firebase Console → Firestore Database → collections: <code>customers</code>, <code>recoveries</code>, <code>users</code>, <code>settings</code>, <code>backups</code>
+Supabase Console → Firestore Database → collections: <code>customers</code>, <code>recoveries</code>, <code>users</code>, <code>settings</code>, <code>backups</code>
 </p>
 </div>
 
@@ -1170,11 +1170,10 @@ JAVASCRIPT
 ========================= -->
 
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-<script src="js/firebase-config.js"></script>
-<script src="js/firebase-db.js"></script>
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/supabase-db.js"></script>
 
 <script src="js/script.js"></script>
 
