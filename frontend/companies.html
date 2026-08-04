@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Company Management | VO Recovery Manager</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+</head>
+<body>
+
+<div class="wrapper">
+
+<aside class="sidebar">
+    <div class="logo">
+        <h2>VO RM</h2>
+        <p>Recovery Manager</p>
+    </div>
+    <ul class="menu">
+        <li><a href="dashboard.html"><i class="fa-solid fa-house"></i><span>Dashboard</span></a></li>
+        <li><a href="customers.html"><i class="fa-solid fa-users"></i><span>Customers</span></a></li>
+        <li><a href="recovery.html"><i class="fa-solid fa-money-bill-wave"></i><span>Recovery</span></a></li>
+        <li><a href="reports.html"><i class="fa-solid fa-chart-column"></i><span>Reports</span></a></li>
+        <li><a href="settings.html"><i class="fa-solid fa-gear"></i><span>Settings</span></a></li>
+        <li><a href="#" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></a></li>
+    </ul>
+</aside>
+
+<main class="main-content">
+
+<header class="topbar">
+    <div>
+        <h1 class="page-title">Company Management</h1>
+        <p class="page-subtitle">Add and manage jewellery shops (tenants)</p>
+    </div>
+    <div class="user-info">
+        <i class="fa-solid fa-user-shield"></i>
+        <span id="userRoleBadge">Super Admin</span>
+    </div>
+</header>
+
+<section class="table-section fade">
+    <div class="summary-bar">
+        <div>
+            <h2>All Shops</h2>
+            <span>Every jewellery company registered in the system</span>
+        </div>
+        <button class="add-btn" onclick="openAddShopModal()">
+            <i class="fa-solid fa-plus"></i> Add Jewellery
+        </button>
+    </div>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Shop Name</th>
+                    <th>Code</th>
+                    <th>Contact</th>
+                    <th>Plan</th>
+                    <th>License Expiry</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="companiesBody"></tbody>
+        </table>
+    </div>
+</section>
+
+<footer class="footer">© 2026 VO Recovery Manager | Powered by <strong>BK Design Hub</strong></footer>
+
+</main>
+</div>
+
+<!-- ADD / EDIT SHOP MODAL -->
+<div class="modal" id="shopModal" style="display:none;">
+    <div class="modal-content">
+        <h2 id="shopModalTitle">Add Jewellery Shop</h2>
+        <input type="hidden" id="shopId">
+        <div class="form-grid">
+            <div>
+                <label>Company / Shop Name</label>
+                <input type="text" id="shopName" placeholder="e.g. Raj Jewellers">
+            </div>
+            <div>
+                <label>Shop Code</label>
+                <input type="text" id="shopCode" placeholder="e.g. RJ" maxlength="10">
+            </div>
+            <div>
+                <label>Contact Number</label>
+                <input type="text" id="shopContact" placeholder="Contact Number">
+            </div>
+            <div>
+                <label>Email</label>
+                <input type="email" id="shopEmail" placeholder="Email Address">
+            </div>
+            <div class="full-width">
+                <label>Address</label>
+                <textarea id="shopAddress" rows="2" placeholder="Shop Address"></textarea>
+            </div>
+            <div>
+                <label>Plan</label>
+                <select id="shopPlan">
+                    <option value="Basic">Basic</option>
+                    <option value="Standard">Standard</option>
+                    <option value="Premium">Premium</option>
+                </select>
+            </div>
+            <div>
+                <label>License Expiry</label>
+                <input type="date" id="shopLicenseExpiry">
+            </div>
+            <div>
+                <label>Max Users</label>
+                <input type="number" id="shopMaxUsers" value="5" min="1">
+            </div>
+        </div>
+
+        <div id="newShopAdminBlock">
+            <br>
+            <div class="summary-bar">
+                <div>
+                    <h2 style="font-size:16px;">Initial Shop Admin (optional)</h2>
+                    <span>Creates the first login for this shop</span>
+                </div>
+            </div>
+            <div class="form-grid">
+                <div>
+                    <label>Admin Username</label>
+                    <input type="text" id="shopAdminUsername" placeholder="e.g. rj_admin">
+                </div>
+                <div>
+                    <label>Admin Password</label>
+                    <input type="text" id="shopAdminPassword" placeholder="Default: 1234">
+                </div>
+                <div>
+                    <label>Admin Display Name</label>
+                    <input type="text" id="shopAdminName" placeholder="Display Name">
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top:18px;display:flex;gap:10px;">
+            <button class="add-btn" onclick="saveShop()">
+                <i class="fa-solid fa-floppy-disk"></i> Save
+            </button>
+            <button class="btn-reset" type="button" onclick="closeShopModal()" style="border-radius:10px;">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase-config.js"></script>
+<script src="js/supabase-db.js"></script>
+<script src="js/script.js"></script>
+<script src="js/super-admin.js"></script>
+
+</body>
+</html>
