@@ -1,5 +1,5 @@
 /* ==========================================================
-   VO Recovery Manager – Supabase Client & Session
+   BK Recovery Manager – Supabase Client & Session
    Production SaaS Edition
 ========================================================== */
 
@@ -21,14 +21,14 @@ function getSupabase() {
 }
 
 const SESSION_KEYS = {
-    loggedIn: "vo_isLoggedIn",
-    userId: "vo_userId",
-    username: "vo_username",
-    role: "vo_role",
-    shopId: "vo_shopId",
-    shopName: "vo_shopName",
-    displayName: "vo_displayName",
-    remember: "vo_remember"
+    loggedIn: "bk_isLoggedIn",
+    userId: "bk_userId",
+    username: "bk_username",
+    role: "bk_role",
+    shopId: "bk_shopId",
+    shopName: "bk_shopName",
+    displayName: "bk_displayName",
+    remember: "bk_remember"
 };
 
 function storage() {

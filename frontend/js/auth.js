@@ -1,5 +1,5 @@
 /* ==========================================================
-   VO Recovery Manager – Authentication
+   BK Recovery Manager – Authentication
 ========================================================== */
 
 async function sbLogin(username, password) {
@@ -23,12 +23,17 @@ async function sbLogin(username, password) {
         if (se) throw se;
         shop = s;
         if (shop && shop.is_active === false) {
-            throw new Error("This shop is deactivated. Contact Super Admin.");
+            return { error: "shop_inactive", message: "Aa shop deactivate che. Super Admin ne contact karo." };
         }
         if (shop && shop.license_expiry) {
-            const st = computeSubStatus(shop.license_expiry);
+            const st = (typeof computeSubStatus === "function")
+                ? computeSubStatus(shop.license_expiry)
+                : "unknown";
             if (st === "expired" && data.role !== "super_admin") {
-                throw new Error("Shop license has expired. Contact Super Admin to renew.");
+                return {
+                    error: "license_expired",
+                    message: "Shop ni license expire thai gayi che.\n\nLogin band che.\nSuper Admin Subscription page parthi renew kari shake."
+                };
             }
         }
     }
@@ -59,7 +64,11 @@ async function login() {
     try {
         const result = await sbLogin(user, pass);
         if (!result) {
-            alert("Invalid Username or Password");
+            showLoginError("Invalid Username or Password");
+            return;
+        }
+        if (result.error) {
+            showLoginError(result.message || result.error);
             return;
         }
         setSession(result.user, result.shop, remember);
@@ -70,7 +79,7 @@ async function login() {
         }
     } catch (e) {
         console.error(e);
-        alert(e.message || "Login failed");
+        showLoginError(e.message || "Login failed. Network / Supabase check karo.");
     } finally {
         if (btn) {
             btn.disabled = false;
@@ -206,3 +215,21 @@ window.logout = logout;
 window.openForgotPassword = openForgotPassword;
 window.closeForgotPassword = closeForgotPassword;
 window.submitForgotPassword = submitForgotPassword;
+
+
+function showLoginError(msg) {
+    let box = document.getElementById("loginErrorBox");
+    if (!box) {
+        box = document.createElement("div");
+        box.id = "loginErrorBox";
+        box.style.cssText = "margin-top:14px;padding:12px 14px;border-radius:12px;background:#fef2f2;color:#b91c1c;font-size:13px;text-align:left;border:1px solid #fecaca;white-space:pre-line;";
+        const card = document.querySelector(".login-card") || document.body;
+        const btn = document.getElementById("loginBtn");
+        if (btn && btn.parentNode) btn.parentNode.insertBefore(box, btn.nextSibling);
+        else card.appendChild(box);
+    }
+    box.textContent = msg;
+    box.style.display = "block";
+    try { alert(msg); } catch (e) {}
+}
+window.showLoginError = showLoginError;

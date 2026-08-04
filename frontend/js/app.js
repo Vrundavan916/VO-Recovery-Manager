@@ -172,6 +172,11 @@ function loadCustomers() {
         const deleteButton = (role === "admin" || role === "super_admin")
             ? `<button onclick="deleteCustomer(${index})" title="Delete">🗑️</button>`
             : "";
+        const waBtn = customer.mobile
+            ? `<button type="button" class="wa-due-btn" onclick="sendWhatsAppReminder(${index})" title="WhatsApp Due Reminder">
+                <i class="fa-brands fa-whatsapp"></i> Due
+               </button>`
+            : "";
 
         tbody.innerHTML += `
         <tr>
@@ -184,6 +189,7 @@ function loadCustomers() {
             <td>
                 <button onclick="viewCustomer(${index})" title="View">👁</button>
                 <button onclick="editCustomer(${index})" title="Edit">✏️</button>
+                ${waBtn}
                 ${deleteButton}
             </td>
         </tr>`;
@@ -244,7 +250,7 @@ function searchCustomer() {
 
 function viewCustomer(index) {
     const c = customers[index];
-    alert(
+    const msg =
 `Customer Details
 
 Customer : ${c.name}
@@ -263,8 +269,81 @@ Executive : ${c.executive}
 Follow-up : ${c.followup}
 Remarks :
 ${c.remarks}
-`);
+`;
+    if (Number(c.outstanding || 0) > 0 && c.mobile) {
+        if (confirm(msg + "\n\nWhatsApp dues reminder moklvu?")) {
+            sendWhatsAppReminder(index);
+        }
+    } else {
+        alert(msg);
+    }
 }
+
+
+// ================================
+// WhatsApp Dues Reminder
+// ================================
+function normalizeWhatsAppNumber(mobile) {
+    let n = String(mobile || "").replace(/\D/g, "");
+    if (!n) return "";
+    if (n.length === 10) n = "91" + n;
+    if (n.startsWith("0") && n.length === 11) n = "91" + n.slice(1);
+    return n;
+}
+
+function buildWhatsAppReminderMessage(customer) {
+    const session = (typeof getSession === "function") ? getSession() : {};
+    const shopName = (session.shopName)
+        || (typeof settings !== "undefined" && settings.company)
+        || "Jewellery Shop";
+    const name = customer.name || "Customer";
+    const outstanding = Number(customer.outstanding || 0).toLocaleString("en-IN");
+    const bill = Number(customer.bill || 0).toLocaleString("en-IN");
+    const phone = (typeof settings !== "undefined" && settings.phone) ? settings.phone : "";
+    const lines = [
+        "🙏 Namaste " + name + " ji,",
+        "",
+        "*" + shopName + "* – Payment Reminder",
+        "",
+        "Aapnu account ma *outstanding dues* baki che.",
+        "",
+        "📋 Bill Amount: ₹" + bill,
+        "💰 *Pending Dues: ₹" + outstanding + "*",
+        "",
+        "Krupaya jaldi payment kari account clear karo.",
+        "Payment pachhi receipt / update mate shop contact karo.",
+        phone ? ("📞 " + phone) : "",
+        "",
+        "Dhanyavaad,",
+        shopName,
+        "_Powered by BK Recovery Manager_"
+    ].filter(Boolean);
+    return lines.join("\n");
+}
+
+function sendWhatsAppReminder(index) {
+    const customer = (typeof customers !== "undefined") ? customers[index] : null;
+    if (!customer) {
+        alert("Customer not found");
+        return;
+    }
+    const phone = normalizeWhatsAppNumber(customer.mobile);
+    if (!phone || phone.length < 12) {
+        alert("Valid mobile number nathi. Customer ma 10 digit mobile enter karo.");
+        return;
+    }
+    const amt = Number(customer.outstanding || 0);
+    if (amt <= 0) {
+        if (!confirm("Outstanding ₹0 che. Fari pan reminder moklvu?")) return;
+    }
+    const text = buildWhatsAppReminderMessage(customer);
+    const url = "https://wa.me/" + phone + "?text=" + encodeURIComponent(text);
+    window.open(url, "_blank", "noopener,noreferrer");
+}
+
+window.sendWhatsAppReminder = sendWhatsAppReminder;
+window.normalizeWhatsAppNumber = normalizeWhatsAppNumber;
+window.buildWhatsAppReminderMessage = buildWhatsAppReminderMessage;
 
 // ================================
 // Dashboard
@@ -585,7 +664,7 @@ function exportReport() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "VO-Recovery-Report.csv";
+    a.download = "BK-Recovery-Report.csv";
     a.click();
     URL.revokeObjectURL(url);
 }
@@ -754,7 +833,7 @@ async function saveSettings() {
 
         if (newUsername !== session.username) {
             await sbUpdateUsername(session.userId, newUsername);
-            sessionStorage.setItem("vo_username", newUsername);
+            sessionStorage.setItem("bk_username", newUsername);
         }
 
         if (session.shopId) {
@@ -857,7 +936,7 @@ async function loadUserList() {
 }
 
 function getCompanyName() {
-    return settings.company || getSession().shopName || "Vrundavan Ornaments Pvt. Ltd.";
+    return settings.company || getSession().shopName || "BK Recovery Manager";
 }
 
 // ================================
@@ -916,6 +995,205 @@ async function saveCompanyBranding() {
 window.previewCompanyLogo = previewCompanyLogo;
 window.saveCompanyBranding = saveCompanyBranding;
 
+
+// ================================
+// Sales / Recovery Executives
+// ================================
+function getExecutivesList() {
+    const list = (typeof settings !== "undefined" && Array.isArray(settings.executives))
+        ? settings.executives.slice()
+        : ["Mukesh", "Bharat", "Office"];
+    return list.filter(x => x && String(x).trim() !== "");
+}
+
+function fillExecutiveDropdowns(selected) {
+    const list = getExecutivesList();
+    const opts = ['<option value="">Select Executive</option>']
+        .concat(list.map(e => {
+            const sel = (selected && String(selected) === String(e)) ? " selected" : "";
+            return `<option value="${String(e).replace(/"/g, "&quot;")}"${sel}>${e}</option>`;
+        }))
+        .join("");
+    const execSel = document.getElementById("executive");
+    if (execSel) {
+        const cur = selected || execSel.value;
+        execSel.innerHTML = opts;
+        if (cur) execSel.value = cur;
+    }
+    const colSel = document.getElementById("collectedBy");
+    if (colSel) {
+        const cur2 = colSel.value;
+        colSel.innerHTML = list.map(e => {
+            const sel = (cur2 && String(cur2) === String(e)) ? " selected" : "";
+            return `<option value="${String(e).replace(/"/g, "&quot;")}"${sel}>${e}</option>`;
+        }).join("") || '<option value="">Select</option>';
+        if (cur2) colSel.value = cur2;
+    }
+}
+
+function loadExecutiveListUI() {
+    const tbody = document.getElementById("executiveListBody");
+    if (!tbody) return;
+    const list = getExecutivesList();
+    tbody.innerHTML = list.map((e, i) => `
+        <tr>
+            <td>${i + 1}</td>
+            <td>${e}</td>
+            <td>
+                <button type="button" onclick="removeExecutive(${i})" title="Remove"
+                    style="background:#ef4444;color:#fff;border:none;border-radius:8px;padding:6px 10px;cursor:pointer;">🗑️</button>
+            </td>
+        </tr>
+    `).join("") || `<tr><td colspan="3" style="text-align:center;color:#94a3b8;">No executives yet. Add below.</td></tr>`;
+}
+
+async function addExecutive() {
+    const input = document.getElementById("newExecutiveName");
+    if (!input) return;
+    const name = input.value.trim();
+    if (!name) {
+        alert("Executive name enter karo");
+        return;
+    }
+    const shopId = (typeof currentShopId === "function") ? currentShopId() : null;
+    if (!shopId) {
+        alert("Shop context nathi. Shop Admin thi login karo.");
+        return;
+    }
+    if (typeof settings !== "object" || !settings) settings = {};
+    if (!Array.isArray(settings.executives)) settings.executives = getExecutivesList();
+    if (settings.executives.some(e => e.toLowerCase() === name.toLowerCase())) {
+        alert("Aa executive pehla thi che");
+        return;
+    }
+    settings.executives.push(name);
+    try {
+        await sbSaveSettings(shopId, settings);
+        input.value = "";
+        loadExecutiveListUI();
+        fillExecutiveDropdowns();
+        try { applyShopBranding(); } catch (e) {}
+        alert("Sales Executive add thai gayo.");
+    } catch (e) {
+        console.error(e);
+        alert("Save failed: " + (e.message || e));
+    }
+}
+
+async function removeExecutive(index) {
+    if (!confirm("Aa executive remove karvu?")) return;
+    const shopId = (typeof currentShopId === "function") ? currentShopId() : null;
+    if (!shopId) {
+        alert("Shop context nathi.");
+        return;
+    }
+    if (!Array.isArray(settings.executives)) settings.executives = getExecutivesList();
+    settings.executives.splice(index, 1);
+    try {
+        await sbSaveSettings(shopId, settings);
+        loadExecutiveListUI();
+        fillExecutiveDropdowns();
+        try { applyShopBranding(); } catch (e) {}
+    } catch (e) {
+        alert("Remove failed: " + (e.message || e));
+    }
+}
+
+window.getExecutivesList = getExecutivesList;
+window.fillExecutiveDropdowns = fillExecutiveDropdowns;
+window.loadExecutiveListUI = loadExecutiveListUI;
+window.addExecutive = addExecutive;
+window.removeExecutive = removeExecutive;
+
+
+// ================================
+// Shop branding (name + logo)
+// ================================
+function applyShopBranding() {
+    const session = (typeof getSession === "function") ? getSession() : {};
+    const company = (typeof settings !== "undefined" && settings.company)
+        || session.shopName
+        || "";
+    const logoUrl = (typeof settings !== "undefined" && settings.logoDataUrl)
+        || "assets/logo.png";
+    const software = (typeof settings !== "undefined" && settings.softwareName)
+        || "Recovery Manager";
+
+    // Sidebar logo block
+    const logoBox = document.querySelector(".sidebar .logo");
+    if (logoBox) {
+        let img = logoBox.querySelector("img.shop-brand-logo");
+        if (!img) {
+            img = document.createElement("img");
+            img.className = "shop-brand-logo";
+            img.alt = "Logo";
+            img.style.cssText = "width:64px;height:64px;object-fit:contain;margin:0 auto 10px;border-radius:12px;background:rgba(255,255,255,0.06);padding:6px;display:block;";
+            logoBox.insertBefore(img, logoBox.firstChild);
+        }
+        img.src = logoUrl;
+        img.onerror = function () {
+            this.src = "assets/logo.png";
+            this.onerror = function () { this.style.display = "none"; };
+        };
+
+        let h2 = logoBox.querySelector("h2");
+        if (!h2) {
+            h2 = document.createElement("h2");
+            logoBox.appendChild(h2);
+        }
+        // Short title for sidebar
+        if (session.role === "super_admin" && !session.shopId) {
+            h2.textContent = "BK Recovery";
+        } else if (company) {
+            // max ~18 chars for sidebar
+            h2.textContent = company.length > 18 ? company.slice(0, 16) + "…" : company;
+            h2.title = company;
+        }
+
+        let p = logoBox.querySelector("p");
+        if (!p) {
+            p = document.createElement("p");
+            logoBox.appendChild(p);
+        }
+        if (session.role === "super_admin" && !session.shopId) {
+            p.textContent = "Super Admin";
+        } else {
+            p.textContent = company || software;
+        }
+    }
+
+    // Topbar / page titles
+    const shopLabel = document.getElementById("currentShopName");
+    if (shopLabel && company) shopLabel.innerText = company;
+
+    // Reports print header
+    const printName = document.getElementById("printCompanyName");
+    if (printName) printName.textContent = company || "Jewellery Shop";
+
+    const printLogo = document.querySelector(".print-header img");
+    if (printLogo) {
+        printLogo.src = logoUrl;
+        printLogo.onerror = function () { this.style.display = "none"; };
+    }
+
+    // Any element with data-brand="company"
+    document.querySelectorAll("[data-brand='company']").forEach(el => {
+        el.textContent = company || el.textContent;
+    });
+
+    // Footer company lines
+    document.querySelectorAll(".footer, footer").forEach(el => {
+        // don't overwrite entire footer; optional small brand line
+    });
+
+    // Document title
+    if (company && session.role !== "super_admin") {
+        document.title = company + " | Recovery Manager";
+    }
+}
+
+window.applyShopBranding = applyShopBranding;
+
 // ================================
 // Data reload
 // ================================
@@ -948,6 +1226,7 @@ async function reloadAllData() {
         }
         if (document.getElementById("recoveryCustomer")) loadRecoveryCustomers();
         if (document.getElementById("reportBody")) loadReports();
+        try { applyShopBranding(); } catch (be) {}
     } catch (e) {
         console.error("reloadAllData", e);
     }
@@ -975,6 +1254,9 @@ window.addEventListener("load", async function () {
         }
         await loadUserList();
     }
+    fillExecutiveDropdowns();
+        try { applyShopBranding(); } catch (e) {}
+    if (document.getElementById("executiveListBody")) loadExecutiveListUI();
 
     if (document.getElementById("companyName") && settings.company) {
         document.getElementById("companyName").value = settings.company;
@@ -990,9 +1272,9 @@ function refreshProject() {
 }
 
 const APP_INFO = {
-    name: "VO Recovery Manager",
-    version: "2.0.0-supabase",
-    company: "Vrundavan Ornaments Pvt. Ltd.",
+    name: "BK Recovery Manager",
+    version: "3.0.0",
+    company: "BK Recovery Manager",
     developer: "BK Design Hub"
 };
 

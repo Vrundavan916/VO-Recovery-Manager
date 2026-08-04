@@ -1,5 +1,5 @@
 /* ==========================================================
-   VO Recovery Manager - Excel Template + Bulk Import
+   BK Recovery Manager - Excel Template + Bulk Import
    Requires SheetJS (xlsx) from CDN
    Now writes to Supabase
 ========================================================== */
@@ -51,7 +51,7 @@ function downloadCustomerTemplate() {
     ws["!cols"] = CUSTOMER_EXCEL_HEADERS.map(() => ({ wch: 22 }));
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Customers");
-    XLSX.writeFile(wb, "VO-Customer-Import-Template.xlsx");
+    XLSX.writeFile(wb, "BK-Customer-Import-Template.xlsx");
 }
 
 function parseExcelDate(val) {
@@ -254,7 +254,7 @@ function exportCustomersToExcel() {
     const ws = XLSX.utils.aoa_to_sheet(rows);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Customers");
-    XLSX.writeFile(wb, "VO-Customers-Export.xlsx");
+    XLSX.writeFile(wb, "BK-Customers-Export.xlsx");
 }
 
 window.downloadCustomerTemplate = downloadCustomerTemplate;

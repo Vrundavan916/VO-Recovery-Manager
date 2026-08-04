@@ -248,28 +248,37 @@ async function sbGetSettings(shopId) {
     const { data, error } = await sb.from("settings").select("*").eq("shop_id", shopId).maybeSingle();
     if (error) throw error;
     if (!data) return {};
+    let extra = data.extra || {};
+    if (typeof extra === "string") {
+        try { extra = JSON.parse(extra); } catch (e) { extra = {}; }
+    }
     return {
         company: data.company_name || "",
-        softwareName: data.software_name || "VO Recovery Manager",
+        softwareName: data.software_name || "BK Recovery Manager",
         phone: data.phone || "",
         email: data.email || "",
         address: data.address || "",
         logoDataUrl: data.logo_data_url || "",
-        recoveryEmail: data.recovery_email || ""
+        recoveryEmail: data.recovery_email || "",
+        executives: Array.isArray(extra.executives) ? extra.executives : ["Mukesh", "Bharat", "Office"]
     };
 }
 
 async function sbSaveSettings(shopId, settingsObj) {
     const sb = getSupabase();
+    const execs = Array.isArray(settingsObj.executives)
+        ? settingsObj.executives
+        : ["Mukesh", "Bharat", "Office"];
     const payload = {
         shop_id: shopId,
         company_name: settingsObj.company || "",
-        software_name: settingsObj.softwareName || "VO Recovery Manager",
+        software_name: settingsObj.softwareName || "BK Recovery Manager",
         phone: settingsObj.phone || "",
         email: settingsObj.email || "",
         address: settingsObj.address || "",
         logo_data_url: settingsObj.logoDataUrl || null,
         recovery_email: settingsObj.recoveryEmail || "",
+        extra: { executives: execs },
         updated_at: new Date().toISOString()
     };
     const { data, error } = await sb
@@ -420,7 +429,7 @@ async function sbRegisterShop(form) {
     await sb.from("settings").upsert({
         shop_id: shop.id,
         company_name: companyName,
-        software_name: "VO Recovery Manager",
+        software_name: "BK Recovery Manager",
         phone: contact || null,
         email: email || null,
         address: address || null
@@ -523,7 +532,7 @@ async function sbAddShop(form) {
     await sb.from("settings").upsert({
         shop_id: shop.id,
         company_name: name,
-        software_name: "VO Recovery Manager",
+        software_name: "BK Recovery Manager",
         phone: payload.contact_number,
         email: payload.email,
         address: payload.address
@@ -579,10 +588,12 @@ async function sbDeleteShop(shopId) {
 
 /* ---------- SUBSCRIPTIONS ---------- */
 function computeSubStatus(endDate) {
-    if (!endDate) return "expired";
+    if (!endDate) return "unknown";
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const end = new Date(endDate);
+    if (isNaN(end.getTime())) return "unknown";
+    end.setHours(0, 0, 0, 0);
     const days = Math.ceil((end - today) / (1000 * 60 * 60 * 24));
     if (days < 0) return "expired";
     if (days <= 15) return "expiring";

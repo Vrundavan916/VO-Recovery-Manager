@@ -1,5 +1,5 @@
 /* ==========================================================
-   VO Recovery Manager – Utilities
+   BK Recovery Manager – Utilities
 ========================================================== */
 
 function formatCurrency(amount) {
@@ -59,14 +59,14 @@ function escapeHtml(str) {
 
 function showToast(msg, type) {
     type = type || "info";
-    let el = document.getElementById("voToast");
+    let el = document.getElementById("bkToast");
     if (!el) {
         el = document.createElement("div");
-        el.id = "voToast";
-        el.className = "vo-toast";
+        el.id = "bkToast";
+        el.className = "bk-toast";
         document.body.appendChild(el);
     }
-    el.className = "vo-toast vo-toast-" + type + " show";
+    el.className = "bk-toast bk-toast-" + type + " show";
     el.textContent = msg;
     clearTimeout(el._t);
     el._t = setTimeout(() => el.classList.remove("show"), 3200);
