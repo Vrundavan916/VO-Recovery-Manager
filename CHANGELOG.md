@@ -1,26 +1,13 @@
-# VO Recovery Manager Changelog
+# Changelog
 
-## Unreleased – Super Admin Module
-- New pages: `super-dashboard.html`, `companies.html`, `subscription.html`
-- New data layer (`js/super-admin.js`, additions to `js/supabase-db.js`): shop CRUD ("Add Jewellery"), activate/deactivate shop, subscription/license renewal, system-wide stats, audit log
-- New tables (`database/super_admin_migration.sql`): `subscriptions`, `audit_log`; new columns on `shops` (`plan_name`, `license_expiry`, `max_users`, `notes`)
-- Super Admin sidebar links are injected automatically on every page when logged in as `super_admin`
-- Run `database/super_admin_migration.sql` in Supabase SQL editor after the base schema
-- Still pending from the original spec: remove "Register Company" link from `login.html`, auto backup, an audit-log viewer page (table exists, capture works, no UI yet)
+## 3.0.0 – Production SaaS
+- Removed Firebase, LocalStorage data layer, public Register Company
+- Modular JS: supabase.js, auth.js, utils.js, db.js, app.js, company.js
+- Premium jewellery-themed UI polish
+- Login: remember me, forgot password modal, no public signup
+- Super Admin company management only path to onboard shops
+- License expiry blocks shop login
+- Supabase-only backend
 
-## V0.03
-- Firebase Firestore integration
-- Full cloud backup to Firebase Console
-- Cloud restore from latest backup
-- Auto sync customers / recoveries / users / settings
-- Reports customer dropdown + filter/search/export fixed
-- Recovery extra fields (payment mode, receipt, collected by)
-
-## V0.02
-- Login Module
-- Reports fixes
-
-## V0.01
-- Repository Created
-- README Added
-- Frontend Structure Created
+## 2.0.0 – Supabase Multi-Tenant
+- Base multi-shop schema and Super Admin module
