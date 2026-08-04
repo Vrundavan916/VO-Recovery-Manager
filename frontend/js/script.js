@@ -55,7 +55,52 @@ function checkLogin() {
         return;
     }
 
+    const superAdminOnlyPages = ["super-dashboard.html", "companies.html", "subscription.html"];
+    if (superAdminOnlyPages.some(p => page.includes(p)) && role !== "super_admin") {
+        alert("Access Denied. This section is available to Super Admin only.");
+        window.location.href = "dashboard.html";
+        return;
+    }
+
     applyRoleRestrictions();
+    injectSuperAdminNav();
+}
+
+// ================================
+// Super Admin sidebar links
+// (injected on every page when role === super_admin)
+// ================================
+function injectSuperAdminNav() {
+    const session = getSession();
+    if (session.role !== "super_admin") return;
+
+    const menu = document.querySelector(".sidebar .menu");
+    if (!menu || menu.dataset.superAdminInjected) return;
+
+    const page = window.location.pathname;
+    const links = [
+        { href: "super-dashboard.html", icon: "fa-chart-pie", label: "Super Dashboard" },
+        { href: "companies.html", icon: "fa-building", label: "Company Management" },
+        { href: "subscription.html", icon: "fa-file-invoice-dollar", label: "Subscription" }
+    ];
+
+    const logoutLi = Array.from(menu.children).find(li => li.querySelector('a[onclick="logout()"]'));
+
+    links.forEach(link => {
+        const li = document.createElement("li");
+        const isActive = page.includes(link.href);
+        li.innerHTML = `<a href="${link.href}"${isActive ? ' class="active"' : ''}>
+            <i class="fa-solid ${link.icon}"></i>
+            <span>${link.label}</span>
+        </a>`;
+        if (logoutLi) {
+            menu.insertBefore(li, logoutLi);
+        } else {
+            menu.appendChild(li);
+        }
+    });
+
+    menu.dataset.superAdminInjected = "true";
 }
 
 function applyRoleRestrictions() {

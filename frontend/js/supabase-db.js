@@ -430,3 +430,244 @@ async function sbRegisterShop(form) {
 }
 
 window.sbRegisterShop = sbRegisterShop;
+
+/* ==========================================================
+   SUPER ADMIN MODULE
+   Company Management, Add Jewellery (shops), Subscriptions,
+   Audit Log, System-wide Dashboard
+========================================================== */
+
+/* ---------- AUDIT LOG ---------- */
+async function sbAddAuditLog(action, entityType, entityId, details, shopId) {
+    try {
+        const sb = getSupabase();
+        const session = getSession();
+        await sb.from("audit_log").insert({
+            shop_id: shopId || null,
+            user_id: session.userId || null,
+            username: session.username || "",
+            action: action,
+            entity_type: entityType || "",
+            entity_id: entityId ? String(entityId) : "",
+            details: details || ""
+        });
+    } catch (e) {
+        console.error("audit log failed", e);
+    }
+}
+
+async function sbGetAuditLog(limit) {
+    const sb = getSupabase();
+    const { data, error } = await sb
+        .from("audit_log")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(limit || 100);
+    if (error) throw error;
+    return data || [];
+}
+
+/* ---------- SHOPS (full, incl. inactive) ---------- */
+async function sbGetAllShopsFull() {
+    const sb = getSupabase();
+    const { data, error } = await sb.from("shops").select("*").order("name");
+    if (error) throw error;
+    return data || [];
+}
+
+async function sbAddShop(form) {
+    const sb = getSupabase();
+    if (!sb) throw new Error("Supabase not ready");
+
+    const name = (form.name || "").trim();
+    const code = (form.code || "").trim().toUpperCase().replace(/\s+/g, "");
+    if (!name) throw new Error("Shop / Company name required");
+    if (!code || code.length < 2) throw new Error("Shop code required (min 2 chars)");
+
+    const { data: existingCode } = await sb.from("shops").select("id").eq("code", code).maybeSingle();
+    if (existingCode) throw new Error("Shop code already exists. Choose another code.");
+
+    const payload = {
+        name,
+        code,
+        contact_number: (form.contact || "").trim() || null,
+        email: (form.email || "").trim() || null,
+        address: (form.address || "").trim() || null,
+        plan_name: form.plan || "Basic",
+        license_expiry: form.licenseExpiry || null,
+        max_users: Number(form.maxUsers || 5),
+        is_active: true
+    };
+
+    const { data: shop, error } = await sb.from("shops").insert(payload).select().single();
+    if (error) throw error;
+
+    // Optional: create an initial admin user for this shop
+    if (form.adminUsername) {
+        const adminUsername = form.adminUsername.trim();
+        const adminPassword = (form.adminPassword || "1234").trim();
+        const { data: existingUser } = await sb.from("users").select("id").eq("username", adminUsername).maybeSingle();
+        if (!existingUser) {
+            await sb.from("users").insert({
+                username: adminUsername,
+                password: adminPassword || "1234",
+                role: "admin",
+                shop_id: shop.id,
+                display_name: form.adminName || adminUsername,
+                is_active: true
+            });
+        }
+    }
+
+    // Settings row + starter subscription
+    await sb.from("settings").upsert({
+        shop_id: shop.id,
+        company_name: name,
+        software_name: "VO Recovery Manager",
+        phone: payload.contact_number,
+        email: payload.email,
+        address: payload.address
+    }, { onConflict: "shop_id" });
+
+    if (form.licenseExpiry) {
+        await sb.from("subscriptions").insert({
+            shop_id: shop.id,
+            plan_name: form.plan || "Basic",
+            amount: Number(form.amount || 0),
+            start_date: new Date().toISOString().split("T")[0],
+            end_date: form.licenseExpiry,
+            status: "active"
+        });
+    }
+
+    await sbAddAuditLog("shop.create", "shop", shop.id, `Created shop "${name}" (${code})`, shop.id);
+    return shop;
+}
+
+async function sbUpdateShop(shopId, form) {
+    const sb = getSupabase();
+    const payload = {
+        name: (form.name || "").trim(),
+        contact_number: (form.contact || "").trim() || null,
+        email: (form.email || "").trim() || null,
+        address: (form.address || "").trim() || null,
+        plan_name: form.plan || "Basic",
+        license_expiry: form.licenseExpiry || null,
+        max_users: Number(form.maxUsers || 5)
+    };
+    const { data, error } = await sb.from("shops").update(payload).eq("id", shopId).select().single();
+    if (error) throw error;
+    await sbAddAuditLog("shop.update", "shop", shopId, `Updated shop details`, shopId);
+    return data;
+}
+
+async function sbToggleShopActive(shopId, isActive) {
+    const sb = getSupabase();
+    const { data, error } = await sb.from("shops").update({ is_active: isActive }).eq("id", shopId).select().single();
+    if (error) throw error;
+    await sbAddAuditLog(isActive ? "shop.activate" : "shop.deactivate", "shop", shopId, isActive ? "Shop activated" : "Shop deactivated", shopId);
+    return data;
+}
+
+async function sbDeleteShop(shopId) {
+    const sb = getSupabase();
+    const { error } = await sb.from("shops").delete().eq("id", shopId);
+    if (error) throw error;
+    await sbAddAuditLog("shop.delete", "shop", shopId, "Shop deleted", shopId);
+    return true;
+}
+
+/* ---------- SUBSCRIPTIONS ---------- */
+function computeSubStatus(endDate) {
+    if (!endDate) return "expired";
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const end = new Date(endDate);
+    const days = Math.ceil((end - today) / (1000 * 60 * 60 * 24));
+    if (days < 0) return "expired";
+    if (days <= 15) return "expiring";
+    return "active";
+}
+
+async function sbGetSubscriptionsWithShops() {
+    const sb = getSupabase();
+    const { data: shops, error: shopErr } = await sb.from("shops").select("*").order("name");
+    if (shopErr) throw shopErr;
+
+    const { data: subs, error: subErr } = await sb
+        .from("subscriptions")
+        .select("*")
+        .order("end_date", { ascending: false });
+    if (subErr) throw subErr;
+
+    // latest subscription per shop
+    const latestByShop = {};
+    (subs || []).forEach(s => {
+        if (!latestByShop[s.shop_id]) latestByShop[s.shop_id] = s;
+    });
+
+    return (shops || []).map(shop => {
+        const sub = latestByShop[shop.id] || null;
+        const endDate = sub ? sub.end_date : shop.license_expiry;
+        return {
+            shop,
+            subscription: sub,
+            endDate: endDate,
+            liveStatus: computeSubStatus(endDate)
+        };
+    });
+}
+
+async function sbRenewSubscription(shopId, form) {
+    const sb = getSupabase();
+    const payload = {
+        shop_id: shopId,
+        plan_name: form.plan || "Basic",
+        amount: Number(form.amount || 0),
+        start_date: new Date().toISOString().split("T")[0],
+        end_date: form.endDate,
+        status: "active",
+        remarks: form.remarks || ""
+    };
+    const { data, error } = await sb.from("subscriptions").insert(payload).select().single();
+    if (error) throw error;
+
+    // keep shop row in sync for quick reads
+    await sb.from("shops").update({ license_expiry: form.endDate, plan_name: form.plan || "Basic" }).eq("id", shopId);
+
+    await sbAddAuditLog("subscription.renew", "subscription", data.id, `Renewed to ${form.plan} until ${form.endDate}`, shopId);
+    return data;
+}
+
+/* ---------- SUPER ADMIN DASHBOARD STATS ---------- */
+async function sbGetSuperDashboardStats() {
+    const sb = getSupabase();
+
+    const { data: shops, error: shopErr } = await sb.from("shops").select("*");
+    if (shopErr) throw shopErr;
+
+    const { data: custs, error: custErr } = await sb.from("customers").select("shop_id, outstanding");
+    if (custErr) throw custErr;
+
+    const totalShops = (shops || []).length;
+    const activeShops = (shops || []).filter(s => s.is_active).length;
+    const inactiveShops = totalShops - activeShops;
+    const totalCustomers = (custs || []).length;
+    const totalOutstanding = (custs || []).reduce((sum, c) => sum + Number(c.outstanding || 0), 0);
+    const expiringSoon = (shops || []).filter(s => computeSubStatus(s.license_expiry) === "expiring").length;
+    const expired = (shops || []).filter(s => computeSubStatus(s.license_expiry) === "expired").length;
+
+    return { totalShops, activeShops, inactiveShops, totalCustomers, totalOutstanding, expiringSoon, expired, shops: shops || [] };
+}
+
+window.sbAddAuditLog = sbAddAuditLog;
+window.sbGetAuditLog = sbGetAuditLog;
+window.sbGetAllShopsFull = sbGetAllShopsFull;
+window.sbAddShop = sbAddShop;
+window.sbUpdateShop = sbUpdateShop;
+window.sbToggleShopActive = sbToggleShopActive;
+window.sbDeleteShop = sbDeleteShop;
+window.computeSubStatus = computeSubStatus;
+window.sbGetSubscriptionsWithShops = sbGetSubscriptionsWithShops;
+window.sbRenewSubscription = sbRenewSubscription;
+window.sbGetSuperDashboardStats = sbGetSuperDashboardStats;
