@@ -1537,7 +1537,7 @@ thead {
 .badge-warning { background: #fef3c7; color: #b45309; }
 .badge-danger { background: #fee2e2; color: #b91c1c; }
 
-.vo-toast {
+.bk-toast {
   position: fixed;
   bottom: 28px;
   right: 28px;
@@ -1554,9 +1554,9 @@ thead {
   z-index: 10000;
   pointer-events: none;
 }
-.vo-toast.show { opacity: 1; transform: translateY(0); }
-.vo-toast-success { background: #15803d; }
-.vo-toast-error { background: #b91c1c; }
+.bk-toast.show { opacity: 1; transform: translateY(0); }
+.bk-toast-success { background: #15803d; }
+.bk-toast-error { background: #b91c1c; }
 
 /* Glass panels on super admin cards */
 .dashboard-grid .card {
@@ -1584,4 +1584,80 @@ input:focus, select:focus, textarea:focus {
 
 @media (max-width: 768px) {
   .sidebar { box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+}
+
+/* Shop brand logo in sidebar */
+.sidebar .logo img.shop-brand-logo {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    margin: 0 auto 10px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.06);
+    padding: 6px;
+    border: 1px solid rgba(212,175,55,0.25);
+}
+.sidebar .logo h2 {
+    font-size: 18px !important;
+    line-height: 1.25;
+    max-width: 100%;
+    word-break: break-word;
+}
+.sidebar .logo p {
+    font-size: 12px;
+    opacity: 0.85;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.print-header img {
+    max-height: 70px;
+    object-fit: contain;
+}
+
+/* WhatsApp Due Reminder button */
+.wa-due-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, #128C7E, #25D366);
+    color: #fff !important;
+    border: none;
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(37, 211, 102, 0.35);
+    transition: .2s;
+    white-space: nowrap;
+}
+.wa-due-btn i {
+    font-size: 15px;
+}
+.wa-due-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(37, 211, 102, 0.45);
+    background: linear-gradient(135deg, #0f7a6e, #1ebe5d);
+}
+.wa-due-btn:active {
+    transform: scale(0.97);
+}
+
+/* Login / sidebar default logo fit for wide BK logo */
+.login-logo {
+    width: 120px !important;
+    height: auto !important;
+    max-height: 90px;
+    object-fit: contain !important;
+}
+.sidebar .logo img.shop-brand-logo {
+    width: 120px !important;
+    height: auto !important;
+    max-height: 72px;
+    object-fit: contain !important;
+    background: #fff !important;
+    border-radius: 12px;
+    padding: 8px;
 }
