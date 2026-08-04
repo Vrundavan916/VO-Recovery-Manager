@@ -1,5 +1,5 @@
 -- ============================================================
--- VO Recovery Manager - Super Admin Module Migration
+-- BK Recovery Manager - Super Admin Module Migration
 -- Adds: license/plan fields on shops + subscriptions table
 -- Safe to run multiple times (IF NOT EXISTS / ON CONFLICT guards)
 -- Run AFTER database/supabase_schema.sql

@@ -1,4 +1,4 @@
--- VO Recovery Manager Database Schema
+-- BK Recovery Manager Database Schema
 -- Version 0.03
 
 CREATE TABLE customers (

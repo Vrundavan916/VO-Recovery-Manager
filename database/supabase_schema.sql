@@ -1,5 +1,5 @@
 -- ============================================================
--- VO Recovery Manager - Supabase Schema
+-- BK Recovery Manager - Supabase Schema
 -- Multi-tenant (3 jewellery shops + Super Admin)
 -- Run this in Supabase SQL Editor
 -- ============================================================
@@ -100,7 +100,7 @@ CREATE TABLE IF NOT EXISTS settings (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     shop_id UUID UNIQUE REFERENCES shops(id) ON DELETE CASCADE,
     company_name TEXT,
-    software_name TEXT DEFAULT 'VO Recovery Manager',
+    software_name TEXT DEFAULT 'BK Recovery Manager',
     phone TEXT,
     email TEXT,
     address TEXT,
@@ -114,7 +114,7 @@ CREATE TABLE IF NOT EXISTS settings (
 -- SEED: 3 Jewellery Shops
 -- ------------------------------------------------------------
 INSERT INTO shops (id, name, code, contact_number, email, address) VALUES
-    ('a1111111-1111-1111-1111-111111111111', 'Vrundavan Ornaments Pvt. Ltd.', 'VO', '9876543210', 'info@vrundavan.com', 'Mehsana, Gujarat'),
+    ('a1111111-1111-1111-1111-111111111111', 'BK Recovery Manager', 'VO', '9876543210', 'info@vrundavan.com', 'Mehsana, Gujarat'),
     ('b2222222-2222-2222-2222-222222222222', 'Raj Jewellers', 'RJ', '9876500001', 'info@rajjewellers.com', 'Ahmedabad, Gujarat'),
     ('c3333333-3333-3333-3333-333333333333', 'Golden Palace Jewellers', 'GP', '9876500002', 'info@goldenpalace.com', 'Surat, Gujarat')
 ON CONFLICT (code) DO NOTHING;
@@ -133,7 +133,7 @@ ON CONFLICT (username) DO NOTHING;
 
 -- Settings for each shop
 INSERT INTO settings (shop_id, company_name, phone, email, address) VALUES
-    ('a1111111-1111-1111-1111-111111111111', 'Vrundavan Ornaments Pvt. Ltd.', '9876543210', 'info@vrundavan.com', 'Mehsana, Gujarat'),
+    ('a1111111-1111-1111-1111-111111111111', 'BK Recovery Manager', '9876543210', 'info@vrundavan.com', 'Mehsana, Gujarat'),
     ('b2222222-2222-2222-2222-222222222222', 'Raj Jewellers', '9876500001', 'info@rajjewellers.com', 'Ahmedabad, Gujarat'),
     ('c3333333-3333-3333-3333-333333333333', 'Golden Palace Jewellers', '9876500002', 'info@goldenpalace.com', 'Surat, Gujarat')
 ON CONFLICT (shop_id) DO NOTHING;
