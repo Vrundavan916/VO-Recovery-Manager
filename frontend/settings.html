@@ -581,7 +581,6 @@ Download JSON
 <h3>Supabase Full Backup</h3>
 <p>Save to Supabase Console</p>
 <br>
-<button type="button" class="add-btn" style="background:#16a34a;" onclick="firebaseFullBackup()">
 ☁ Cloud Backup
 </button>
 </div>
@@ -591,7 +590,6 @@ Download JSON
 <h3>Supabase Restore</h3>
 <p>Restore latest cloud backup</p>
 <br>
-<button type="button" class="add-btn" style="background:#f59e0b;" onclick="firebaseFullRestore()">
 ☁ Cloud Restore
 </button>
 </div>
@@ -633,7 +631,6 @@ Delete Data
 <span>Cloud connection</span>
 </div>
 </div>
-<p><strong>Status:</strong> <span id="firebaseStatus">Checking...</span></p>
 <p><strong>Database:</strong> <span id="dbStatusBadge" class="badge badge-warning">Local Storage</span></p>
 <p><strong>Last Cloud Backup:</strong> <span id="lastBackupDate">-</span></p>
 <p style="margin-top:10px;color:#64748b;font-size:14px;">
@@ -1171,11 +1168,8 @@ JAVASCRIPT
 
 
 <!-- Supabase SDK -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/supabase-config.js"></script>
-<script src="js/supabase-db.js"></script>
 
-<script src="js/script.js"></script>
+
 
 <script>
 
@@ -1234,6 +1228,15 @@ setInterval(function(){
 },30000);
 
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/db.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/app.js"></script>
+<script src="js/company.js"></script>
+<script src="js/excel-import.js"></script>
 
 </body>
 
