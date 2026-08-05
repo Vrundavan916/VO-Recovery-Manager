@@ -854,16 +854,15 @@ function formatDate(date) {
 }
 
 function backupData() {
-    alert("Your data is stored on secure encrypted cloud servers.
-Use Cloud Backup to save a snapshot.");
+    alert("Data is stored in Supabase cloud.\\nUse Supabase Dashboard → Table Editor for export if needed.");
 }
 
 function restoreData() {
-    alert("Use Cloud Restore to recover from the latest secure cloud backup.");
+    alert("Restore is managed via Supabase. Local JSON restore is disabled.");
 }
 
 function clearAllData() {
-    alert("Clear All is disabled for safety. Delete records individually from the app.");
+    alert("Clear All is disabled. Manage data from Supabase Dashboard or delete records individually.");
 }
 
 function firebaseFullBackup() { backupData(); }
