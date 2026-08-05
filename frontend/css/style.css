@@ -1914,3 +1914,158 @@ input[id*="Code"] {
 .modal-content .close:hover {
     background: #fee2e2;
 }
+
+/* =========================================================
+   BK Recovery Manager – Dark Teal Theme (v4)
+========================================================= */
+:root {
+  --bg: #0b1220;
+  --bg-2: #111827;
+  --card: #1a2332;
+  --card-2: #1f2a3d;
+  --border: rgba(45, 212, 191, 0.15);
+  --teal: #2dd4bf;
+  --teal-2: #14b8a6;
+  --teal-dark: #0f766e;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --gold: #d4af37;
+  --danger: #f87171;
+  --ok: #34d399;
+  --sidebar: #0a1628;
+}
+
+body {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+}
+
+.sidebar {
+  background: linear-gradient(180deg, #0a1628 0%, #0f1c2e 100%) !important;
+  border-right: 1px solid var(--border);
+}
+
+.sidebar .logo h2 { color: var(--teal) !important; }
+.sidebar a { color: #cbd5e1 !important; }
+.sidebar a:hover, .sidebar a.active {
+  background: rgba(45, 212, 191, 0.12) !important;
+  color: var(--teal) !important;
+}
+
+.main, .content, .page-content {
+  background: var(--bg) !important;
+}
+
+.topbar, .header-bar {
+  background: var(--bg-2) !important;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+
+.content-box, .table-section, .card, .stat-card, .summary-card {
+  background: var(--card) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.35) !important;
+}
+
+.content-box h2, .table-section h2, .summary-bar h2 {
+  color: #f1f5f9 !important;
+}
+.content-box span, .summary-bar span, .table-section p, small {
+  color: var(--muted) !important;
+}
+
+.stat-card, .dashboard-cards .card, .cards .card {
+  cursor: pointer;
+  transition: transform .2s, border-color .2s;
+}
+.stat-card:hover, .dashboard-cards .card:hover {
+  transform: translateY(-3px);
+  border-color: var(--teal) !important;
+}
+
+table { color: var(--text); }
+thead, th {
+  background: #0f766e !important;
+  color: #fff !important;
+}
+td { border-color: rgba(148,163,184,0.12) !important; }
+tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+
+input, select, textarea, .form-control {
+  background: #0f172a !important;
+  border: 1.5px solid rgba(45,212,191,0.25) !important;
+  color: var(--text) !important;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--teal) !important;
+  box-shadow: 0 0 0 3px rgba(45,212,191,0.15) !important;
+}
+
+.add-btn, .btn-primary, button.add-btn {
+  background: linear-gradient(135deg, var(--teal-dark), var(--teal-2)) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 12px !important;
+}
+
+.modal { background: rgba(0,0,0,0.65) !important; }
+.modal-content {
+  background: var(--card-2) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+}
+.modal-content label { color: var(--muted) !important; }
+.modal-content h2 { color: #f8fafc !important; }
+
+.footer {
+  background: var(--bg-2) !important;
+  color: var(--muted) !important;
+  border-top: 1px solid var(--border);
+}
+
+/* Customers toolbar compact */
+.customer-toolbar, .toolbar-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.customer-toolbar .add-btn,
+.table-section > .add-btn {
+  padding: 10px 14px !important;
+  font-size: 13px !important;
+  width: auto !important;
+}
+
+/* Clickable metric highlight */
+.metric-active {
+  outline: 2px solid var(--teal);
+  box-shadow: 0 0 0 4px rgba(45,212,191,0.2);
+}
+
+/* A4 print */
+@media print {
+  body * { visibility: hidden; }
+  .print-area, .print-area * { visibility: visible; }
+  .print-area {
+    position: absolute;
+    left: 0; top: 0;
+    width: 100%;
+  }
+  .sidebar, .topbar, .add-btn, button, .no-print { display: none !important; }
+  @page { size: A4 portrait; margin: 12mm; }
+  table { font-size: 11px !important; }
+}
+
+/* Login dark */
+.login-page, .login-box, body.login-body {
+  background: radial-gradient(ellipse at top, #0f766e22, #0b1220 60%) !important;
+}
+.login-box, .login-card {
+  background: var(--card) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text);
+}
