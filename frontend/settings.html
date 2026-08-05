@@ -589,8 +589,8 @@ Backup & Restore Project Data
 
 <div class="card blue">
 <i class="fa-solid fa-download"></i>
-<h3>Export Backup</h3>
-<p>Download encrypted backup file</p>
+<h3>Local Backup</h3>
+<p>Download JSON file</p>
 <br>
 <button type="button" class="add-btn" onclick="backupData()">
 Download JSON
@@ -599,8 +599,8 @@ Download JSON
 
 <div class="card green">
 <i class="fa-solid fa-cloud-arrow-up"></i>
-<h3>Cloud Backup</h3>
-<p>Save securely to cloud</p>
+<h3>Supabase Full Backup</h3>
+<p>Save to Supabase Console</p>
 <br>
 ☁ Cloud Backup
 </button>
@@ -608,8 +608,8 @@ Download JSON
 
 <div class="card orange">
 <i class="fa-solid fa-cloud-arrow-down"></i>
-<h3>Cloud Restore</h3>
-<p>Restore from secure cloud</p>
+<h3>Supabase Restore</h3>
+<p>Restore latest cloud backup</p>
 <br>
 ☁ Cloud Restore
 </button>
@@ -617,8 +617,8 @@ Download JSON
 
 <div class="card blue">
 <i class="fa-solid fa-upload"></i>
-<h3>Restore Backup</h3>
-<p>Import backup file</p>
+<h3>Restore JSON File</h3>
+<p>Import local backup file</p>
 <br>
 <input type="file" id="restoreFile" accept=".json" onchange="restoreData(event)">
 </div>
@@ -636,7 +636,7 @@ Export Data
 <div class="card red">
 <i class="fa-solid fa-trash"></i>
 <h3>Clear All Data</h3>
-<p>Delete all records (permanent)</p>
+<p>Delete all local records</p>
 <br>
 <button type="button" class="add-btn" style="background:#dc2626;" onclick="clearAllData()">
 Delete Data
@@ -648,14 +648,14 @@ Delete Data
 <div class="content-box" style="margin-top:20px;">
 <div class="summary-bar">
 <div>
-<h2>Cloud Status</h2>
-<span>Secure connection</span>
+<h2>Supabase Status</h2>
+<span>Cloud connection</span>
 </div>
 </div>
-<p><strong>Cloud:</strong> <span id="dbStatusBadge" class="badge badge-success">Secure Cloud</span></p>
+<p><strong>Database:</strong> <span id="dbStatusBadge" class="badge badge-warning">Local Storage</span></p>
 <p><strong>Last Cloud Backup:</strong> <span id="lastBackupDate">-</span></p>
 <p style="margin-top:10px;color:#64748b;font-size:14px;">
-All data is stored securely on encrypted cloud servers.
+Supabase Console → Firestore Database → collections: <code>customers</code>, <code>recoveries</code>, <code>users</code>, <code>settings</code>, <code>backups</code>
 </p>
 </div>
 
@@ -879,7 +879,7 @@ Online
 
 </h1>
 
-<small>Secure Cloud Active</small>
+<small>Local Storage Active</small>
 
 </div>
 
