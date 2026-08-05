@@ -113,7 +113,11 @@ function getCustomerData() {
         outstanding: document.getElementById("outstanding")?.value || 0,
         executive: document.getElementById("executive")?.value || "",
         followup: document.getElementById("followup")?.value || "",
-        remarks: document.getElementById("remarks")?.value || ""
+        remarks: document.getElementById("remarks")?.value || "",
+        autoReminder: document.getElementById("autoReminder") ? document.getElementById("autoReminder").checked : true,
+        reminderInterval: Number(document.getElementById("reminderInterval")?.value || 3),
+        dueDate: document.getElementById("followup")?.value || "",
+        nextReminderDate: document.getElementById("followup")?.value || ""
     };
 }
 
@@ -190,7 +194,7 @@ function loadCustomers() {
             <td>${customer.mobile || "-"}</td>
             <td>${customer.village || ""}</td>
             <td>₹${Number(customer.outstanding || 0).toLocaleString("en-IN")}</td>
-            <td>${customer.followup || ""}</td>
+            <td>${customer.followup || ""}${customer.autoReminder === false ? " 🔕" : ""}</td>
             <td style="white-space:nowrap;">
                 <button onclick="viewCustomer(${index})" title="View">👁</button>
                 <button onclick="editCustomer(${index})" title="Edit">✏️</button>
@@ -349,6 +353,77 @@ function sendWhatsAppReminder(index) {
 window.sendWhatsAppReminder = sendWhatsAppReminder;
 window.normalizeWhatsAppNumber = normalizeWhatsAppNumber;
 window.buildWhatsAppReminderMessage = buildWhatsAppReminderMessage;
+
+// ================================
+// WhatsApp reminder schedule (due + every N days)
+// Full auto-send needs Meta WhatsApp Cloud API + cron.
+// Here: detect due list + one-click / sequential send + mark sent.
+// ================================
+function addDaysISO(dateStr, days) {
+    const d = new Date(dateStr || new Date());
+    if (isNaN(d.getTime())) return todayISO();
+    d.setDate(d.getDate() + Number(days || 3));
+    return d.toISOString().split("T")[0];
+}
+
+function getDueReminderCustomers() {
+    const today = todayISO();
+    return (customers || []).filter(c => {
+        if (c.autoReminder === false) return false;
+        if (Number(c.outstanding || 0) <= 0) return false;
+        if (!c.mobile) return false;
+        const due = c.dueDate || c.followup || c.nextReminderDate;
+        if (!due) return false;
+        // due today or past, and (no last sent OR next_reminder_date <= today)
+        if (due > today && (!c.nextReminderDate || c.nextReminderDate > today)) {
+            // only if next_reminder_date is set and due
+            if (c.nextReminderDate && c.nextReminderDate <= today) return true;
+            return false;
+        }
+        if (due <= today) {
+            if (!c.nextReminderDate || c.nextReminderDate <= today) return true;
+        }
+        return false;
+    });
+}
+
+async function processWhatsAppReminders(autoOpen) {
+    const list = getDueReminderCustomers();
+    if (!list.length) {
+        alert("Aaje koi auto-reminder pending nathi.\n\n• Outstanding > 0\n• Auto Reminder ON\n• Follow-up / Due date today or past");
+        return;
+    }
+    if (!confirm(list.length + " customer(s) ne WhatsApp due reminder moklvu?\n\nOK = ek-ek WhatsApp open thase.")) return;
+
+    for (let i = 0; i < list.length; i++) {
+        const c = list[i];
+        const idx = customers.findIndex(x => x.id === c.id);
+        if (idx < 0) continue;
+        sendWhatsAppReminder(idx);
+        const interval = Number(c.reminderInterval || 3);
+        const next = addDaysISO(todayISO(), interval);
+        try {
+            if (typeof sbMarkReminderSent === "function") {
+                await sbMarkReminderSent(c.id, next);
+            }
+            c.lastReminderAt = new Date().toISOString();
+            c.nextReminderDate = next;
+        } catch (e) {
+            console.error(e);
+        }
+        if (i < list.length - 1) {
+            await new Promise(r => setTimeout(r, 1500));
+        }
+    }
+    alert("Reminders process thai gaya. Next auto date: +" + (list[0].reminderInterval || 3) + " days.");
+    if (typeof reloadAllData === "function") await reloadAllData();
+}
+
+window.getDueReminderCustomers = getDueReminderCustomers;
+window.processWhatsAppReminders = processWhatsAppReminders;
+window.addDaysISO = addDaysISO;
+
+
 
 // ================================
 // Dashboard
@@ -779,15 +854,16 @@ function formatDate(date) {
 }
 
 function backupData() {
-    alert("Data is stored in Supabase cloud.\\nUse Supabase Dashboard → Table Editor for export if needed.");
+    alert("Your data is stored on secure encrypted cloud servers.
+Use Cloud Backup to save a snapshot.");
 }
 
 function restoreData() {
-    alert("Restore is managed via Supabase. Local JSON restore is disabled.");
+    alert("Use Cloud Restore to recover from the latest secure cloud backup.");
 }
 
 function clearAllData() {
-    alert("Clear All is disabled. Manage data from Supabase Dashboard or delete records individually.");
+    alert("Clear All is disabled for safety. Delete records individually from the app.");
 }
 
 function firebaseFullBackup() { backupData(); }

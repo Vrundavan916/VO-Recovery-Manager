@@ -61,6 +61,11 @@ function mapCustomerFromDb(row) {
         status: row.status || "Active",
         priority: row.priority || "Low",
         remarks: row.remarks || "",
+        autoReminder: row.auto_reminder !== false,
+        reminderInterval: Number(row.reminder_interval_days || 3),
+        lastReminderAt: row.last_reminder_at || "",
+        nextReminderDate: row.next_reminder_date || "",
+        dueDate: row.due_date || row.followup || "",
         photo_url: row.photo_url || "",
         aadhaar_photo_url: row.aadhaar_photo_url || "",
         pan_photo_url: row.pan_photo_url || "",
@@ -88,7 +93,11 @@ function mapCustomerToDb(c, shopId) {
         followup: c.followup || null,
         status: c.status || "Active",
         priority: c.priority || "Low",
-        remarks: c.remarks || ""
+        remarks: c.remarks || "",
+        auto_reminder: c.autoReminder !== false,
+        reminder_interval_days: Number(c.reminderInterval || 3),
+        next_reminder_date: c.nextReminderDate || c.followup || null,
+        due_date: c.dueDate || c.followup || null
     };
 }
 
@@ -682,3 +691,17 @@ window.computeSubStatus = computeSubStatus;
 window.sbGetSubscriptionsWithShops = sbGetSubscriptionsWithShops;
 window.sbRenewSubscription = sbRenewSubscription;
 window.sbGetSuperDashboardStats = sbGetSuperDashboardStats;
+
+
+async function sbMarkReminderSent(customerId, nextDate) {
+    const sb = getSupabase();
+    const payload = {
+        last_reminder_at: new Date().toISOString(),
+        next_reminder_date: nextDate || null,
+        updated_at: new Date().toISOString()
+    };
+    const { error } = await sb.from("customers").update(payload).eq("id", customerId);
+    if (error) throw error;
+    return true;
+}
+window.sbMarkReminderSent = sbMarkReminderSent;
