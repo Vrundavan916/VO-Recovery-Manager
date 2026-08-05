@@ -1661,3 +1661,256 @@ input:focus, select:focus, textarea:focus {
     border-radius: 12px;
     padding: 8px;
 }
+
+/* =========================================================
+   BK RECOVERY MANAGER – Premium Forms / Modals / Settings
+========================================================= */
+
+.modal {
+    backdrop-filter: blur(6px);
+    background: rgba(15, 23, 42, 0.55) !important;
+}
+
+.modal-content {
+    border-radius: 20px !important;
+    border: 1px solid rgba(212, 175, 55, 0.18);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.28) !important;
+    padding: 28px 24px !important;
+    max-width: 520px;
+    animation: modalIn 0.28s ease;
+}
+
+@keyframes modalIn {
+    from { opacity: 0; transform: translateY(16px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modal-content h2,
+.modal-content h3 {
+    font-size: 22px !important;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 6px;
+    letter-spacing: -0.02em;
+}
+
+.modal-content > p,
+.modal-content .page-subtitle {
+    color: #64748b;
+    font-size: 13px;
+    margin-bottom: 18px;
+}
+
+.modal-content label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 14px 0 6px;
+}
+
+.modal-content input,
+.modal-content select,
+.modal-content textarea,
+.table-section input,
+.table-section select,
+.table-section textarea,
+.content-box input,
+.content-box select,
+.content-box textarea,
+.form-control {
+    width: 100%;
+    padding: 12px 14px !important;
+    border: 1.5px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    background: #f8fafc !important;
+    font-size: 15px !important;
+    color: #0f172a;
+    transition: 0.2s;
+    box-sizing: border-box;
+}
+
+.modal-content input:focus,
+.modal-content select:focus,
+.table-section input:focus,
+.table-section select:focus,
+.content-box input:focus,
+.content-box select:focus,
+.form-control:focus {
+    border-color: #d4af37 !important;
+    background: #fff !important;
+    box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.12) !important;
+    outline: none;
+}
+
+.modal-content input::placeholder {
+    color: #94a3b8;
+}
+
+/* Modal action row */
+.modal-content .add-btn,
+.modal-content button[onclick*="Save"],
+.modal-content button[onclick*="save"],
+.modal-content button[onclick*="confirm"] {
+    border-radius: 12px !important;
+    padding: 12px 20px !important;
+    font-weight: 600;
+}
+
+/* Settings / Reports cards */
+.table-section,
+.content-box {
+    border-radius: 20px !important;
+    border: 1px solid rgba(15, 23, 42, 0.05);
+    box-shadow: 0 8px 28px rgba(15, 23, 42, 0.06) !important;
+    padding: 24px !important;
+    background: #fff;
+}
+
+.table-section h2,
+.content-box h2 {
+    font-size: 20px !important;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 4px;
+}
+
+.table-section > p,
+.content-box > p {
+    color: #64748b;
+    font-size: 13px;
+    margin-bottom: 18px;
+}
+
+/* Settings preference rows */
+.table-section label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+    margin-top: 14px;
+    margin-bottom: 6px;
+    display: block;
+}
+
+/* Report filter buttons stack on mobile */
+@media (max-width: 768px) {
+    .table-section .add-btn,
+    .content-box .add-btn,
+    .table-section button.add-btn {
+        width: 100%;
+        margin-bottom: 10px;
+        justify-content: center;
+    }
+
+    .modal-content {
+        width: 94% !important;
+        margin: 12px auto !important;
+        max-height: 88vh;
+    }
+
+    .modal-content input,
+    .modal-content select {
+        font-size: 16px !important; /* iOS zoom fix */
+    }
+}
+
+/* Premium primary / secondary buttons in forms */
+.btn-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 22px;
+    flex-wrap: wrap;
+}
+
+.btn-row .add-btn {
+    flex: 1;
+    min-width: 120px;
+}
+
+.btn-cancel {
+    flex: 1;
+    min-width: 100px;
+    padding: 12px 18px;
+    border-radius: 12px;
+    border: 1.5px solid #e2e8f0;
+    background: #f8fafc;
+    color: #475569;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-cancel:hover {
+    background: #f1f5f9;
+}
+
+/* User management table polish */
+#userListBody td,
+#executiveListBody td,
+#companiesBody td {
+    vertical-align: middle;
+}
+
+/* Report filter action buttons colored */
+button[onclick*="exportReport"],
+button[onclick*="Export"] {
+    background: linear-gradient(135deg, #15803d, #22c55e) !important;
+}
+
+button[onclick*="print"],
+button[onclick*="Print"] {
+    background: linear-gradient(135deg, #c2410c, #f59e0b) !important;
+    color: #fff !important;
+    border: none;
+}
+
+/* Section accent bar */
+.table-section {
+    position: relative;
+    overflow: hidden;
+}
+.table-section::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #1e40af, #d4af37);
+    opacity: 0.85;
+}
+
+/* Application info read-only fields */
+.table-section input[readonly],
+.content-box input[readonly] {
+    background: #f1f5f9 !important;
+    color: #64748b;
+    border-style: dashed !important;
+}
+
+/* Shop code field emphasis */
+input#shopCode,
+input[id*="Code"] {
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+}
+
+/* Close X */
+.modal-content .close {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #fef2f2;
+    color: #ef4444;
+    font-size: 22px;
+    line-height: 1;
+    float: right;
+}
+.modal-content .close:hover {
+    background: #fee2e2;
+}
