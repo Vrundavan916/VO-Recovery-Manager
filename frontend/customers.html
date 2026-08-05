@@ -208,7 +208,8 @@ Add Customer
 </label>
 
 <button type="button" class="add-btn" style="background:#64748b;margin-left:8px;" onclick="exportCustomersToExcel()">
-<i class="fa-solid fa-download"></i> Export Excel
+<i class="fa-solid fa-download"></i> Export Excel</button>
+<button type="button" class="add-btn" style="background:linear-gradient(135deg,#128C7E,#25D366);margin-left:8px;" onclick="processWhatsAppReminders(true)"><i class="fa-brands fa-whatsapp"></i> Send Due Reminders
 </button>
 
 
@@ -588,6 +589,15 @@ accept="image/*">
 <!-- Remarks -->
 
 <div class="full-width">
+
+
+<label style="display:flex;align-items:center;gap:8px;margin-top:14px;text-transform:none;font-size:14px;letter-spacing:0;">
+<input type="checkbox" id="autoReminder" checked style="width:auto;">
+WhatsApp Auto Reminder ON
+</label>
+<small style="color:#64748b;display:block;margin-bottom:8px;">Due date / follow-up divase message, pachhi darek N day e repeat. Bandh karva uncheck karo.</small>
+<label>Reminder every (days)</label>
+<input type="number" id="reminderInterval" min="1" max="30" value="3" class="form-control">
 
 <label>Remarks</label>
 
