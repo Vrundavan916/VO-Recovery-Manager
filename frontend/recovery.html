@@ -2,6 +2,8 @@
 <html lang="en">
 
 <head>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f766e">
 
 <meta charset="UTF-8">
 
@@ -657,78 +659,6 @@ Collection Overview
 </section>
 
 <!-- =========================
-QUICK ACTIONS
-========================= -->
-
-<section class="content-box fade">
-
-<div class="summary-bar">
-
-<div>
-
-<h2>
-
-Quick Actions
-
-</h2>
-
-<span>
-
-Recovery Shortcuts
-
-</span>
-
-</div>
-
-</div>
-
-<div class="quick-actions">
-
-<a href="customers.html" class="action-card">
-
-<i class="fa-solid fa-users"></i>
-
-<h4>Customers</h4>
-
-<p>Manage Customers</p>
-
-</a>
-
-<a href="dashboard.html" class="action-card">
-
-<i class="fa-solid fa-chart-line"></i>
-
-<h4>Dashboard</h4>
-
-<p>View Dashboard</p>
-
-</a>
-
-<a href="reports.html" class="action-card">
-
-<i class="fa-solid fa-file-lines"></i>
-
-<h4>Reports</h4>
-
-<p>View Reports</p>
-
-</a>
-
-<a href="#" class="action-card" onclick="loadRecoveryTable()">
-
-<i class="fa-solid fa-rotate"></i>
-
-<h4>Refresh</h4>
-
-<p>Reload Recovery Data</p>
-
-</a>
-
-</div>
-
-</section>
-
-<!-- =========================
 END OF PART 5
 ========================= --><!-- =========================
 PART 6
@@ -858,6 +788,9 @@ setInterval(function(){
 <script src="js/company.js"></script>
 <script src="js/excel-import.js"></script>
 
+<script>
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){});}
+</script>
 </body>
 
 </html>

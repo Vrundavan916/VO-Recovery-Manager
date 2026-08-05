@@ -2,6 +2,8 @@
 <html lang="en">
 
 <head>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f766e">
 
 <meta charset="UTF-8">
 
@@ -451,78 +453,6 @@ Today's Collection
 <!-- =========================
 RECENT RECOVERY END
 ========================= --><!-- =========================
-QUICK ACTIONS START
-========================= -->
-
-<section class="content-box fade">
-
-<div class="summary-bar">
-
-<div>
-
-<h2>
-
-Quick Actions
-
-</h2>
-
-<span>
-
-Frequently Used Options
-
-</span>
-
-</div>
-
-</div>
-
-<div class="quick-actions">
-
-<a href="customers.html" class="action-card">
-
-<i class="fa-solid fa-user-plus"></i>
-
-<h4>Add Customer</h4>
-
-<p>Create New Customer</p>
-
-</a>
-
-<a href="recovery.html" class="action-card">
-
-<i class="fa-solid fa-money-bill-wave"></i>
-
-<h4>Add Recovery</h4>
-
-<p>Receive Payment</p>
-
-</a>
-
-<a href="reports.html" class="action-card">
-
-<i class="fa-solid fa-chart-line"></i>
-
-<h4>View Reports</h4>
-
-<p>Daily & Monthly Reports</p>
-
-</a>
-
-<a href="settings.html" class="action-card">
-
-<i class="fa-solid fa-gear"></i>
-
-<h4>Settings</h4>
-
-<p>System Configuration</p>
-
-</a>
-
-</div>
-
-</section>
-
-<!-- =========================
 SYSTEM INFORMATION
 ========================= -->
 
@@ -653,6 +583,46 @@ setInterval(function(){
 <script src="js/company.js"></script>
 <script src="js/excel-import.js"></script>
 
+
+<section class="content-box fade" id="dashboardMetricList" style="display:none;margin-top:16px;">
+<div class="summary-bar"><div><h3>Filtered List</h3></div>
+<button type="button" class="add-btn" onclick="document.getElementById('dashboardMetricList').style.display='none'">Close</button>
+</div>
+<table><thead><tr><th>#</th><th>Name / Detail</th><th>Mobile / Amount</th><th>Outstanding / Date</th><th>Follow-up</th></tr></thead>
+<tbody></tbody></table>
+</section>
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+  function bind(label, type){
+    document.querySelectorAll("h1,h2,h3,h4,.card,.stat-card,div").forEach(function(el){
+      if(el.children.length>6) return;
+      if((el.textContent||"").trim().indexOf(label)===0 || (el.innerText||"").includes(label) && el.innerText.length<40){
+        var card=el.closest(".content-box, .card, .stat-card, section") || el.parentElement;
+        if(card && !card.dataset.metric){
+          card.dataset.metric=type;
+          card.style.cursor="pointer";
+          card.addEventListener("click", function(e){
+            if(e.target.closest("button,a")) return;
+            filterDashboardMetric(type);
+            card.classList.add("metric-active");
+          });
+        }
+      }
+    });
+  }
+  setTimeout(function(){
+    bind("Total Customers","customers");
+    bind("Total Outstanding","outstanding");
+    bind("Today's Follow-up","followup");
+    bind("Today's Recovery","recovery");
+    bind("Today Recovery","recovery");
+  }, 800);
+});
+</script>
+
+<script>
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){});}
+</script>
 </body>
 
 </html>

@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f766e">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Login | BK Recovery Manager</title>
@@ -108,6 +110,9 @@ document.getElementById("forgotModal").addEventListener("click",function(e){
 });
 function openForgotPassword(){ document.getElementById("forgotModal").classList.add("show"); }
 function closeForgotPassword(){ document.getElementById("forgotModal").classList.remove("show"); }
+</script>
+<script>
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){});}
 </script>
 </body>
 </html>

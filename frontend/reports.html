@@ -2,6 +2,8 @@
 <html lang="en">
 
 <head>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f766e">
 
 <meta charset="UTF-8">
 
@@ -817,78 +819,6 @@ PART 6
 ========================= -->
 
 <!-- =========================
-QUICK ACTIONS START
-========================= -->
-
-<section class="content-box fade">
-
-<div class="summary-bar">
-
-<div>
-
-<h2>
-
-Quick Actions
-
-</h2>
-
-<span>
-
-Frequently Used Report Options
-
-</span>
-
-</div>
-
-</div>
-
-<div class="quick-actions">
-
-<a href="dashboard.html" class="action-card">
-
-<i class="fa-solid fa-chart-line"></i>
-
-<h4>Dashboard</h4>
-
-<p>Go To Dashboard</p>
-
-</a>
-
-<a href="customers.html" class="action-card">
-
-<i class="fa-solid fa-users"></i>
-
-<h4>Customers</h4>
-
-<p>Manage Customers</p>
-
-</a>
-
-<a href="recovery.html" class="action-card">
-
-<i class="fa-solid fa-money-bill-wave"></i>
-
-<h4>Recovery</h4>
-
-<p>Add Recovery Entry</p>
-
-</a>
-
-<a href="#" class="action-card" onclick="window.print()">
-
-<i class="fa-solid fa-print"></i>
-
-<h4>Print Report</h4>
-
-<p>Print Current Report</p>
-
-</a>
-
-</div>
-
-</section>
-
-<!-- =========================
 REPORT NOTES START
 ========================= -->
 
@@ -1061,6 +991,9 @@ try {
 <script src="js/company.js"></script>
 <script src="js/excel-import.js"></script>
 
+<script>
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){});}
+</script>
 </body>
 
 </html>

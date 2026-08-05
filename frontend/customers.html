@@ -2,6 +2,8 @@
 <html lang="en">
 
 <head>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f766e">
 
 <meta charset="UTF-8">
 
@@ -309,7 +311,9 @@ required>
 
 </div>
 
-<!-- Father / Husband Name -->
+<!-- Product Name *</label>
+<input type="text" id="productName" class="form-control" placeholder="e.g. Gold Chain, Ring" required>
+<label>Father / Husband Name -->
 
 <div>
 
@@ -853,6 +857,9 @@ if(typeof updateDashboard === "function"){
 <script src="js/company.js"></script>
 <script src="js/excel-import.js"></script>
 
+<script>
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){});}
+</script>
 </body>
 
 </html>
