@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Settings | BK Recovery Manager</title>
+
+<link rel="stylesheet" href="css/style.css?v=bk3">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+</head>
+
+<body>
+
+<div class="wrapper">
+
+<!-- =========================
+SIDEBAR START
+========================= -->
+
+<aside class="sidebar">
+
+<div class="logo">
+
+<h2>BK Recovery</h2>
+
+<p>Recovery Manager</p>
+
+</div>
+
+<ul class="menu">
+
+<li>
+
+<a href="dashboard.html">
+
+<i class="fa-solid fa-house"></i>
+
+<span>Dashboard</span>
+
+</a>
+
+</li>
+
+<li>
+
+<a href="customers.html">
+
+<i class="fa-solid fa-users"></i>
+
+<span>Customers</span>
+
+</a>
+
+</li>
+
+<li>
+
+<a href="recovery.html">
+
+<i class="fa-solid fa-money-bill-wave"></i>
+
+<span>Recovery</span>
+
+</a>
+
+</li>
+
+<li>
+
+<a href="reports.html">
+
+<i class="fa-solid fa-chart-column"></i>
+
+<span>Reports</span>
+
+</a>
+
+</li>
+
+<li>
+
+<a href="settings.html" class="active">
+
+<i class="fa-solid fa-gear"></i>
+
+<span>Settings</span>
+
+</a>
+
+</li>
+
+<li>
+
+<a href="#" onclick="logout()">
+
+<i class="fa-solid fa-right-from-bracket"></i>
+
+<span>Logout</span>
+
+</a>
+
+</li>
+
+</ul>
+
+</aside>
+
+<!-- =========================
+SIDEBAR END
+========================= -->
+
+<!-- =========================
+MAIN CONTENT START
+========================= -->
+
+<main class="main-content">
+
+<!-- =========================
+END OF PART 1
+========================= --><!-- =========================
+PART 2
+========================= -->
+
+<!-- =========================
+TOPBAR START
+========================= -->
+
+<header class="topbar">
+
+<div>
+
+<h1 class="page-title">
+
+System Settings
+
+</h1>
+
+<p class="page-subtitle">
+
+Manage Application & Company Settings
+
+</p>
+
+</div>
+
+<div class="user-info">
+
+<i class="fa-solid fa-user-shield"></i>
+
+<span id="userRoleBadge">Administrator</span>
+
+</div>
+
+</header>
+
+<!-- =========================
+TOPBAR END
+========================= -->
+
+<!-- =========================
+COMPANY INFORMATION START
+========================= -->
+
+<section class="table-section fade">
+
+<div class="summary-bar">
+
+<div>
+
+<h2>
+
+Company Information
+
+</h2>
+
+<span>
+
+Update Company Details
+
+</span>
+
+</div>
+
+</div>
+
+<form id="companyForm">
+
+<div class="form-grid">
+
+<!-- Company Name -->
+
+<div>
+
+<label>Company Name</label>
+
+<input
+
+type="text"
+
+id="companyName"
+
+value="BK Recovery Manager"
+
+placeholder="Company Name">
+
+</div>
+
+<!-- Contact Number -->
+
+<div>
+
+<label>Contact Number</label>
+
+<input
+
+type="text"
+
+id="companyMobile"
+
+placeholder="Enter Contact Number">
+
+</div>
+
+<!-- Email -->
+
+<div>
+
+<label>Email Address</label>
+
+<input
+
+type="email"
+
+id="companyEmail"
+
+placeholder="Enter Email Address">
+
+</div>
+
+<!-- Website -->
+
+<div>
+
+<label>Website</label>
+
+<input
+
+type="text"
+
+id="companyWebsite"
+
+placeholder="www.example.com">
+
+</div>
+
+<!-- Address -->
+
+<div class="full-width">
+
+<label>Company Address</label>
+
+<textarea
+
+id="companyAddress"
+
+rows="4"
+
+placeholder="Enter Company Address">
+
+</textarea>
+
+</div>
+
+<!-- Company Logo -->
+
+<div class="full-width">
+
+<label>Company Logo</label>
+
+<input
+
+type="file"
+
+id="companyLogo"
+
+accept="image/*"
+
+onchange="previewCompanyLogo(event)">
+
+</div>
+
+</div>
+
+<button type="button" class="add-btn" onclick="saveCompanyBranding()" style="margin-top:15px;">
+Save Company Info
+</button>
+
+
+<!-- =========================
+END OF PART 2
+========================= --><!-- =========================
+PART 3
+========================= -->
+
+<!-- =========================
+ADMIN SETTINGS START
+========================= -->
+
+<br>
+
+<div class="summary-bar">
+
+<div>
+
+<h2>
+
+
+<div class="full-width" style="margin-top:15px;">
+<label>Company Logo (Login Page)</label>
+<input type="file" id="companyLogoFile" accept="image/*" onchange="previewCompanyLogo(event)">
+<small style="color:#64748b;">Login page અને print header પર દેખાશે</small>
+<img id="logoPreview" src="assets/logo.png" style="max-height:80px;margin-top:10px;border-radius:8px;" onerror="this.style.display='none'">
+</div>
+
+Administrator Settings
+
+</h2>
+
+<span>
+
+Manage Login Credentials
+
+</span>
+
+</div>
+
+</div>
+
+<div class="form-grid">
+
+<!-- Username -->
+
+<div>
+
+<label>Username</label>
+
+<input
+
+type="text"
+
+id="adminUsername"
+
+value="admin"
+
+placeholder="Enter Username">
+
+</div>
+
+<!-- Current Password -->
+
+<div>
+
+<label>Current Password</label>
+
+<input
+
+type="password"
+
+id="currentPassword"
+
+placeholder="Current Password">
+
+</div>
+
+<!-- New Password -->
+
+<div>
+
+<label>New Password</label>
+
+<input
+
+type="password"
+
+id="newPassword"
+
+placeholder="New Password">
+
+</div>
+
+<!-- Confirm Password -->
+
+<div>
+
+<label>Confirm Password</label>
+
+<input
+
+type="password"
+
+id="confirmPassword"
+
+placeholder="Confirm Password">
+
+</div>
+
+<!-- Recovery Email -->
+
+<div>
+
+<label>Recovery Email</label>
+
+<input
+
+type="email"
+
+id="recoveryEmail"
+
+placeholder="Recovery Email">
+
+</div>
+
+<!-- System Role -->
+
+<div>
+
+<label>Role</label>
+
+<input
+type="text"
+id="currentRoleDisplay"
+value="Administrator"
+readonly>
+
+</div>
+
+</div>
+
+<br>
+
+<button
+
+type="button"
+
+class="add-btn"
+
+onclick="saveSettings()">
+
+<i class="fa-solid fa-floppy-disk"></i>
+
+Save Settings
+
+</button>
+
+</form>
+
+</section>
+
+<!-- =========================
+END OF PART 3
+========================= --><!-- =========================
+PART 3B - USER MANAGEMENT
+========================= -->
+
+
+<section class="table-section fade" id="executiveManagementSection">
+    <h2><i class="fa-solid fa-user-tie"></i> Sales / Recovery Executives</h2>
+    <p style="color:#64748b;margin-bottom:16px;">Customer ane Recovery form ma aa list dropdown ma aavse. Shop Admin add/remove kari shake.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
+        <input type="text" id="newExecutiveName" class="form-control" placeholder="Executive name (e.g. Ramesh)" style="max-width:280px;">
+        <button type="button" class="add-btn" onclick="addExecutive()"><i class="fa-solid fa-plus"></i> Add Executive</button>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="executiveListBody">
+        </tbody>
+    </table>
+</section>
+
+<section class="table-section fade" id="userManagementSection">
+
+<div class="summary-bar">
+
+<div>
+
+<h2>
+User Management
+</h2>
+
+<span>
+Add Or Remove Staff Logins
+</span>
+
+</div>
+
+</div>
+
+<div class="form-grid">
+
+<div>
+<label>New Username</label>
+<input type="text" id="newUserUsername" placeholder="Username">
+</div>
+
+<div>
+<label>New Password</label>
+<input type="password" id="newUserPassword" placeholder="Password">
+</div>
+
+<div>
+<label>Role</label>
+<select id="newUserRole">
+<option value="User">User (Add/Edit Only)</option>
+<option value="Admin">Admin (Full Access)</option>
+</select>
+</div>
+
+</div>
+
+<br>
+
+<button type="button" class="add-btn" onclick="addUser()">
+<i class="fa-solid fa-user-plus"></i>
+Add User
+</button>
+
+<br><br>
+
+<table id="userListTable">
+<thead>
+<tr>
+<th>Username</th>
+<th>Role</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody id="userListBody">
+</tbody>
+</table>
+
+</section>
+
+<!-- =========================
+END OF PART 3B
+========================= --><!-- =========================
+PART 4
+========================= -->
+
+<!-- =========================
+DATA MANAGEMENT START
+========================= -->
+
+<section class="table-section fade">
+
+<div class="summary-bar">
+
+<div>
+
+<h2>
+
+Data Management
+
+</h2>
+
+<span>
+
+Backup & Restore Project Data
+
+</span>
+
+</div>
+
+</div>
+
+<div class="dashboard-grid">
+
+<div class="card blue">
+<i class="fa-solid fa-download"></i>
+<h3>Local Backup</h3>
+<p>Download JSON file</p>
+<br>
+<button type="button" class="add-btn" onclick="backupData()">
+Download JSON
+</button>
+</div>
+
+<div class="card green">
+<i class="fa-solid fa-cloud-arrow-up"></i>
+<h3>Supabase Full Backup</h3>
+<p>Save to Supabase Console</p>
+<br>
+☁ Cloud Backup
+</button>
+</div>
+
+<div class="card orange">
+<i class="fa-solid fa-cloud-arrow-down"></i>
+<h3>Supabase Restore</h3>
+<p>Restore latest cloud backup</p>
+<br>
+☁ Cloud Restore
+</button>
+</div>
+
+<div class="card blue">
+<i class="fa-solid fa-upload"></i>
+<h3>Restore JSON File</h3>
+<p>Import local backup file</p>
+<br>
+<input type="file" id="restoreFile" accept=".json" onchange="restoreData(event)">
+</div>
+
+<div class="card orange">
+<i class="fa-solid fa-file-export"></i>
+<h3>Export Reports</h3>
+<p>Export recovery CSV</p>
+<br>
+<button type="button" class="add-btn" onclick="exportReport()">
+Export Data
+</button>
+</div>
+
+<div class="card red">
+<i class="fa-solid fa-trash"></i>
+<h3>Clear All Data</h3>
+<p>Delete all local records</p>
+<br>
+<button type="button" class="add-btn" style="background:#dc2626;" onclick="clearAllData()">
+Delete Data
+</button>
+</div>
+
+</div>
+
+<div class="content-box" style="margin-top:20px;">
+<div class="summary-bar">
+<div>
+<h2>Supabase Status</h2>
+<span>Cloud connection</span>
+</div>
+</div>
+<p><strong>Database:</strong> <span id="dbStatusBadge" class="badge badge-warning">Local Storage</span></p>
+<p><strong>Last Cloud Backup:</strong> <span id="lastBackupDate">-</span></p>
+<p style="margin-top:10px;color:#64748b;font-size:14px;">
+Supabase Console → Firestore Database → collections: <code>customers</code>, <code>recoveries</code>, <code>users</code>, <code>settings</code>, <code>backups</code>
+</p>
+</div>
+
+</section>
+
+<!-- =========================
+END OF PART 4
+========================= --><!-- =========================
+PART 5
+========================= -->
+
+<!-- =========================
+SECURITY SETTINGS START
+========================= -->
+
+<section class="table-section fade">
+
+<div class="summary-bar">
+
+<div>
+
+<h2>
+
+Security & Preferences
+
+</h2>
+
+<span>
+
+System Security Options
+
+</span>
+
+</div>
+
+</div>
+
+<div class="form-grid">
+
+<!-- Auto Logout -->
+
+<div>
+
+<label>Auto Logout</label>
+
+<select id="autoLogout">
+
+<option value="5">5 Minutes</option>
+
+<option value="10">10 Minutes</option>
+
+<option value="15" selected>15 Minutes</option>
+
+<option value="30">30 Minutes</option>
+
+<option value="60">60 Minutes</option>
+
+</select>
+
+</div>
+
+<!-- Session Timeout -->
+
+<div>
+
+<label>Session Timeout</label>
+
+<select id="sessionTimeout">
+
+<option value="30">30 Minutes</option>
+
+<option value="60" selected>1 Hour</option>
+
+<option value="120">2 Hours</option>
+
+<option value="240">4 Hours</option>
+
+</select>
+
+</div>
+
+<!-- Default Currency -->
+
+<div>
+
+<label>Currency</label>
+
+<select id="currency">
+
+<option value="INR" selected>Indian Rupee (₹)</option>
+
+</select>
+
+</div>
+
+<!-- Date Format -->
+
+<div>
+
+<label>Date Format</label>
+
+<select id="dateFormat">
+
+<option value="dd-mm-yyyy" selected>DD-MM-YYYY</option>
+
+<option value="mm-dd-yyyy">MM-DD-YYYY</option>
+
+<option value="yyyy-mm-dd">YYYY-MM-DD</option>
+
+</select>
+
+</div>
+
+<!-- Notifications -->
+
+<div>
+
+<label>Notifications</label>
+
+<select id="notifications">
+
+<option value="on" selected>Enabled</option>
+
+<option value="off">Disabled</option>
+
+</select>
+
+</div>
+
+<!-- Auto Backup -->
+
+<div>
+
+<label>Auto Backup</label>
+
+<select id="autoBackup">
+
+<option value="daily" selected>Daily</option>
+
+<option value="weekly">Weekly</option>
+
+<option value="monthly">Monthly</option>
+
+<option value="off">Disabled</option>
+
+</select>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- =========================
+END OF PART 5
+========================= --><!-- =========================
+PART 6
+========================= -->
+
+<!-- =========================
+APPLICATION INFORMATION START
+========================= -->
+
+<section class="table-section fade">
+
+<div class="summary-bar">
+
+<div>
+
+<h2>
+
+Application Information
+
+</h2>
+
+<span>
+
+System Details & Status
+
+</span>
+
+</div>
+
+</div>
+
+<div class="dashboard-grid">
+
+<div class="card blue">
+
+<i class="fa-solid fa-code"></i>
+
+<h3>Application Version</h3>
+
+<h1>v1.0.0</h1>
+
+<small>BK Recovery Manager</small>
+
+</div>
+
+<div class="card green">
+
+<i class="fa-solid fa-laptop-code"></i>
+
+<h3>Developer</h3>
+
+<h1>BK Design Hub</h1>
+
+<small>Designed & Developed</small>
+
+</div>
+
+<div class="card orange">
+
+<i class="fa-solid fa-database"></i>
+
+<h3>Database Status</h3>
+
+<h1 id="databaseStatus">
+
+Online
+
+</h1>
+
+<small>Local Storage Active</small>
+
+</div>
+
+<div class="card red">
+
+<i class="fa-solid fa-hard-drive"></i>
+
+<h3>Storage Usage</h3>
+
+<h1 id="storageUsage">
+
+0 MB
+
+</h1>
+
+<small>Current Data Size</small>
+
+</div>
+
+</div>
+
+<br>
+
+<div class="form-grid">
+
+<div>
+
+<label>Last Backup Date</label>
+
+<input
+
+type="text"
+
+id="lastBackup"
+
+value="No Backup Available"
+
+readonly>
+
+</div>
+
+<div>
+
+<label>Last Login</label>
+
+<input
+
+type="text"
+
+id="lastLogin"
+
+value="--"
+
+readonly>
+
+</div>
+
+<div>
+
+<label>System Status</label>
+
+<input
+
+type="text"
+
+value="Running Successfully"
+
+readonly>
+
+</div>
+
+<div>
+
+<label>License</label>
+
+<input
+
+type="text"
+
+value="Licensed Copy"
+
+readonly>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- =========================
+END OF PART 6
+========================= --><!-- =========================
+PART 7
+========================= -->
+
+<!-- =========================
+QUICK ACTIONS START
+========================= -->
+
+<section class="table-section fade">
+
+<div class="summary-bar">
+
+<div>
+
+<h2>
+
+Quick Actions
+
+</h2>
+
+<span>
+
+System Management
+
+</span>
+
+</div>
+
+</div>
+
+<div class="quick-actions">
+
+<a href="dashboard.html" class="action-card">
+
+<i class="fa-solid fa-chart-line"></i>
+
+<h4>Dashboard</h4>
+
+<p>Go To Dashboard</p>
+
+</a>
+
+<a href="customers.html" class="action-card">
+
+<i class="fa-solid fa-users"></i>
+
+<h4>Customers</h4>
+
+<p>Manage Customers</p>
+
+</a>
+
+<a href="recovery.html" class="action-card">
+
+<i class="fa-solid fa-money-bill-wave"></i>
+
+<h4>Recovery</h4>
+
+<p>Manage Recovery</p>
+
+</a>
+
+<a href="reports.html" class="action-card">
+
+<i class="fa-solid fa-chart-column"></i>
+
+<h4>Reports</h4>
+
+<p>View Reports</p>
+
+</a>
+
+</div>
+
+<br>
+
+<div style="display:flex;gap:15px;flex-wrap:wrap;justify-content:center;">
+
+<button
+
+type="button"
+
+class="add-btn"
+
+onclick="saveSettings()">
+
+<i class="fa-solid fa-floppy-disk"></i>
+
+Save Settings
+
+</button>
+
+<button
+
+type="button"
+
+class="add-btn"
+
+style="background:#f59e0b;"
+
+onclick="location.reload()">
+
+<i class="fa-solid fa-rotate"></i>
+
+Reset Page
+
+</button>
+
+<button
+
+type="button"
+
+class="add-btn"
+
+style="background:#ef4444;"
+
+onclick="logout()">
+
+<i class="fa-solid fa-right-from-bracket"></i>
+
+Logout
+
+</button>
+
+</div>
+
+</section>
+
+<!-- =========================
+SUPPORT INFORMATION
+========================= -->
+
+<section class="table-section fade">
+
+<div class="summary-bar">
+
+<div>
+
+<h2>
+
+Support Information
+
+</h2>
+
+<span>
+
+Developer Contact
+
+</span>
+
+</div>
+
+</div>
+
+<p><strong>Application :</strong> BK Recovery Manager</p>
+
+<p><strong>Company :</strong> BK Recovery Manager</p>
+
+<p><strong>Developer :</strong> BK Design Hub</p>
+
+<p><strong>Version :</strong> 1.0.0</p>
+
+<p><strong>Support :</strong> support@bkdesignhub.com</p>
+
+<p><strong>Status :</strong> Active</p>
+
+</section>
+
+<!-- =========================
+FOOTER START
+========================= -->
+
+<footer class="footer">
+
+<div>
+
+<strong>BK Recovery Manager</strong>
+
+</div>
+
+<div style="margin-top:8px;">
+
+© 2026 BK Design Hub | BK Recovery Manager
+
+</div>
+
+<div style="margin-top:8px;">
+
+Developed by <strong>BK Design Hub</strong>
+
+</div>
+
+</footer>
+
+<!-- =========================
+END OF PART 7
+========================= --><!-- =========================
+PART 8
+========================= -->
+
+<!-- =========================
+MAIN CONTENT END
+========================= -->
+
+</main>
+
+<!-- =========================
+WRAPPER END
+========================= -->
+
+</div>
+
+<!-- =========================
+JAVASCRIPT
+========================= -->
+
+
+<!-- Supabase SDK -->
+
+
+
+<script>
+
+// Check Login
+
+if(typeof checkLogin==="function"){
+
+    checkLogin();
+
+}
+
+// Load Saved Settings
+
+if(typeof loadSettings==="function"){
+
+    loadSettings();
+
+}
+
+// Update Dashboard
+
+if(typeof updateDashboard==="function"){
+
+    updateDashboard();
+
+}
+
+// Update Storage Usage
+
+if(typeof updateStorageUsage==="function"){
+
+    updateStorageUsage();
+
+}
+
+// Update Last Login
+
+const lastLogin=document.getElementById("lastLogin");
+
+if(lastLogin){
+
+    lastLogin.value=new Date().toLocaleString();
+
+}
+
+// Auto Refresh Every 30 Seconds
+
+setInterval(function(){
+
+    if(typeof refreshProject==="function"){
+
+        refreshProject();
+
+    }
+
+},30000);
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/db.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/app.js"></script>
+<script src="js/company.js"></script>
+<script src="js/excel-import.js"></script>
+
+</body>
+
+</html>
+
+<!-- =========================
+END OF settings.html
+========================= -->
