@@ -44,6 +44,7 @@ function mapCustomerFromDb(row) {
         id: row.id,
         shop_id: row.shop_id,
         name: row.name || "",
+        productName: row.product_name || "",
         father: row.father || "",
         mobile: row.mobile || "",
         altMobile: row.alt_mobile || "",
@@ -77,6 +78,7 @@ function mapCustomerToDb(c, shopId) {
     return {
         shop_id: shopId || c.shop_id,
         name: c.name || "",
+        product_name: c.productName || "",
         father: c.father || "",
         mobile: c.mobile || "",
         alt_mobile: c.altMobile || "",

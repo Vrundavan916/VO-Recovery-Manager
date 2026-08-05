@@ -214,6 +214,7 @@ function editCustomer(index) {
     editCustomerId = c.id;
 
     document.getElementById("customerName").value = c.name || "";
+    const pn = document.getElementById("productName"); if (pn) pn.value = c.productName || "";
     document.getElementById("fatherName").value = c.father || "";
     document.getElementById("mobile").value = c.mobile || "";
     document.getElementById("altMobile").value = c.altMobile || "";
@@ -1392,3 +1393,63 @@ const APP_INFO = {
 };
 
 console.log(APP_INFO.name + " v" + APP_INFO.version);
+
+
+function filterDashboardMetric(type) {
+    document.querySelectorAll(".metric-active").forEach(el => el.classList.remove("metric-active"));
+    const today = (typeof todayISO === "function") ? todayISO() : new Date().toISOString().split("T")[0];
+    let list = [];
+    let title = "";
+    if (type === "customers") {
+        list = customers || [];
+        title = "All Customers (" + list.length + ")";
+    } else if (type === "outstanding") {
+        list = (customers || []).filter(c => Number(c.outstanding || 0) > 0);
+        title = "Outstanding Customers (" + list.length + ")";
+    } else if (type === "followup") {
+        list = (customers || []).filter(c => c.followup && String(c.followup).slice(0,10) === today);
+        title = "Today's Follow-up (" + list.length + ")";
+    } else if (type === "recovery") {
+        list = (recoveries || []).filter(r => String(r.date || r.recovery_date || "").slice(0,10) === today);
+        title = "Today's Recovery (" + list.length + ")";
+    }
+    const box = document.getElementById("dashboardMetricList");
+    if (!box) {
+        // navigate to customers with hash
+        if (type === "recovery") location.href = "recovery.html";
+        else location.href = "customers.html#" + type;
+        return;
+    }
+    box.style.display = "block";
+    box.querySelector("h3").textContent = title;
+    const tb = box.querySelector("tbody");
+    if (type === "recovery") {
+        tb.innerHTML = list.map((r,i) => {
+            const cust = (customers||[]).find(c => c.id === r.customerId || c.id === r.customer_id);
+            return `<tr><td>${i+1}</td><td>${(cust&&cust.name)||"-"}</td><td>₹${Number(r.amount||0).toLocaleString("en-IN")}</td><td>${r.date||r.recovery_date||""}</td></tr>`;
+        }).join("") || `<tr><td colspan="4">No records</td></tr>`;
+    } else {
+        tb.innerHTML = list.map((c,i) =>
+            `<tr><td>${i+1}</td><td>${c.name||""}</td><td>${c.mobile||""}</td><td>₹${Number(c.outstanding||0).toLocaleString("en-IN")}</td><td>${c.followup||""}</td></tr>`
+        ).join("") || `<tr><td colspan="5">No records</td></tr>`;
+    }
+}
+window.filterDashboardMetric = filterDashboardMetric;
+
+async function logAudit(action, entityType, entityId, details) {
+    try {
+        const sb = getSupabase();
+        if (!sb) return;
+        const session = getSession();
+        await sb.from("audit_log").insert({
+            shop_id: session.shopId || null,
+            user_id: session.userId || null,
+            username: session.username || "",
+            action: action,
+            entity_type: entityType || "",
+            entity_id: entityId ? String(entityId) : "",
+            details: details || ""
+        });
+    } catch (e) { console.warn("audit", e); }
+}
+window.logAudit = logAudit;
