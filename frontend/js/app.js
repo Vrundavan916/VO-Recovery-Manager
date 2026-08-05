@@ -896,6 +896,10 @@ async function addUser() {
 
 async function deleteUser(usernameOrId) {
     const session = getSession();
+    if (!usernameOrId) {
+        alert("Invalid user");
+        return;
+    }
     if (usernameOrId === session.username || usernameOrId === session.userId) {
         alert("You Cannot Delete Your Own Logged-In Account.");
         return;
@@ -903,14 +907,37 @@ async function deleteUser(usernameOrId) {
     if (!confirm("Remove This User Permanently?")) return;
 
     try {
-        const users = await sbGetUsers(isSuperAdmin() ? null : currentShopId());
-        const target = users.find(u => u.username === usernameOrId || u.id === usernameOrId);
-        if (!target) {
-            alert("User not found");
-            return;
+        // Resolve by id or username (fresh fetch)
+        let userId = usernameOrId;
+        const looksLikeUuid = String(usernameOrId).length > 20 && String(usernameOrId).includes("-");
+        if (!looksLikeUuid) {
+            const users = await sbGetUsers(isSuperAdmin() ? null : currentShopId());
+            const target = (users || []).find(u =>
+                u.id === usernameOrId ||
+                u.username === usernameOrId ||
+                String(u.id) === String(usernameOrId)
+            );
+            if (!target) {
+                alert("User not found");
+                return;
+            }
+            if (target.username === "superadmin" || target.role === "super_admin") {
+                alert("Super Admin account delete nathi kari shakat.");
+                return;
+            }
+            userId = target.id;
+        } else {
+            // protect superadmin by id lookup optional
+            const users = await sbGetUsers(null);
+            const t = (users || []).find(u => String(u.id) === String(usernameOrId));
+            if (t && (t.username === "superadmin" || t.role === "super_admin")) {
+                alert("Super Admin account delete nathi kari shakat.");
+                return;
+            }
         }
-        await sbDeleteUser(target.id);
+        await sbDeleteUser(userId);
         await loadUserList();
+        alert("User removed.");
     } catch (e) {
         console.error(e);
         alert("Delete failed: " + (e.message || e));
@@ -920,23 +947,29 @@ async function deleteUser(usernameOrId) {
 async function loadUserList() {
     const tbody = document.getElementById("userListBody");
     if (!tbody) return;
+    const session = getSession();
 
     try {
         const shopFilter = isSuperAdmin() ? null : currentShopId();
         const users = await sbGetUsers(shopFilter);
         tbody.innerHTML = "";
-        users.forEach(u => {
+        (users || []).forEach(u => {
+            const isSelf = u.id === session.userId || u.username === session.username;
+            const isSA = u.role === "super_admin" || u.username === "superadmin";
+            let action = "—";
+            if (!isSelf && !isSA) {
+                action = `<button type="button" onclick="deleteUser(this.dataset.uid)" data-uid="${u.id}" title="Remove" style="background:#ef4444;color:#fff;border:none;border-radius:8px;padding:6px 10px;cursor:pointer;">🗑️ Remove</button>`;
+            }
             tbody.innerHTML += `
             <tr>
-                <td>${u.username}</td>
-                <td>${u.role}</td>
-                <td>
-                    <button onclick="deleteUser('${u.id}')" title="Remove">🗑️ Remove</button>
-                </td>
+                <td>${u.username || ""}</td>
+                <td>${u.role || ""}</td>
+                <td>${action}</td>
             </tr>`;
         });
     } catch (e) {
         console.error(e);
+        tbody.innerHTML = `<tr><td colspan="3" style="color:#ef4444;">Failed to load users: ${e.message || e}</td></tr>`;
     }
 }
 
