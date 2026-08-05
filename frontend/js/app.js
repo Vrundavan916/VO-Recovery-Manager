@@ -172,21 +172,26 @@ function loadCustomers() {
         const deleteButton = (role === "admin" || role === "super_admin")
             ? `<button onclick="deleteCustomer(${index})" title="Delete">🗑️</button>`
             : "";
-        const waBtn = customer.mobile
-            ? `<button type="button" class="wa-due-btn" onclick="sendWhatsAppReminder(${index})" title="WhatsApp Due Reminder">
-                <i class="fa-brands fa-whatsapp"></i> Due
+        const hasMobile = !!(customer.mobile && String(customer.mobile).replace(/\D/g, "").length >= 10);
+        const waBtn = hasMobile
+            ? `<button type="button" onclick="sendWhatsAppReminder(${index})" title="WhatsApp Due Reminder"
+                style="display:inline-flex;align-items:center;gap:4px;background:#25D366;color:#fff;border:none;border-radius:16px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;margin:2px;box-shadow:0 2px 8px rgba(37,211,102,.4);">
+                💬 WA Due
                </button>`
-            : "";
+            : `<button type="button" disabled title="Mobile number joiye"
+                style="display:inline-flex;background:#94a3b8;color:#fff;border:none;border-radius:16px;padding:6px 10px;font-size:11px;margin:2px;opacity:.7;">
+                💬 No Mob
+               </button>`;
 
         tbody.innerHTML += `
         <tr>
             <td>${index + 1}</td>
             <td>${customer.name}</td>
-            <td>${customer.mobile}</td>
-            <td>${customer.village}</td>
+            <td>${customer.mobile || "-"}</td>
+            <td>${customer.village || ""}</td>
             <td>₹${Number(customer.outstanding || 0).toLocaleString("en-IN")}</td>
             <td>${customer.followup || ""}</td>
-            <td>
+            <td style="white-space:nowrap;">
                 <button onclick="viewCustomer(${index})" title="View">👁</button>
                 <button onclick="editCustomer(${index})" title="Edit">✏️</button>
                 ${waBtn}
