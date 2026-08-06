@@ -18,7 +18,7 @@ html{
 }
 
 body{
-    background:#F1F6F5;
+    background:#FAFAF8;
     color:#1e293b;
     min-height:100vh;
 }
@@ -52,7 +52,7 @@ select{
     display:flex;
     justify-content:center;
     align-items:center;
-    background:linear-gradient(135deg,#1F6762,#0E4D4B);
+    background:linear-gradient(135deg,#1A1A1A,#000000);
     padding:20px;
 }
 
@@ -75,7 +75,7 @@ select{
 
     text-align:center;
 
-    color:#1F6762;
+    color:#141414;
 
     font-size:34px;
 
@@ -127,7 +127,7 @@ select{
 
 .login-box input:focus{
 
-    border-color:#1F6762;
+    border-color:#F5B301;
 
     box-shadow:0 0 0 3px rgba(31,103,98,.15);
 
@@ -145,7 +145,7 @@ select{
 
     border-radius:10px;
 
-    background:#1F6762;
+    background:#141414;
 
     color:#fff;
 
@@ -161,7 +161,7 @@ select{
 
 .login-box button:hover{
 
-    background:#17524D;
+    background:#000000;
 
     transform:translateY(-2px);
 
@@ -183,7 +183,7 @@ select{
 
 .primary-btn{
 
-    background:#1F6762;
+    background:#141414;
 
     color:#fff;
 
@@ -201,7 +201,7 @@ select{
 
 .primary-btn:hover{
 
-    background:#17524D;
+    background:#000000;
 
 }
 
@@ -223,7 +223,7 @@ select{
 
 .form-control:focus{
 
-    border-color:#1F6762;
+    border-color:#F5B301;
 
 }/* =========================================================
    VO RECOVERY MANAGER
@@ -243,7 +243,7 @@ select{
 .sidebar{
 
     width:260px;
-    background:#16211F;
+    background:#0D0D0D;
     color:#fff;
 
     position:fixed;
@@ -274,7 +274,7 @@ select{
 
 .logo h2{
 
-    color:#3FA79D;
+    color:#F5B301;
 
     font-size:30px;
 
@@ -330,7 +330,7 @@ select{
 
 .menu li a:hover{
 
-    background:#1F6762;
+    background:#141414;
 
     color:#fff;
 
@@ -340,11 +340,11 @@ select{
 
 .menu li a.active{
 
-    background:#1F6762;
+    background:#141414;
 
     color:#fff;
 
-    box-shadow:0 10px 20px rgba(31,103,98,.35);
+    box-shadow:0 10px 20px rgba(245,179,1,.4);
 
 }
 
@@ -388,7 +388,7 @@ select{
 
     font-size:30px;
 
-    color:#16211F;
+    color:#141414;
 
 }
 
@@ -412,7 +412,7 @@ select{
 
     gap:10px;
 
-    background:#1F6762;
+    background:#141414;
 
     color:#fff;
 
@@ -434,7 +434,7 @@ select{
 
     font-weight:700;
 
-    color:#16211F;
+    color:#141414;
 
     margin-bottom:5px;
 
@@ -514,7 +514,7 @@ select{
 
 .card.blue{
 
-    border-left:6px solid #1F6762;
+    border-left:6px solid #F5B301;
 
 }
 
@@ -570,7 +570,7 @@ select{
 
     font-size:34px;
 
-    color:#16211F;
+    color:#141414;
 
     font-weight:700;
 
@@ -622,7 +622,7 @@ select{
 
 .action-card:hover{
 
-    background:#1F6762;
+    background:#141414;
 
     color:#fff;
 
@@ -674,7 +674,7 @@ select{
 
 .summary-bar h2{
 
-    color:#16211F;
+    color:#141414;
 
     font-size:28px;
 
@@ -742,7 +742,7 @@ select{
 
 .table-section h2{
     font-size:24px;
-    color:#16211F;
+    color:#141414;
     margin-bottom:20px;
 }
 
@@ -751,7 +751,7 @@ select{
 .search-box{
     width:100%;
     padding:14px 18px;
-    border:1px solid #CFE3E0;
+    border:1px solid #E0E0E0;
     border-radius:12px;
     outline:none;
     font-size:15px;
@@ -760,8 +760,8 @@ select{
 }
 
 .search-box:focus{
-    border-color:#1F6762;
-    box-shadow:0 0 0 4px rgba(31,103,98,.15);
+    border-color:#F5B301;
+    box-shadow:0 0 0 4px rgba(245,179,1,.2);
 }
 
 /* ---------- TABLE ---------- */
@@ -773,8 +773,8 @@ table{
 }
 
 thead{
-    background:#1F6762;
-    color:#fff;
+    background:#141414;
+    color:#F5B301;
 }
 
 thead th{
@@ -829,7 +829,7 @@ tbody tr:hover{
 /* ---------- ADD BUTTON ---------- */
 
 .add-btn{
-    background:#1F6762;
+    background:#141414;
     color:#fff;
     border:none;
     padding:13px 22px;
@@ -840,7 +840,7 @@ tbody tr:hover{
 }
 
 .add-btn:hover{
-    background:#17524D;
+    background:#000000;
 }
 
 /* ---------- MODAL ---------- */
@@ -908,7 +908,7 @@ form select{
 
     width:100%;
     padding:12px 14px;
-    border:1px solid #CFE3E0;
+    border:1px solid #E0E0E0;
     border-radius:10px;
     outline:none;
     transition:.3s;
@@ -924,7 +924,7 @@ form input:focus,
 form textarea:focus,
 form select:focus{
 
-    border-color:#1F6762;
+    border-color:#F5B301;
     box-shadow:0 0 0 3px rgba(31,103,98,.12);
 
 }
@@ -1130,7 +1130,7 @@ background:#f1f5f9;
 
 ::-webkit-scrollbar-thumb{
 
-background:#1F6762;
+background:#F5B301;
 
 border-radius:30px;
 
@@ -1138,7 +1138,7 @@ border-radius:30px;
 
 ::-webkit-scrollbar-thumb:hover{
 
-background:#17524D;
+background:#D99A00;
 
 }
 
@@ -1152,7 +1152,7 @@ height:50px;
 
 border:5px solid #e2e8f0;
 
-border-top:5px solid #1F6762;
+border-top:5px solid #F5B301;
 
 border-radius:50%;
 
@@ -1234,7 +1234,7 @@ text-align:left;
 
 .text-primary{
 
-color:#1F6762;
+color:#8a6a00;
 
 }
 
@@ -1260,7 +1260,7 @@ color:#f59e0b;
 
 .bg-primary{
 
-background:#1F6762;
+background:#141414;
 
 color:#fff;
 
@@ -1395,7 +1395,7 @@ border:none;
     }
 
     thead {
-        background: #1F6762 !important;
+        background: #141414 !important;
         color: #fff !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
@@ -1436,30 +1436,30 @@ border:none;
 ========================================================= */
 
 :root {
-  --accent: #3FA79D;
-  --accent-soft: rgba(63,167,157,0.15);
-  --navy: #16211F;
-  --blue: #1F6762;
-  --blue-dark: #0E4D4B;
+  --accent: #F5B301;
+  --accent-soft: rgba(245,179,1,0.15);
+  --navy: #141414;
+  --blue: #141414;
+  --blue-dark: #000000;
   --surface: #ffffff;
   --muted: #64748b;
   --radius: 16px;
-  --shadow: 0 10px 30px rgba(22,33,31,0.08);
-  --shadow-hover: 0 18px 40px rgba(22,33,31,0.14);
+  --shadow: 0 10px 30px rgba(0,0,0,0.1);
+  --shadow-hover: 0 18px 40px rgba(0,0,0,0.16);
 }
 
 body {
-  background: linear-gradient(180deg, #f1f5f9 0%, #E6EFEE 100%);
+  background: linear-gradient(180deg, #f1f5f9 0%, #FAF6E9 100%);
   -webkit-font-smoothing: antialiased;
 }
 
 .sidebar {
-  background: linear-gradient(180deg, #0A1F1D 0%, #16211F 60%, #142B28 100%);
+  background: linear-gradient(180deg, #0D0D0D 0%, #141414 60%, #1A1A1A 100%);
   border-right: 1px solid rgba(63,167,157,0.12);
 }
 
 .logo h2 {
-  background: linear-gradient(90deg, var(--accent), #7DB8B4);
+  background: linear-gradient(90deg, var(--accent), #FFD666);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -1470,8 +1470,8 @@ body {
 }
 .menu li a:hover,
 .menu li a.active {
-  background: linear-gradient(135deg, #0E4D4B, #1F6762);
-  box-shadow: 0 8px 24px rgba(31,103,98,0.35);
+  background: linear-gradient(135deg, #000000, #141414);
+  box-shadow: 0 8px 24px rgba(245,179,1,0.3);
   border-color: rgba(255,255,255,0.08);
 }
 
@@ -1489,21 +1489,21 @@ body {
   border-color: rgba(63,167,157,0.25);
 }
 
-.card.blue { border-left: 5px solid #1F6762; }
+.card.blue { border-left: 5px solid #F5B301; }
 .card.green { border-left: 5px solid #16a34a; }
 .card.orange { border-left: 5px solid #f59e0b; }
 .card.red { border-left: 5px solid #ef4444; }
 
 .add-btn, .primary-btn, .btn-login {
-  background: linear-gradient(135deg, #0E4D4B, #1F6762);
-  box-shadow: 0 6px 16px rgba(31,103,98,0.25);
+  background: linear-gradient(135deg, #000000, #141414);
+  box-shadow: 0 6px 16px rgba(245,179,1,0.25);
   border-radius: 12px;
   font-weight: 600;
   transition: .25s;
 }
 .add-btn:hover, .primary-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 24px rgba(31,103,98,0.35);
+  box-shadow: 0 10px 24px rgba(245,179,1,0.35);
 }
 
 .table-section, .content-box {
@@ -1512,19 +1512,19 @@ body {
 }
 
 thead {
-  background: linear-gradient(135deg, #0E4D4B, #1F6762);
+  background: linear-gradient(135deg, #000000, #141414);
 }
 
 .user-info {
-  background: linear-gradient(135deg, #0E4D4B, #1F6762);
-  box-shadow: 0 8px 20px rgba(31,103,98,0.3);
+  background: linear-gradient(135deg, #000000, #141414);
+  box-shadow: 0 8px 20px rgba(245,179,1,0.3);
 }
 
 .action-card {
   border: 1px solid rgba(22,33,31,0.05);
 }
 .action-card:hover {
-  background: linear-gradient(135deg, #0E4D4B, #1F6762);
+  background: linear-gradient(135deg, #000000, #141414);
   border-color: transparent;
 }
 
@@ -1543,7 +1543,7 @@ thead {
   right: 28px;
   padding: 14px 22px;
   border-radius: 12px;
-  background: #16211F;
+  background: #141414;
   color: #fff;
   font-size: 14px;
   font-weight: 500;
@@ -1689,7 +1689,7 @@ input:focus, select:focus, textarea:focus {
 .modal-content h3 {
     font-size: 22px !important;
     font-weight: 700;
-    color: #16211F;
+    color: #141414;
     margin: 0 0 6px;
     letter-spacing: -0.02em;
 }
@@ -1727,7 +1727,7 @@ input:focus, select:focus, textarea:focus {
     border-radius: 12px !important;
     background: #f8fafc !important;
     font-size: 15px !important;
-    color: #16211F;
+    color: #141414;
     transition: 0.2s;
     box-sizing: border-box;
 }
@@ -1739,7 +1739,7 @@ input:focus, select:focus, textarea:focus {
 .content-box input:focus,
 .content-box select:focus,
 .form-control:focus {
-    border-color: #3FA79D !important;
+    border-color: #F5B301 !important;
     background: #fff !important;
     box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.12) !important;
     outline: none;
@@ -1773,7 +1773,7 @@ input:focus, select:focus, textarea:focus {
 .content-box h2 {
     font-size: 20px !important;
     font-weight: 700;
-    color: #16211F;
+    color: #141414;
     margin-bottom: 4px;
 }
 
@@ -1877,7 +1877,7 @@ button[onclick*="Print"] {
     left: 0;
     right: 0;
     height: 3px;
-    background: linear-gradient(90deg, #0E4D4B, #3FA79D);
+    background: linear-gradient(90deg, #000000, #F5B301);
     opacity: 0.85;
 }
 
@@ -1919,19 +1919,19 @@ input[id*="Code"] {
    BK Recovery Manager – Baraka Dark Teal Sidebar/Card Theme (v4)
 ========================================================= */
 :root {
-  --bg: #0A1F1D;
-  --bg-2: #142B28;
-  --card: #1B2E2B;
-  --card-2: #203732;
-  --border: rgba(63,167,157,0.18);
-  --teal: #3FA79D;
-  --teal-2: #2E8C84;
-  --teal-dark: #1F6762;
+  --bg: #0D0D0D;
+  --bg-2: #1A1A1A;
+  --card: #1F1F1F;
+  --card-2: #262626;
+  --border: rgba(245,179,1,0.18);
+  --teal: #F5B301;
+  --teal-2: #000000;
+  --teal-dark: #141414;
   --text: #e2e8f0;
   --muted: #94a3b8;
   --danger: #f87171;
   --ok: #34d399;
-  --sidebar: #0A211F;
+  --sidebar: #0D0D0D;
 }
 
 body {
@@ -1940,7 +1940,7 @@ body {
 }
 
 .sidebar {
-  background: linear-gradient(180deg, #0A211F 0%, #0f1c2e 100%) !important;
+  background: linear-gradient(180deg, #0D0D0D 0%, #0f1c2e 100%) !important;
   border-right: 1px solid var(--border);
 }
 
@@ -1986,14 +1986,14 @@ body {
 
 table { color: var(--text); }
 thead, th {
-  background: #1F6762 !important;
-  color: #fff !important;
+  background: #141414 !important;
+  color: #F5B301 !important;
 }
 td { border-color: rgba(148,163,184,0.12) !important; }
 tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
 
 input, select, textarea, .form-control {
-  background: #16211F !important;
+  background: #141414 !important;
   border: 1.5px solid rgba(63,167,157,0.25) !important;
   color: var(--text) !important;
 }
@@ -2061,7 +2061,7 @@ input:focus, select:focus, textarea:focus {
 
 /* Login dark */
 .login-page, .login-box, body.login-body {
-  background: radial-gradient(ellipse at top, #1F676222, #0A1F1D 60%) !important;
+  background: radial-gradient(ellipse at top, #F5B30122, #0D0D0D 60%) !important;
 }
 .login-box, .login-card {
   background: var(--card) !important;
