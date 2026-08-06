@@ -3,31 +3,7 @@
    CRUD for customers, recoveries, users, shops, settings
 ========================================================== */
 
-/* ---------- LOGIN ---------- */
-async function sbLogin(username, password) {
-    const sb = getSupabase();
-    if (!sb) throw new Error("Supabase not ready");
-
-    const { data, error } = await sb
-        .from("users")
-        .select("id, username, password, role, shop_id, display_name, is_active")
-        .eq("username", username.trim())
-        .eq("password", password.trim())
-        .eq("is_active", true)
-        .maybeSingle();
-
-    if (error) throw error;
-    if (!data) return null;
-
-    let shop = null;
-    if (data.shop_id) {
-        const { data: s } = await sb.from("shops").select("*").eq("id", data.shop_id).maybeSingle();
-        shop = s;
-    }
-
-    setSession(data, shop);
-    return { user: data, shop };
-}
+/* LOGIN is handled in auth.js (sbLogin with shop/license checks) */
 
 /* ---------- SHOPS ---------- */
 async function sbGetShops() {
@@ -354,7 +330,6 @@ async function supabaseBoot() {
 }
 
 // Export
-window.sbLogin = sbLogin;
 window.sbGetShops = sbGetShops;
 window.sbGetCustomers = sbGetCustomers;
 window.sbSaveCustomer = sbSaveCustomer;
