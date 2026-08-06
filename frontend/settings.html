@@ -1168,14 +1168,16 @@ JAVASCRIPT
 ========================= -->
 
 
-<!-- Supabase SDK -->
-
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/db.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/app.js"></script>
+<script src="js/company.js"></script>
+<script src="js/excel-import.js"></script>
 
 <script>
-
-// Check Login
-
 if(typeof checkLogin==="function"){
 
     checkLogin();
@@ -1230,22 +1232,10 @@ setInterval(function(){
 
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/supabase.js"></script>
-<script src="js/utils.js"></script>
-<script src="js/db.js"></script>
-<script src="js/auth.js"></script>
-<script src="js/app.js"></script>
-<script src="js/company.js"></script>
-<script src="js/excel-import.js"></script>
-
 <script>
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){});}
 </script>
+
 </body>
 
 </html>
-
-<!-- =========================
-END OF settings.html
-========================= -->

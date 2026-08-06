@@ -819,34 +819,7 @@ JAVASCRIPT
 ========================= -->
 
 
-<!-- Firebase SDK -->
-
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
-<script>
-
-// Auto Refresh Every 30 Seconds
-
-setInterval(function(){
-
-    if(typeof refreshProject === "function"){
-
-        refreshProject();
-
-    }
-
-},30000);
-
-// Dashboard Statistics Refresh
-
-if(typeof updateDashboard === "function"){
-
-    updateDashboard();
-
-}
-
-</script>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase.js"></script>
@@ -858,12 +831,16 @@ if(typeof updateDashboard === "function"){
 <script src="js/excel-import.js"></script>
 
 <script>
+setInterval(function(){
+    if (typeof refreshProject === "function") refreshProject();
+}, 30000);
+if (typeof updateDashboard === "function") updateDashboard();
+</script>
+
+<script>
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){});}
 </script>
+
 </body>
 
 </html>
-
-<!-- =========================
-END OF customers.html
-========================= -->

@@ -717,68 +717,6 @@ JAVASCRIPT
 ========================= -->
 
 
-<!-- Firebase SDK -->
-
-
-
-<script>
-
-// Check Login
-
-if(typeof checkLogin==="function"){
-
-    checkLogin();
-
-}
-
-// Load Customer List
-
-if(typeof loadRecoveryCustomers==="function"){
-
-    loadRecoveryCustomers();
-
-}
-
-// Load Recovery Table
-
-if(typeof loadRecoveryTable==="function"){
-
-    loadRecoveryTable();
-
-}
-
-// Update Dashboard
-
-if(typeof updateDashboard==="function"){
-
-    updateDashboard();
-
-}
-
-// Set Today's Date
-
-const recoveryDate=document.getElementById("recoveryDate");
-
-if(recoveryDate){
-
-    recoveryDate.value=new Date().toISOString().split("T")[0];
-
-}
-
-// Auto Refresh Every 30 Seconds
-
-setInterval(function(){
-
-    if(typeof refreshProject==="function"){
-
-        refreshProject();
-
-    }
-
-},30000);
-
-</script>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase.js"></script>
 <script src="js/utils.js"></script>
@@ -789,12 +727,21 @@ setInterval(function(){
 <script src="js/excel-import.js"></script>
 
 <script>
+if (typeof checkLogin === "function") checkLogin();
+if (typeof loadRecoveryCustomers === "function") loadRecoveryCustomers();
+if (typeof loadRecoveryTable === "function") loadRecoveryTable();
+if (typeof updateDashboard === "function") updateDashboard();
+var recoveryDate = document.getElementById("recoveryDate");
+if (recoveryDate) recoveryDate.value = new Date().toISOString().split("T")[0];
+setInterval(function(){
+    if (typeof refreshProject === "function") refreshProject();
+}, 30000);
+</script>
+
+<script>
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){});}
 </script>
+
 </body>
 
 </html>
-
-<!-- =========================
-END OF recovery.html
-========================= -->

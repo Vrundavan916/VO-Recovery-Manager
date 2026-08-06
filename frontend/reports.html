@@ -909,79 +909,6 @@ JAVASCRIPT
 ========================= -->
 
 
-<!-- Firebase SDK -->
-
-
-
-<script>
-
-// Check Login
-
-if(typeof checkLogin==="function"){
-
-    checkLogin();
-
-}
-
-// Load Reports
-
-if(typeof loadReports==="function"){
-
-    loadReports();
-
-}
-
-// Refresh Dashboard Data
-
-if(typeof updateDashboard==="function"){
-
-    updateDashboard();
-
-}
-
-// Auto Load Today's Date
-
-const today=new Date().toISOString().split("T")[0];
-
-const fromDate=document.getElementById("fromDate");
-const toDate=document.getElementById("toDate");
-
-if(fromDate && fromDate.value===""){
-
-    fromDate.value=today;
-
-}
-
-if(toDate && toDate.value===""){
-
-    toDate.value=today;
-
-}
-
-// Auto Refresh Every 30 Seconds
-
-setInterval(function(){
-
-    if(typeof refreshProject==="function"){
-
-        refreshProject();
-
-    }
-
-},30000);
-
-
-try {
-  const s = JSON.parse(localStorage.getItem("settings")||"{}");
-  if (s.company) {
-    const el = document.getElementById("printCompanyName");
-    if (el) el.innerText = s.company;
-  }
-  const d = document.getElementById("printDateLine");
-  if (d) d.innerText = "Printed: " + new Date().toLocaleString("en-IN");
-} catch(e){}
-</script>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/supabase.js"></script>
 <script src="js/utils.js"></script>
@@ -992,12 +919,32 @@ try {
 <script src="js/excel-import.js"></script>
 
 <script>
+if (typeof checkLogin === "function") checkLogin();
+if (typeof loadReports === "function") loadReports();
+if (typeof updateDashboard === "function") updateDashboard();
+var today = new Date().toISOString().split("T")[0];
+var fromDate = document.getElementById("fromDate");
+var toDate = document.getElementById("toDate");
+if (fromDate && fromDate.value === "") fromDate.value = today;
+if (toDate && toDate.value === "") toDate.value = today;
+setInterval(function(){
+    if (typeof refreshProject === "function") refreshProject();
+}, 30000);
+try {
+  var s = JSON.parse(localStorage.getItem("settings") || "{}");
+  if (s.company) {
+    var el = document.getElementById("printCompanyName");
+    if (el) el.innerText = s.company;
+  }
+  var d = document.getElementById("printDateLine");
+  if (d) d.innerText = "Printed: " + new Date().toLocaleString("en-IN");
+} catch (e) {}
+</script>
+
+<script>
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){});}
 </script>
+
 </body>
 
 </html>
-
-<!-- =========================
-END OF reports.html
-========================= -->
