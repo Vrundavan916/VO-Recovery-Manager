@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#141414">
+<meta name="theme-color" content="#0B1220">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Login | BK Recovery Manager</title>
@@ -11,54 +11,54 @@
 <style>
 body.login-body{
     margin:0;min-height:100vh;display:flex;justify-content:center;align-items:center;
-    background:radial-gradient(ellipse at 20% 20%,rgba(245,179,1,0.18) 0%,transparent 50%),
-        radial-gradient(ellipse at 80% 80%,rgba(0,0,0,0.3) 0%,transparent 50%),
-        linear-gradient(145deg,#0D0D0D 0%,#1A1A1A 40%,#000000 100%);
+    background:radial-gradient(ellipse at 20% 20%,rgba(212,175,55,0.14) 0%,transparent 50%),
+        radial-gradient(ellipse at 80% 80%,rgba(212,175,55,0.06) 0%,transparent 50%),
+        linear-gradient(150deg,#0A0F1D 0%,#0B1220 55%,#0D1526 100%);
     font-family:'Segoe UI',system-ui,-apple-system,sans-serif;padding:20px;
 }
 .login-card{
-    width:100%;max-width:420px;background:rgba(255,255,255,0.97);backdrop-filter:blur(20px);
-    border-radius:24px;padding:40px 36px 32px;
-    box-shadow:0 25px 60px rgba(0,0,0,.4),0 0 0 1px rgba(245,179,1,0.25);
+    width:100%;max-width:420px;background:#1A2233;backdrop-filter:blur(20px);
+    border-radius:20px;padding:40px 36px 32px;border:1px solid rgba(212,175,55,.16);
+    box-shadow:0 25px 60px rgba(0,0,0,.5),0 0 0 1px rgba(212,175,55,0.08);
     text-align:center;animation:fadeUp .5s ease;
 }
 @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-.login-logo{width:88px;height:88px;object-fit:contain;margin:0 auto 14px;border-radius:18px;
-    background:linear-gradient(135deg,#FAF6E9,#f8fafc);padding:10px;border:1px solid rgba(245,179,1,0.4);
-    box-shadow:0 8px 24px rgba(245,179,1,0.2)}
-.login-company{font-size:17px;font-weight:700;color:#141414;margin:0 0 4px}
-.login-software{font-size:13px;color:#64748b;margin:0 0 24px}
-.login-card h2{margin:0 0 20px;color:#141414;font-size:22px;font-weight:700}
-.login-card h2 i{color:#F5B301;margin-right:6px}
-.login-card label{display:block;text-align:left;font-weight:600;color:#334155;margin:14px 0 6px;font-size:13px}
+.login-logo{width:88px;height:88px;object-fit:contain;margin:0 auto 14px;border-radius:16px;
+    background:#fff;padding:10px;border:1px solid rgba(212,175,55,0.35);
+    box-shadow:0 8px 24px rgba(212,175,55,0.2)}
+.login-company{font-size:17px;font-weight:700;color:#fff;margin:0 0 4px}
+.login-software{font-size:13px;color:#9CA6B8;margin:0 0 24px}
+.login-card h2{margin:0 0 20px;color:#fff;font-size:22px;font-weight:700}
+.login-card h2 i{color:#D4AF37;margin-right:6px}
+.login-card label{display:block;text-align:left;font-weight:600;color:#9CA6B8;margin:14px 0 6px;font-size:13px}
 .login-card input[type="text"],.login-card input[type="password"]{
-    width:100%;padding:13px 16px;border:1.5px solid #e2e8f0;border-radius:12px;font-size:15px;
-    box-sizing:border-box;outline:none;transition:.25s;background:#f8fafc}
-.login-card input:focus{border-color:#F5B301;background:#fff;box-shadow:0 0 0 4px rgba(245,179,1,.18)}
+    width:100%;padding:13px 16px;border:1.5px solid rgba(255,255,255,.09);border-radius:12px;font-size:15px;
+    box-sizing:border-box;outline:none;transition:.25s;background:rgba(255,255,255,.03);color:#fff}
+.login-card input:focus{border-color:#D4AF37;background:rgba(255,255,255,.05);box-shadow:0 0 0 4px rgba(212,175,55,.18)}
 .remember-row{display:flex;align-items:center;gap:8px;margin-top:14px;text-align:left}
-.remember-row input{width:auto;accent-color:#141414}
-.remember-row label{margin:0;font-weight:500;color:#64748b;font-size:13px;cursor:pointer}
+.remember-row input{width:auto;accent-color:#D4AF37}
+.remember-row label{margin:0;font-weight:500;color:#9CA6B8;font-size:13px;cursor:pointer}
 .btn-login{width:100%;margin-top:22px;padding:15px;border:none;border-radius:12px;
-    background:linear-gradient(135deg,#000000,#141414);color:#fff;font-size:16px;font-weight:600;
-    cursor:pointer;transition:.3s;box-shadow:0 8px 20px rgba(245,179,1,.35)}
-.btn-login:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(245,179,1,.5)}
+    background:linear-gradient(135deg,#D4AF37,#B8912C);color:#0B1220;font-size:16px;font-weight:700;
+    cursor:pointer;transition:.3s;box-shadow:0 10px 24px rgba(212,175,55,.32)}
+.btn-login:hover{transform:translateY(-2px);box-shadow:0 14px 30px rgba(212,175,55,.45)}
 .btn-login:disabled{opacity:.7;cursor:wait;transform:none}
-.btn-forgot{margin-top:16px;background:none;border:none;color:#8a6a00;font-size:13px;cursor:pointer;font-weight:500}
+.btn-forgot{margin-top:16px;background:none;border:none;color:#E8C766;font-size:13px;cursor:pointer;font-weight:500}
 .btn-forgot:hover{text-decoration:underline}
-.login-footer{margin-top:22px;font-size:12px;color:#94a3b8}
-.login-footer span{color:#8a6a00;font-weight:600}
-.forgot-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;
+.login-footer{margin-top:22px;font-size:12px;color:#6B7690}
+.login-footer span{color:#E8C766;font-weight:600}
+.forgot-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9999;
     align-items:center;justify-content:center;padding:20px}
 .forgot-modal.show{display:flex}
-.forgot-box{background:#fff;border-radius:18px;padding:28px;max-width:400px;width:100%;
-    box-shadow:0 20px 50px rgba(0,0,0,.3)}
-.forgot-box h3{margin:0 0 8px;color:#141414}
-.forgot-box p{color:#64748b;font-size:13px;margin:0 0 16px}
-.forgot-box input{width:100%;padding:12px 14px;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:12px;box-sizing:border-box}
+.forgot-box{background:#1A2233;border:1px solid rgba(212,175,55,.16);border-radius:18px;padding:28px;max-width:400px;width:100%;
+    box-shadow:0 20px 50px rgba(0,0,0,.5)}
+.forgot-box h3{margin:0 0 8px;color:#fff}
+.forgot-box p{color:#9CA6B8;font-size:13px;margin:0 0 16px}
+.forgot-box input{width:100%;padding:12px 14px;border:1px solid rgba(255,255,255,.1);border-radius:10px;margin-bottom:12px;box-sizing:border-box;background:rgba(255,255,255,.03);color:#fff}
 .forgot-actions{display:flex;gap:10px;margin-top:8px}
 .forgot-actions button{flex:1;padding:12px;border:none;border-radius:10px;font-weight:600;cursor:pointer}
-.forgot-actions .btn-primary{background:#141414;color:#fff}
-.forgot-actions .btn-secondary{background:#f1f5f9;color:#334155}
+.forgot-actions .btn-primary{background:linear-gradient(135deg,#D4AF37,#B8912C);color:#0B1220}
+.forgot-actions .btn-secondary{background:rgba(255,255,255,.06);color:#9CA6B8}
 </style>
 </head>
 <body class="login-body">
