@@ -71,6 +71,7 @@ database/
 - Expired / inactive shops cannot login (shop staff).
 - Passwords are stored plain to match original app simplicity — hash before commercial production if required.
 
+
 ## Developed by
 
 **BK Design Hub** · BK Recovery Manager Commercial Edition
