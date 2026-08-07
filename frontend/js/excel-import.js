@@ -100,8 +100,8 @@ function rowToCustomer(row) {
     };
 
     const name = get(["Customer Name", "customer name", "Name", "name", "Customer"], 0);
-    const mobile = get(["Mobile", "mobile", "Mobile Number", "Phone"], 2);
-    if (!name || !mobile) return null;
+    const mobile = get(["Mobile", "mobile", "Mobile Number", "Phone", "Mobile No", "Mobile No."], 2);
+    if (!name || !mobile) return { error: !name && !mobile ? "Name & Mobile khali che" : (!name ? "Name khali che" : "Mobile khali che") };
 
     const bill = parseFloat(get(["Bill Amount", "bill amount", "Bill", "Total Bill"], 8)) || 0;
     const down = parseFloat(get(["Down Payment", "down payment", "Down"], 9)) || 0;
@@ -156,16 +156,19 @@ function importCustomersFromExcel(file, options) {
                 }
 
                 const imported = [];
-                const skipped = [];
+                const skipReasons = [];
 
                 rows.forEach((row, i) => {
                     const c = rowToCustomer(row);
-                    if (c) imported.push(c);
-                    else skipped.push(i + 2);
+                    if (c && !c.error) {
+                        imported.push(c);
+                    } else {
+                        skipReasons.push("Row " + (i + 2) + ": " + (c && c.error ? c.error : "invalid data"));
+                    }
                 });
 
                 if (!imported.length) {
-                    reject(new Error("Valid customer rows મળ્યા નથી. Template headers check કરો."));
+                    reject(new Error("Valid customer rows મળ્યા નથી. Template headers check કરો.\n\n" + skipReasons.join("\n")));
                     return;
                 }
 
@@ -183,7 +186,8 @@ function importCustomersFromExcel(file, options) {
                     resolve({
                         total: imported.length,
                         saved: saved.length,
-                        skipped: skipped.length
+                        skipped: skipReasons.length,
+                        skipReasons: skipReasons
                     });
                 } else {
                     // append - skip duplicate mobiles client-side against current list
@@ -191,7 +195,7 @@ function importCustomersFromExcel(file, options) {
                     const unique = [];
                     imported.forEach(c => {
                         if (existingMobiles.has(String(c.mobile))) {
-                            skipped.push(c.mobile);
+                            skipReasons.push("Mobile " + c.mobile + " (" + c.name + "): pehla thi database ma che (duplicate)");
                         } else {
                             unique.push(c);
                             existingMobiles.add(String(c.mobile));
@@ -202,7 +206,8 @@ function importCustomersFromExcel(file, options) {
                     resolve({
                         total: imported.length,
                         saved: saved.length,
-                        skipped: skipped.length
+                        skipped: skipReasons.length,
+                        skipReasons: skipReasons
                     });
                 }
             } catch (err) {
@@ -224,9 +229,13 @@ function handleCustomerExcelUpload(event) {
 
     importCustomersFromExcel(file, { mode })
         .then(res => {
-            alert("✅ Excel Import Successful!\n\nImported rows: " + res.total +
+            let msg = "✅ Excel Import Successful!\n\nImported rows: " + res.total +
                 "\nSaved: " + res.saved +
-                "\nSkipped: " + res.skipped);
+                "\nSkipped: " + res.skipped;
+            if (res.skipReasons && res.skipReasons.length) {
+                msg += "\n\nSkip reasons:\n" + res.skipReasons.join("\n");
+            }
+            alert(msg);
             event.target.value = "";
         })
         .catch(err => {
