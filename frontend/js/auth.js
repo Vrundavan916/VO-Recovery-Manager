@@ -100,6 +100,15 @@ async function checkLogin() {
 
     const role = session.role;
 
+    // Super Admin should never see individual shop/customer data (privacy/trust).
+    // Only Super Dashboard (aggregate numbers), Company Management, Subscription allowed.
+    const superAdminBlockedPages = ["dashboard.html", "customers.html", "recovery.html", "reports.html"];
+    if (role === "super_admin" && superAdminBlockedPages.some(p => page.includes(p))) {
+        alert("Super Admin ne shop-level customer data joi shakay nahi (privacy policy). Super Dashboard par redirect thai rahya cho.");
+        window.location.href = "super-dashboard.html";
+        return;
+    }
+
     if (role !== "super_admin") {
         try {
             const status = await sbGetMaintenanceStatus();
@@ -179,7 +188,19 @@ function applyRoleRestrictions() {
         shopLabel.innerText = session.shopName || (role === "super_admin" ? "All Shops" : "");
     }
 
-    if (role === "admin" || role === "super_admin") return;
+    if (role === "super_admin") {
+        // Hide shop-level data links from Super Admin (privacy - no customer PII access)
+        ["dashboard.html", "customers.html", "recovery.html", "reports.html"].forEach(href => {
+            document.querySelectorAll('a[href="' + href + '"]').forEach(link => {
+                const li = link.closest("li");
+                if (li) li.style.display = "none";
+                else link.style.display = "none";
+            });
+        });
+        return;
+    }
+
+    if (role === "admin") return;
 
     document.querySelectorAll('a[href="settings.html"]').forEach(link => {
         link.style.display = "none";
