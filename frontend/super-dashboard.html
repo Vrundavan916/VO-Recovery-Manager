@@ -111,6 +111,28 @@
 <section class="table-section fade">
     <div class="summary-bar">
         <div>
+            <h2><i class="fa-solid fa-power-off"></i> Website Maintenance Mode</h2>
+            <span>Website off karo to badha shops na users login/dashboard access nahi kari shake (Super Admin j chalu rakhi shake)</span>
+        </div>
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+            <span id="maintStatusLabel" style="font-weight:700;color:#2ecc71;">Website ON</span>
+            <span style="position:relative;display:inline-block;width:52px;height:28px;">
+                <input type="checkbox" id="maintenanceToggle" onchange="toggleMaintenanceMode()" style="opacity:0;width:0;height:0;">
+                <span id="maintSwitchTrack" style="position:absolute;cursor:pointer;inset:0;background:#ccc;border-radius:28px;transition:.2s;"></span>
+                <span id="maintSwitchKnob" style="position:absolute;height:22px;width:22px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;"></span>
+            </span>
+        </label>
+    </div>
+    <div style="padding:0 20px 20px;">
+        <label style="font-size:13px;color:#7a8699;font-weight:600;">Message users ne dekhashe (off hoy tyare):</label>
+        <textarea id="maintenanceMessage" rows="2" style="width:100%;margin-top:6px;padding:10px;border-radius:8px;border:1px solid #ddd;font-family:inherit;" placeholder="Amara system ma have update chalu che. Thoda time ma pacha aavo."></textarea>
+        <button class="add-btn" style="margin-top:10px;" onclick="saveMaintenanceMessage()"><i class="fa-solid fa-floppy-disk"></i> Message Save Karo</button>
+    </div>
+</section>
+
+<section class="table-section fade">
+    <div class="summary-bar">
+        <div>
             <h2>Shop-wise Overview</h2>
             <span>License status per shop</span>
         </div>
@@ -153,6 +175,72 @@
 
 <script>
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){});}
+</script>
+
+<script>
+async function loadMaintenanceUI() {
+    try {
+        const status = await sbGetMaintenanceStatus();
+        document.getElementById("maintenanceToggle").checked = status.enabled;
+        document.getElementById("maintenanceMessage").value = status.message || "";
+        renderMaintSwitch(status.enabled);
+    } catch (e) { console.error("loadMaintenanceUI", e); }
+}
+
+function renderMaintSwitch(on) {
+    const track = document.getElementById("maintSwitchTrack");
+    const knob = document.getElementById("maintSwitchKnob");
+    const label = document.getElementById("maintStatusLabel");
+    if (!track || !knob || !label) return;
+    if (on) {
+        track.style.background = "#e74c3c";
+        knob.style.transform = "translateX(24px)";
+        label.textContent = "Website OFF (Maintenance)";
+        label.style.color = "#e74c3c";
+    } else {
+        track.style.background = "#2ecc71";
+        knob.style.transform = "translateX(0)";
+        label.textContent = "Website ON";
+        label.style.color = "#2ecc71";
+    }
+}
+
+async function toggleMaintenanceMode() {
+    const checkbox = document.getElementById("maintenanceToggle");
+    const enabled = checkbox.checked;
+    const message = document.getElementById("maintenanceMessage").value.trim();
+
+    if (enabled && !confirm("Website OFF karva mangho cho? Badha shops na users (Super Admin sivay) login/dashboard access nahi kari shake.")) {
+        checkbox.checked = false;
+        return;
+    }
+
+    try {
+        await sbSetMaintenanceMode(enabled, message);
+        renderMaintSwitch(enabled);
+        alert(enabled ? "✅ Website OFF thai gayu. Users ne maintenance message dekhashe." : "✅ Website pacha ON thai gayu.");
+    } catch (e) {
+        console.error(e);
+        alert("Failed: " + (e.message || e));
+        checkbox.checked = !enabled;
+    }
+}
+
+async function saveMaintenanceMessage() {
+    const enabled = document.getElementById("maintenanceToggle").checked;
+    const message = document.getElementById("maintenanceMessage").value.trim();
+    try {
+        await sbSetMaintenanceMode(enabled, message);
+        alert("✅ Message save thai gayu.");
+    } catch (e) {
+        console.error(e);
+        alert("Save failed: " + (e.message || e));
+    }
+}
+
+window.addEventListener("load", function () {
+    setTimeout(loadMaintenanceUI, 600);
+});
 </script>
 </body>
 </html>
