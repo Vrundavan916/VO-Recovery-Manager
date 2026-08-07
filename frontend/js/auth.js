@@ -102,8 +102,9 @@ async function checkLogin() {
 
     // Super Admin should never see individual shop/customer data (privacy/trust).
     // Only Super Dashboard (aggregate numbers), Company Management, Subscription allowed.
-    const superAdminBlockedPages = ["dashboard.html", "customers.html", "recovery.html", "reports.html"];
-    if (role === "super_admin" && superAdminBlockedPages.some(p => page.includes(p))) {
+    // NOTE: check "/dashboard.html" (leading slash) so it does NOT match "super-dashboard.html".
+    const superAdminBlockedPages = ["/dashboard.html", "customers.html", "recovery.html", "reports.html"];
+    if (role === "super_admin" && !page.includes("super-dashboard.html") && superAdminBlockedPages.some(p => page.includes(p))) {
         alert("Super Admin ne shop-level customer data joi shakay nahi (privacy policy). Super Dashboard par redirect thai rahya cho.");
         window.location.href = "super-dashboard.html";
         return;
