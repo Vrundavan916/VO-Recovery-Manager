@@ -559,6 +559,8 @@ async function saveRecovery() {
         if (paymentMode) paymentMode.selectedIndex = 0;
         if (collectedBy) collectedBy.selectedIndex = 0;
         customerId.value = "";
+        const outBox = document.getElementById("recoveryOutstanding");
+        if (outBox) outBox.value = "";
 
         await reloadAllData();
         alert("Recovery Saved Successfully.");
@@ -626,11 +628,45 @@ async function deleteRecovery(index) {
 function loadRecoveryCustomers() {
     const select = document.getElementById("recoveryCustomer");
     if (!select) return;
+    const prev = select.value;
     select.innerHTML = `<option value="">Select Customer</option>`;
-    customers.forEach(customer => {
-        select.innerHTML += `<option value="${customer.id}">${customer.name}</option>`;
+    (customers || []).forEach(customer => {
+        const out = Number(customer.outstanding || 0);
+        const label = customer.name + (out > 0 ? " — ₹" + out.toLocaleString("en-IN") + " due" : " — Paid");
+        select.innerHTML += `<option value="${customer.id}" data-outstanding="${out}">${label}</option>`;
     });
+    if (prev) select.value = prev;
+    onRecoveryCustomerChange();
 }
+
+function onRecoveryCustomerChange() {
+    const select = document.getElementById("recoveryCustomer");
+    const outBox = document.getElementById("recoveryOutstanding");
+    const amtBox = document.getElementById("recoveryAmount");
+    const hint = document.getElementById("recoveryOutHint");
+    if (!select || !outBox) return;
+    if (!select.value) {
+        outBox.value = "";
+        if (hint) hint.textContent = "Customer select karo – pending amount ahiya dekhase";
+        return;
+    }
+    const c = (customers || []).find(x => String(x.id) === String(select.value));
+    const out = c ? Number(c.outstanding || 0) : 0;
+    outBox.value = "₹" + out.toLocaleString("en-IN");
+    if (hint) {
+        hint.textContent = out > 0
+            ? "Max recovery aa outstanding sudhi kari sakay"
+            : "Outstanding 0 – already paid";
+        hint.style.color = out > 0 ? "#b91c1c" : "#15803d";
+    }
+    // optional: prefill amount empty but validate on save
+    if (amtBox && !amtBox.value && out > 0) {
+        amtBox.setAttribute("max", String(out));
+        amtBox.placeholder = "Max ₹" + out.toLocaleString("en-IN");
+    }
+}
+window.onRecoveryCustomerChange = onRecoveryCustomerChange;
+
 
 // ================================
 // Reports
