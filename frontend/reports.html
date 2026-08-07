@@ -11,7 +11,7 @@
 
 <title>Reports | BK Recovery Manager</title>
 
-<link rel="stylesheet" href="css/style.css?v=print1">
+<link rel="stylesheet" href="css/style.css?v=print2">
 
 <link rel="stylesheet"
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
@@ -421,7 +421,7 @@ class="add-btn"
 
 style="background:#f59e0b;"
 
-onclick="printCleanReport()">
+onclick="if(typeof printCleanReport==='function')printCleanReport();else window.print();">
 
 <i class="fa-solid fa-print"></i>
 
@@ -967,7 +967,7 @@ JAVASCRIPT
 <script src="js/utils.js"></script>
 <script src="js/db.js"></script>
 <script src="js/auth.js"></script>
-<script src="js/app.js"></script>
+<script src="js/app.js?v=print2"></script>
 <script src="js/company.js"></script>
 <script src="js/excel-import.js"></script>
 
