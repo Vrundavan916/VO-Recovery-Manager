@@ -1506,59 +1506,71 @@ window.logAudit = logAudit;
 function printCleanReport() {
     try {
         const body = document.getElementById("cprBody");
-        if (!body) {
-            window.print();
-            return;
-        }
-
-        const list = (typeof customers !== "undefined" && customers) ? customers : [];
-        let totalReceived = 0, totalDue = 0;
+        if (!body) { window.print(); return; }
 
         const fromEl = document.getElementById("fromDate");
         const toEl = document.getElementById("toDate");
         const searchEl = document.getElementById("reportSearch");
         const custEl = document.getElementById("reportCustomer");
 
+        // ONLY recoveries in selected period (today if dates = today)
         let recs = (typeof recoveries !== "undefined" && recoveries) ? recoveries.slice() : [];
         if (fromEl && fromEl.value) {
-            recs = recs.filter(function(r){ return String(r.date || r.recovery_date || "").slice(0,10) >= fromEl.value; });
+            recs = recs.filter(function(r){
+                return String(r.date || r.recovery_date || "").slice(0,10) >= fromEl.value;
+            });
         }
         if (toEl && toEl.value) {
-            recs = recs.filter(function(r){ return String(r.date || r.recovery_date || "").slice(0,10) <= toEl.value; });
+            recs = recs.filter(function(r){
+                return String(r.date || r.recovery_date || "").slice(0,10) <= toEl.value;
+            });
         }
-
-        const receivedByCustomer = {};
-        recs.forEach(function(r) {
-            var id = String(r.customerId || r.customer_id || "");
-            receivedByCustomer[id] = (receivedByCustomer[id] || 0) + Number(r.amount || 0);
-        });
-
-        var rows = list.slice();
         if (custEl && custEl.value) {
-            rows = rows.filter(function(c){ return String(c.id) === String(custEl.value); });
+            recs = recs.filter(function(r){
+                return String(r.customerId || r.customer_id) === String(custEl.value);
+            });
         }
         if (searchEl && searchEl.value && searchEl.value.trim()) {
             var q = searchEl.value.trim().toLowerCase();
-            rows = rows.filter(function(c) {
+            recs = recs.filter(function(r){
+                var c = (customers || []).find(function(x){ return String(x.id) === String(r.customerId || r.customer_id); }) || {};
                 return String(c.name || "").toLowerCase().indexOf(q) >= 0
                     || String(c.mobile || "").indexOf(q) >= 0
                     || String(c.village || "").toLowerCase().indexOf(q) >= 0;
             });
         }
 
+        // Group by customer for sheet columns (only who recovered in period)
+        var map = {};
+        recs.forEach(function(r) {
+            var id = String(r.customerId || r.customer_id || "");
+            var c = (customers || []).find(function(x){ return String(x.id) === id; }) || {};
+            if (!map[id]) {
+                map[id] = {
+                    name: c.name || "-",
+                    city: c.village || c.city || c.district || "-",
+                    bill: Number(c.bill || 0),
+                    received: 0,
+                    due: Number(c.outstanding || 0),
+                    comment: c.remarks || ""
+                };
+            }
+            map[id].received += Number(r.amount || 0);
+            if (r.remarks) map[id].comment = r.remarks;
+        });
+
+        var rows = Object.keys(map).map(function(k){ return map[k]; });
+        var totalReceived = 0, totalDue = 0;
+
         if (!rows.length) {
-            body.innerHTML = '<tr><td colspan="7" style="text-align:center">No customer data to print</td></tr>';
+            body.innerHTML = '<tr><td colspan="7" style="text-align:center">Aa period ma koi recovery nathi</td></tr>';
         } else {
-            body.innerHTML = rows.map(function(c, i) {
-                var rec = Number(receivedByCustomer[String(c.id)] || 0);
-                var due = Number(c.outstanding || 0);
-                var totalAmt = Number(c.bill || 0);
-                if (!totalAmt) totalAmt = due + rec;
-                var city = c.village || c.city || c.district || "-";
-                var comment = (c.remarks || "-").toString().replace(/</g, "&lt;");
-                totalReceived += rec;
-                totalDue += due;
-                return "<tr><td>" + (i+1) + "</td><td>" + (c.name || "-") + "</td><td>" + city + "</td><td>₹" + totalAmt.toLocaleString("en-IN") + "</td><td>₹" + rec.toLocaleString("en-IN") + "</td><td>₹" + due.toLocaleString("en-IN") + "</td><td>" + comment + "</td></tr>";
+            body.innerHTML = rows.map(function(r, i) {
+                var totalAmt = r.bill || (r.due + r.received);
+                totalReceived += r.received;
+                totalDue += r.due;
+                var comment = String(r.comment || "-").replace(/</g, "&lt;");
+                return "<tr><td>" + (i+1) + "</td><td>" + r.name + "</td><td>" + r.city + "</td><td>₹" + Number(totalAmt).toLocaleString("en-IN") + "</td><td>₹" + Number(r.received).toLocaleString("en-IN") + "</td><td>₹" + Number(r.due).toLocaleString("en-IN") + "</td><td>" + comment + "</td></tr>";
             }).join("");
         }
 
@@ -1574,9 +1586,8 @@ function printCleanReport() {
         var dl = document.getElementById("cprDateLine");
         if (dl) dl.textContent = "Printed: " + new Date().toLocaleString("en-IN");
         var fl = document.getElementById("cprFilterLine");
-        if (fl) fl.textContent = "Period: " + ((fromEl && fromEl.value) || "All") + " to " + ((toEl && toEl.value) || "All");
+        if (fl) fl.textContent = "Period: " + ((fromEl && fromEl.value) || "All") + " to " + ((toEl && toEl.value) || "All") + " | Recovery only";
 
-        // show print block briefly then print
         var box = document.getElementById("cleanPrintReport");
         if (box) box.style.display = "block";
         setTimeout(function() {
