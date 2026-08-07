@@ -184,34 +184,130 @@ function logout() {
     }
 }
 
+
 function openForgotPassword() {
     const modal = document.getElementById("forgotModal");
-    if (modal) document.getElementById("forgotModal")&&document.getElementById("forgotModal").classList.add("show");
-    else alert("Contact your Super Admin or shop administrator to reset your password.");
+    if (!modal) {
+        alert("Forgot Password form not found.");
+        return;
+    }
+    modal.classList.add("show");
+    modal.style.display = "flex";
+    ["forgotUsername","forgotEmail","forgotNewPass","forgotConfirmPass"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = "";
+    });
 }
 
 function closeForgotPassword() {
     const modal = document.getElementById("forgotModal");
-    if (modal) modal.style.display = "none";
+    if (!modal) return;
+    modal.classList.remove("show");
+    modal.style.display = "none";
 }
 
 async function submitForgotPassword() {
-    const username = (document.getElementById("forgotUsername") || {}).value;
-    const email = (document.getElementById("forgotEmail") || {}).value;
-    if (!username && !email) {
-        alert("Enter your username or recovery email.");
+    const username = (document.getElementById("forgotUsername")?.value || "").trim();
+    const email = (document.getElementById("forgotEmail")?.value || "").trim().toLowerCase();
+    const newPass = document.getElementById("forgotNewPass")?.value || "";
+    const confirmPass = document.getElementById("forgotConfirmPass")?.value || "";
+
+    if (!username) {
+        alert("Username enter karo.");
         return;
     }
-    alert("Password reset request noted. Please contact Super Admin / Shop Admin to reset your password.\n\nUsername: " + (username || "—"));
-    closeForgotPassword();
+    if (!email) {
+        alert("Recovery email enter karo.
+
+Settings ma je Recovery Email save karyu hoy ae.");
+        return;
+    }
+    if (!newPass || newPass.length < 4) {
+        alert("New password minimum 4 characters.");
+        return;
+    }
+    if (newPass !== confirmPass) {
+        alert("New password ane confirm password match nathi thata.");
+        return;
+    }
+
+    try {
+        const sb = getSupabase();
+        if (!sb) {
+            alert("Cloud connection fail.");
+            return;
+        }
+
+        const { data: user, error } = await sb
+            .from("users")
+            .select("id, username, role, shop_id, recovery_email, is_active")
+            .eq("username", username)
+            .maybeSingle();
+
+        if (error) throw error;
+        if (!user) {
+            alert("Username not found.");
+            return;
+        }
+        if (user.is_active === false) {
+            alert("Account inactive che. Super Admin contact karo.");
+            return;
+        }
+
+        let expectedEmail = (user.recovery_email || "").trim().toLowerCase();
+
+        // If user has no recovery_email, try shop settings recovery_email / email
+        if (!expectedEmail && user.shop_id) {
+            const { data: st } = await sb.from("settings").select("recovery_email, email").eq("shop_id", user.shop_id).maybeSingle();
+            expectedEmail = ((st && (st.recovery_email || st.email)) || "").trim().toLowerCase();
+        }
+
+        // Super admin without recovery_email: allow team email match from any settings row with recovery
+        if (!expectedEmail && user.role === "super_admin") {
+            const { data: anySt } = await sb.from("settings").select("recovery_email, email").limit(20);
+            const emails = (anySt || []).map(x => (x.recovery_email || x.email || "").trim().toLowerCase()).filter(Boolean);
+            if (emails.includes(email)) {
+                expectedEmail = email;
+            }
+        }
+
+        if (!expectedEmail) {
+            alert("Aa account par Recovery Email set nathi.
+
+Pehla login kari Settings → Recovery Email save karo,
+athva Super Admin Company Management mathi password reset karo.");
+            return;
+        }
+
+        if (email !== expectedEmail) {
+            alert("Recovery email match nathi thatu.
+
+Sahi registered recovery email nakho.");
+            return;
+        }
+
+        const { error: upErr } = await sb
+            .from("users")
+            .update({ password: newPass })
+            .eq("id", user.id);
+
+        if (upErr) throw upErr;
+
+        alert("✅ Password reset successful!
+
+Username: " + username + "
+Haji nava password thi login karo.");
+        closeForgotPassword();
+        const passInput = document.getElementById("password") || document.querySelector('input[type="password"]');
+        const userInput = document.getElementById("username") || document.querySelector('input[type="text"]');
+        if (userInput) userInput.value = username;
+        if (passInput) passInput.value = "";
+    } catch (e) {
+        console.error(e);
+        alert("Reset failed: " + (e.message || e));
+    }
 }
 
-window.sbLogin = sbLogin;
-window.login = login;
-window.checkLogin = checkLogin;
-window.injectSuperAdminNav = injectSuperAdminNav;
-window.applyRoleRestrictions = applyRoleRestrictions;
-window.logout = logout;
 window.openForgotPassword = openForgotPassword;
 window.closeForgotPassword = closeForgotPassword;
 window.submitForgotPassword = submitForgotPassword;
