@@ -72,7 +72,8 @@ function parseExcelDate(val) {
         return m[3] + "-" + m[2].padStart(2, "0") + "-" + m[1].padStart(2, "0");
     }
     if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
-    return s;
+    // Unrecognized format (e.g. a stray number/text) - don't pass garbage to the DB.
+    return "";
 }
 
 function rowToCustomer(row) {
@@ -83,6 +84,18 @@ function rowToCustomer(row) {
             }
         }
         if (Array.isArray(row) && row[idx] !== undefined) return String(row[idx] || "").trim();
+        return "";
+    };
+
+    // Returns the raw cell value (keeps numbers as numbers) so Excel date
+    // serial numbers (e.g. 46264) can be detected and converted correctly.
+    const getRaw = (keys, idx) => {
+        for (const k of keys) {
+            if (row[k] !== undefined && row[k] !== null && String(row[k]).trim() !== "") {
+                return row[k];
+            }
+        }
+        if (Array.isArray(row) && row[idx] !== undefined) return row[idx];
         return "";
     };
 
@@ -110,7 +123,7 @@ function rowToCustomer(row) {
         down: down,
         outstanding: outstanding,
         executive: get(["Recovery Executive", "Executive", "executive"], 11),
-        followup: parseExcelDate(get(["Next Follow-up (YYYY-MM-DD)", "Next Follow-up", "Follow-up", "followup"], 12)),
+        followup: parseExcelDate(getRaw(["Next Follow-up (YYYY-MM-DD)", "Next Follow-up", "Follow-up", "followup"], 12)),
         remarks: get(["Remarks", "remarks", "Notes"], 13)
     };
 }
