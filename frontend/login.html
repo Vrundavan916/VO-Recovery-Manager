@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0B1220">
+<meta name="theme-color" content="#1A3D63">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Login | BK Recovery Manager</title>
-<link rel="stylesheet" href="css/style.css?v=bk3">
+<link rel="stylesheet" href="css/style.css?v=enterprise3">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 <style>
 body.login-body{
@@ -50,10 +50,10 @@ body.login-body{
 .forgot-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9999;
     align-items:center;justify-content:center;padding:20px}
 .forgot-modal.show{display:flex}
-.forgot-box{background:#1A2233;border:1px solid rgba(212,175,55,.16);border-radius:18px;padding:28px;max-width:400px;width:100%;
+.forgot-box{background:#fff;border:1px solid #D9E7F3;border-radius:18px;padding:28px;max-width:400px;width:100%;
     box-shadow:0 20px 50px rgba(0,0,0,.5)}
-.forgot-box h3{margin:0 0 8px;color:#fff}
-.forgot-box p{color:#9CA6B8;font-size:13px;margin:0 0 16px}
+.forgot-box h3{margin:0 0 8px;color:#1A3D63}
+.forgot-box p{color:#73879B;font-size:13px;margin:0 0 16px}
 .forgot-box input{width:100%;padding:12px 14px;border:1px solid rgba(255,255,255,.1);border-radius:10px;margin-bottom:12px;box-sizing:border-box;background:rgba(255,255,255,.03);color:#fff}
 .forgot-actions{display:flex;gap:10px;margin-top:8px}
 .forgot-actions button{flex:1;padding:12px;border:none;border-radius:10px;font-weight:600;cursor:pointer}
@@ -90,11 +90,18 @@ body.login-body{
 <div class="forgot-modal" id="forgotModal">
     <div class="forgot-box">
         <h3><i class="fa-solid fa-key"></i> Forgot Password</h3>
-        <p>Enter your username. Super Admin or Shop Admin can reset the password from Settings / Company Management.</p>
-        <input type="text" id="forgotUsername" placeholder="Username">
-        <div class="forgot-actions">
+        <p>Username + recovery email verify kari navo password set karo.</p>
+        <label style="display:block;text-align:left;margin-top:8px;">Username *</label>
+        <input type="text" id="forgotUsername" placeholder="e.g. superadmin" autocomplete="username">
+        <label style="display:block;text-align:left;margin-top:8px;">Recovery Email *</label>
+        <input type="email" id="forgotEmail" placeholder="Registered recovery email">
+        <label style="display:block;text-align:left;margin-top:8px;">New Password *</label>
+        <input type="password" id="forgotNewPass" placeholder="Min 4 characters" autocomplete="new-password">
+        <label style="display:block;text-align:left;margin-top:8px;">Confirm Password *</label>
+        <input type="password" id="forgotConfirmPass" placeholder="Re-enter password" autocomplete="new-password">
+        <div class="forgot-actions" style="margin-top:16px;display:flex;gap:10px;">
             <button type="button" class="btn-secondary" onclick="closeForgotPassword()">Cancel</button>
-            <button type="button" class="btn-primary" onclick="submitForgotPassword()">Submit</button>
+            <button type="button" class="btn-primary" onclick="submitForgotPassword()">Reset Password</button>
         </div>
     </div>
 </div>
@@ -108,8 +115,7 @@ body.login-body{
 document.getElementById("forgotModal").addEventListener("click",function(e){
     if(e.target===this) closeForgotPassword();
 });
-function openForgotPassword(){ document.getElementById("forgotModal").classList.add("show"); }
-function closeForgotPassword(){ document.getElementById("forgotModal").classList.remove("show"); }
+/* open/close/submitForgotPassword → auth.js */
 </script>
 <script>
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){});}

@@ -3,7 +3,7 @@
 
 <head>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0B1220">
+<meta name="theme-color" content="#1A3D63">
 
 <meta charset="UTF-8">
 
@@ -11,7 +11,7 @@
 
 <title>Reports | BK Recovery Manager</title>
 
-<link rel="stylesheet" href="css/style.css?v=bk3">
+<link rel="stylesheet" href="css/style.css?v=enterprise3">
 
 <link rel="stylesheet"
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
@@ -19,6 +19,29 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
 </head>
 
 <body>
+
+<button type="button" class="menu-toggle" id="menuToggle" aria-label="Menu">☰</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<script>
+(function(){
+  function ready(fn){ if(document.readyState!=='loading') fn(); else document.addEventListener('DOMContentLoaded',fn); }
+  ready(function(){
+    var btn=document.getElementById('menuToggle');
+    var sb=document.querySelector('.sidebar');
+    var ov=document.getElementById('sidebarOverlay');
+    if(!btn||!sb) return;
+    function close(){ sb.classList.remove('open'); if(ov) ov.classList.remove('show'); }
+    function open(){ sb.classList.add('open'); if(ov) ov.classList.add('show'); }
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      if(sb.classList.contains('open')) close(); else open();
+    });
+    if(ov) ov.addEventListener('click', close);
+    sb.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', close); });
+  });
+})();
+</script>
+
 
 <div class="wrapper">
 
