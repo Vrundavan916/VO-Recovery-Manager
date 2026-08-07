@@ -905,3 +905,61 @@ body.login-body {
     margin-left: 0 !important;
   }
 }
+
+
+/* ========== Mobile menu toggle ========== */
+.menu-toggle {
+  display: none;
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 1100;
+  width: 46px;
+  height: 46px;
+  border-radius: 12px !important;
+  background: linear-gradient(135deg, #1A3D63, #4A7FA7) !important;
+  color: #fff !important;
+  border: none !important;
+  box-shadow: 0 4px 16px rgba(26,61,99,0.35) !important;
+  font-size: 20px !important;
+  padding: 0 !important;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(8,24,47,0.45);
+  z-index: 999;
+}
+
+.sidebar-overlay.show { display: block; }
+
+@media (max-width: 992px) {
+  .menu-toggle { display: flex !important; }
+
+  .sidebar {
+    transform: translateX(-105%) !important;
+    transition: transform 0.3s ease !important;
+    z-index: 1001 !important;
+  }
+  .sidebar.open {
+    transform: translateX(0) !important;
+  }
+
+  .main-content,
+  .content,
+  .wrapper > main {
+    margin-left: 0 !important;
+    padding-top: 64px !important;
+  }
+}
+
+@media (min-width: 993px) {
+  .menu-toggle { display: none !important; }
+  .sidebar-overlay { display: none !important; }
+  .sidebar { transform: none !important; }
+}
