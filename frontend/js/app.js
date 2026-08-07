@@ -1504,81 +1504,89 @@ async function logAudit(action, entityType, entityId, details) {
 window.logAudit = logAudit;
 
 function printCleanReport() {
-    const today = (typeof todayISO === "function") ? todayISO() : new Date().toISOString().slice(0, 10);
-    const body = document.getElementById("cprBody");
-    if (!body) { window.print(); return; }
+    try {
+        const body = document.getElementById("cprBody");
+        if (!body) {
+            window.print();
+            return;
+        }
 
-    // Customer-wise like Google Sheet:
-    // Name | City | Total Amount | Received Amount | Total Due | Comment
-    const list = customers || [];
-    let totalReceived = 0, totalDue = 0;
+        const list = (typeof customers !== "undefined" && customers) ? customers : [];
+        let totalReceived = 0, totalDue = 0;
 
-    // Sum received from recoveries (optional date filter)
-    const fromEl = document.getElementById("fromDate");
-    const toEl = document.getElementById("toDate");
-    const searchEl = document.getElementById("reportSearch");
-    const custEl = document.getElementById("reportCustomer");
+        const fromEl = document.getElementById("fromDate");
+        const toEl = document.getElementById("toDate");
+        const searchEl = document.getElementById("reportSearch");
+        const custEl = document.getElementById("reportCustomer");
 
-    let recs = recoveries || [];
-    if (fromEl && fromEl.value) recs = recs.filter(r => String(r.date || "").slice(0,10) >= fromEl.value);
-    if (toEl && toEl.value) recs = recs.filter(r => String(r.date || "").slice(0,10) <= toEl.value);
+        let recs = (typeof recoveries !== "undefined" && recoveries) ? recoveries.slice() : [];
+        if (fromEl && fromEl.value) {
+            recs = recs.filter(function(r){ return String(r.date || r.recovery_date || "").slice(0,10) >= fromEl.value; });
+        }
+        if (toEl && toEl.value) {
+            recs = recs.filter(function(r){ return String(r.date || r.recovery_date || "").slice(0,10) <= toEl.value; });
+        }
 
-    const receivedByCustomer = {};
-    recs.forEach(r => {
-        const id = String(r.customerId || r.customer_id || "");
-        receivedByCustomer[id] = (receivedByCustomer[id] || 0) + Number(r.amount || 0);
-    });
+        const receivedByCustomer = {};
+        recs.forEach(function(r) {
+            var id = String(r.customerId || r.customer_id || "");
+            receivedByCustomer[id] = (receivedByCustomer[id] || 0) + Number(r.amount || 0);
+        });
 
-    let rows = list.slice();
-    if (custEl && custEl.value) {
-        rows = rows.filter(c => String(c.id) === String(custEl.value));
+        var rows = list.slice();
+        if (custEl && custEl.value) {
+            rows = rows.filter(function(c){ return String(c.id) === String(custEl.value); });
+        }
+        if (searchEl && searchEl.value && searchEl.value.trim()) {
+            var q = searchEl.value.trim().toLowerCase();
+            rows = rows.filter(function(c) {
+                return String(c.name || "").toLowerCase().indexOf(q) >= 0
+                    || String(c.mobile || "").indexOf(q) >= 0
+                    || String(c.village || "").toLowerCase().indexOf(q) >= 0;
+            });
+        }
+
+        if (!rows.length) {
+            body.innerHTML = '<tr><td colspan="7" style="text-align:center">No customer data to print</td></tr>';
+        } else {
+            body.innerHTML = rows.map(function(c, i) {
+                var rec = Number(receivedByCustomer[String(c.id)] || 0);
+                var due = Number(c.outstanding || 0);
+                var totalAmt = Number(c.bill || 0);
+                if (!totalAmt) totalAmt = due + rec;
+                var city = c.village || c.city || c.district || "-";
+                var comment = (c.remarks || "-").toString().replace(/</g, "&lt;");
+                totalReceived += rec;
+                totalDue += due;
+                return "<tr><td>" + (i+1) + "</td><td>" + (c.name || "-") + "</td><td>" + city + "</td><td>₹" + totalAmt.toLocaleString("en-IN") + "</td><td>₹" + rec.toLocaleString("en-IN") + "</td><td>₹" + due.toLocaleString("en-IN") + "</td><td>" + comment + "</td></tr>";
+            }).join("");
+        }
+
+        var elT = document.getElementById("cprTotalAmt");
+        var elO = document.getElementById("cprTotalOut");
+        if (elT) elT.textContent = "₹" + totalReceived.toLocaleString("en-IN");
+        if (elO) elO.textContent = "₹" + totalDue.toLocaleString("en-IN");
+
+        var shop = "";
+        try { if (typeof getSession === "function") shop = getSession().shopName || ""; } catch(e) {}
+        var sn = document.getElementById("cprShopName");
+        if (sn) sn.textContent = shop || (typeof settings !== "undefined" && settings && settings.company) || "BK Recovery Manager";
+        var dl = document.getElementById("cprDateLine");
+        if (dl) dl.textContent = "Printed: " + new Date().toLocaleString("en-IN");
+        var fl = document.getElementById("cprFilterLine");
+        if (fl) fl.textContent = "Period: " + ((fromEl && fromEl.value) || "All") + " to " + ((toEl && toEl.value) || "All");
+
+        // show print block briefly then print
+        var box = document.getElementById("cleanPrintReport");
+        if (box) box.style.display = "block";
+        setTimeout(function() {
+            window.print();
+            setTimeout(function(){ if (box) box.style.display = ""; }, 500);
+        }, 200);
+    } catch (err) {
+        console.error("printCleanReport", err);
+        alert("Print error: " + (err.message || err));
+        window.print();
     }
-    if (searchEl && searchEl.value.trim()) {
-        const q = searchEl.value.trim().toLowerCase();
-        rows = rows.filter(c =>
-            String(c.name || "").toLowerCase().includes(q) ||
-            String(c.mobile || "").includes(q) ||
-            String(c.village || "").toLowerCase().includes(q)
-        );
-    }
-
-    body.innerHTML = rows.map((c, i) => {
-        const totalAmt = Number(c.bill || 0) || (Number(c.outstanding || 0) + Number(receivedByCustomer[String(c.id)] || 0));
-        const received = Number(receivedByCustomer[String(c.id)] || 0);
-        // Prefer live outstanding; else total - received
-        const due = c.outstanding != null && c.outstanding !== ""
-            ? Number(c.outstanding || 0)
-            : Math.max(0, totalAmt - received);
-        const city = c.village || c.city || c.district || "-";
-        const comment = c.remarks || "-";
-        totalReceived += received;
-        totalDue += due;
-        return "<tr>" +
-            "<td>" + (i + 1) + "</td>" +
-            "<td>" + (c.name || "-") + "</td>" +
-            "<td>" + city + "</td>" +
-            "<td>₹" + totalAmt.toLocaleString("en-IN") + "</td>" +
-            "<td>₹" + received.toLocaleString("en-IN") + "</td>" +
-            "<td>₹" + due.toLocaleString("en-IN") + "</td>" +
-            "<td>" + comment + "</td>" +
-            "</tr>";
-    }).join("") || "<tr><td colspan=\"7\" style=\"text-align:center\">No customers</td></tr>";
-
-    const elT = document.getElementById("cprTotalAmt");
-    const elO = document.getElementById("cprTotalOut");
-    if (elT) elT.textContent = "₹" + totalReceived.toLocaleString("en-IN");
-    if (elO) elO.textContent = "₹" + totalDue.toLocaleString("en-IN");
-
-    const shop = (typeof getSession === "function" && getSession().shopName) || "";
-    const sn = document.getElementById("cprShopName");
-    if (sn) sn.textContent = shop || (typeof settings !== "undefined" && settings.company) || "BK Recovery Manager";
-    const dl = document.getElementById("cprDateLine");
-    if (dl) dl.textContent = "Printed: " + new Date().toLocaleString("en-IN");
-    const fl = document.getElementById("cprFilterLine");
-    if (fl) {
-        fl.textContent = "Period: " + ((fromEl && fromEl.value) || "All") + " → " + ((toEl && toEl.value) || "All");
-    }
-
-    setTimeout(function () { window.print(); }, 150);
 }
 window.printCleanReport = printCleanReport;
