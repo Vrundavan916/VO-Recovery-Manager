@@ -1075,3 +1075,35 @@ body.login-body {
 }
 @media (max-width:992px){.dashboard-grid{grid-template-columns:repeat(2,1fr)}}
 @media (max-width:560px){.dashboard-grid{grid-template-columns:1fr}}
+
+
+/* Clean print report */
+.clean-print-report{display:none}
+@media print{
+  body *{visibility:hidden!important}
+  .clean-print-report,.clean-print-report *{visibility:visible!important}
+  .clean-print-report{display:block!important;position:absolute;left:0;top:0;width:100%;padding:8mm;background:#fff;color:#000}
+  .cpr-header{text-align:center;margin-bottom:12px;border-bottom:2px solid #1A3D63;padding-bottom:8px}
+  .cpr-logo{height:48px;margin:0 auto 6px}
+  .cpr-header h1{font-size:18px;margin:0;color:#1A3D63}
+  .cpr-header p{margin:2px 0;font-size:11px;color:#333}
+  .cpr-table{width:100%;border-collapse:collapse;font-size:11px}
+  .cpr-table th,.cpr-table td{border:1px solid #333;padding:6px 5px;text-align:left}
+  .cpr-table th{background:#1A3D63!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .cpr-footer{margin-top:12px;font-size:12px}
+  .cpr-sign{margin-top:20px;text-align:right;font-size:10px;color:#666}
+  @page{size:A4 portrait;margin:10mm}
+}
+
+#recoveryOutstanding{
+  font-size:18px!important;
+  font-weight:700!important;
+  color:#b91c1c!important;
+  background:#fef2f2!important;
+  border:2px solid #fecaca!important;
+  min-height:48px!important;
+}
+#recoveryOutHint{display:block;margin-top:4px;font-size:12px}
+@media (max-width:768px){
+  #recoveryOutstanding{font-size:20px!important;width:100%!important}
+}
