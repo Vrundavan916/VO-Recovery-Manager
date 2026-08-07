@@ -692,6 +692,63 @@ footer {
 
 .fade { animation: fadeInUp 0.4s ease both; }
 
+/* ---------- Simple page/element entrance animations ---------- */
+
+/* Staggered fade-in for dashboard cards - each card appears slightly after the previous */
+.dashboard-grid .card:nth-child(1),
+.dashboard-cards .card:nth-child(1) { animation-delay: 0.03s; }
+.dashboard-grid .card:nth-child(2),
+.dashboard-cards .card:nth-child(2) { animation-delay: 0.08s; }
+.dashboard-grid .card:nth-child(3),
+.dashboard-cards .card:nth-child(3) { animation-delay: 0.13s; }
+.dashboard-grid .card:nth-child(4),
+.dashboard-cards .card:nth-child(4) { animation-delay: 0.18s; }
+.dashboard-grid .card,
+.dashboard-cards .card {
+  animation: fadeInUp 0.45s ease both;
+}
+.dashboard-grid .card:hover,
+.dashboard-cards .card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.08);
+}
+
+/* Gentle fade-in for table rows as data loads */
+table tbody tr {
+  animation: fadeIn 0.35s ease both;
+}
+table tbody tr:hover {
+  background: rgba(26,61,99,0.04);
+  transition: background 0.15s ease;
+}
+
+/* Smooth whole-page entrance */
+.main-content,
+.wrapper > .main,
+.wrapper > main,
+.wrapper > .content {
+  animation: fadeIn 0.3s ease both;
+}
+
+/* Sidebar logo gentle pulse on load (very subtle, one-time) */
+.sidebar .logo {
+  animation: fadeInUp 0.5s ease both;
+}
+
+/* Modal pop-in already uses zoomIn; add smooth backdrop fade */
+.modal-overlay,
+.overlay {
+  animation: fadeIn 0.2s ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
 /* ---------- Utilities ---------- */
 .text-center { text-align: center; }
 .text-right { text-align: right; }
@@ -780,12 +837,20 @@ body {
   border-radius: 12px !important;
   color: rgba(255,255,255,0.75) !important;
   text-decoration: none !important;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease, padding-left 0.2s ease !important;
 }
 
 .sidebar .menu a:hover,
 .sidebar .menu a.active {
   background: #102544 !important;
   color: #fff !important;
+  transform: translateX(3px);
+}
+
+.sidebar .menu a:hover i,
+.sidebar .menu a.active i {
+  transform: scale(1.12);
+  transition: transform 0.2s ease;
 }
 
 .main-content,
