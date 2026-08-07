@@ -88,9 +88,9 @@ async function login() {
     }
 }
 
-function checkLogin() {
+async function checkLogin() {
     const page = window.location.pathname;
-    if (page.includes("login.html") || page.endsWith("/") || page.endsWith("/frontend")) return;
+    if (page.includes("login.html") || page.includes("maintenance.html") || page.endsWith("/") || page.endsWith("/frontend")) return;
 
     const session = getSession();
     if (!session.isLoggedIn) {
@@ -99,6 +99,18 @@ function checkLogin() {
     }
 
     const role = session.role;
+
+    if (role !== "super_admin") {
+        try {
+            const status = await sbGetMaintenanceStatus();
+            if (status.enabled) {
+                sessionStorage.setItem("bk_maintenance_message", status.message || "");
+                window.location.href = "maintenance.html";
+                return;
+            }
+        } catch (e) { console.error("maintenance check failed", e); }
+    }
+
     if (page.includes("settings.html") && role !== "admin" && role !== "super_admin") {
         alert("Access Denied. Settings is available to Admin only.");
         window.location.href = "dashboard.html";

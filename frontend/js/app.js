@@ -535,6 +535,13 @@ async function saveRecovery() {
         return;
     }
 
+    const outstandingNow = Number(cust ? cust.outstanding || 0 : 0);
+    if (Number(amount.value) > outstandingNow) {
+        alert("❌ Recovery Amount (₹" + Number(amount.value).toLocaleString("en-IN") +
+            ") outstanding amount (₹" + outstandingNow.toLocaleString("en-IN") + ") thi vadhu che.\n\nAmount ghatado.");
+        return;
+    }
+
     const recovery = {
         customerId: customerId.value,
         amount: Number(amount.value),
@@ -1375,7 +1382,7 @@ window.addEventListener("load", async function () {
         try { await supabaseBoot(); } catch (e) { console.error(e); }
     }
 
-    checkLogin();
+    await checkLogin();
 
     const session = getSession();
     if (!session.isLoggedIn && !window.location.pathname.includes("login.html")) return;

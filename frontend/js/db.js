@@ -277,6 +277,34 @@ async function sbSaveSettings(shopId, settingsObj) {
     return data;
 }
 
+/* ---------- SYSTEM MAINTENANCE (Super Admin only) ---------- */
+async function sbGetMaintenanceStatus() {
+    const sb = getSupabase();
+    const { data, error } = await sb.from("system_config").select("*").eq("id", 1).maybeSingle();
+    if (error) throw error;
+    if (!data) return { enabled: false, message: "" };
+    return {
+        enabled: !!data.maintenance_mode,
+        message: data.maintenance_message || ""
+    };
+}
+
+async function sbSetMaintenanceMode(enabled, message) {
+    const sb = getSupabase();
+    const { data, error } = await sb
+        .from("system_config")
+        .upsert({
+            id: 1,
+            maintenance_mode: !!enabled,
+            maintenance_message: message || "",
+            updated_at: new Date().toISOString()
+        }, { onConflict: "id" })
+        .select()
+        .single();
+    if (error) throw error;
+    return data;
+}
+
 /* ---------- BULK IMPORT ---------- */
 async function sbBulkInsertCustomers(list, shopId) {
     const sb = getSupabase();
@@ -345,6 +373,8 @@ window.sbUpdateUserPassword = sbUpdateUserPassword;
 window.sbUpdateUsername = sbUpdateUsername;
 window.sbGetSettings = sbGetSettings;
 window.sbSaveSettings = sbSaveSettings;
+window.sbGetMaintenanceStatus = sbGetMaintenanceStatus;
+window.sbSetMaintenanceMode = sbSetMaintenanceMode;
 window.sbBulkInsertCustomers = sbBulkInsertCustomers;
 window.supabaseBoot = supabaseBoot;
 window.mapCustomerFromDb = mapCustomerFromDb;
