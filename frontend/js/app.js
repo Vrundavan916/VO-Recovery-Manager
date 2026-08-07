@@ -281,7 +281,7 @@ Remarks :
 ${c.remarks}
 `;
     if (Number(c.outstanding || 0) > 0 && c.mobile) {
-        if (confirm(msg + "\n\nWhatsApp dues reminder moklvu?")) {
+        if (confirm(msg + "\n\nSend WhatsApp dues reminder?")) {
             sendWhatsAppReminder(index);
         }
     } else {
@@ -315,13 +315,13 @@ function buildWhatsAppReminderMessage(customer) {
         "",
         "*" + shopName + "* – Payment Reminder",
         "",
-        "Aapnu account ma *outstanding dues* baki che.",
+        "Your account has *outstanding dues* pending.",
         "",
         "📋 Bill Amount: ₹" + bill,
         "💰 *Pending Dues: ₹" + outstanding + "*",
         "",
-        "Krupaya jaldi payment kari account clear karo.",
-        "Payment pachhi receipt / update mate shop contact karo.",
+        "Please make payment soon to clear your account.",
+        "After payment, contact the shop for receipt / update.",
         phone ? ("📞 " + phone) : "",
         "",
         "Dhanyavaad,",
@@ -339,12 +339,12 @@ function sendWhatsAppReminder(index) {
     }
     const phone = normalizeWhatsAppNumber(customer.mobile);
     if (!phone || phone.length < 12) {
-        alert("Valid mobile number nathi. Customer ma 10 digit mobile enter karo.");
+        alert("Valid mobile number not found. Enter a 10-digit mobile on the customer.");
         return;
     }
     const amt = Number(customer.outstanding || 0);
     if (amt <= 0) {
-        if (!confirm("Outstanding ₹0 che. Fari pan reminder moklvu?")) return;
+        if (!confirm("Outstanding is ₹0. Still send reminder?")) return;
     }
     const text = buildWhatsAppReminderMessage(customer);
     const url = "https://wa.me/" + phone + "?text=" + encodeURIComponent(text);
@@ -391,10 +391,10 @@ function getDueReminderCustomers() {
 async function processWhatsAppReminders(autoOpen) {
     const list = getDueReminderCustomers();
     if (!list.length) {
-        alert("Aaje koi auto-reminder pending nathi.\n\n• Outstanding > 0\n• Auto Reminder ON\n• Follow-up / Due date today or past");
+        alert("No auto-reminders pending today.\n\n• Outstanding > 0\n• Auto Reminder ON\n• Follow-up / Due date today or past");
         return;
     }
-    if (!confirm(list.length + " customer(s) ne WhatsApp due reminder moklvu?\n\nOK = ek-ek WhatsApp open thase.")) return;
+    if (!confirm(list.length + " customer(s) — send WhatsApp due reminder?\n\nOK = WhatsApp will open one by one.")) return;
 
     for (let i = 0; i < list.length; i++) {
         const c = list[i];
@@ -416,7 +416,7 @@ async function processWhatsAppReminders(autoOpen) {
             await new Promise(r => setTimeout(r, 1500));
         }
     }
-    alert("Reminders process thai gaya. Next auto date: +" + (list[0].reminderInterval || 3) + " days.");
+    alert("Reminders processed. Next auto date: +" + (list[0].reminderInterval || 3) + " days.");
     if (typeof reloadAllData === "function") await reloadAllData();
 }
 
@@ -529,11 +529,11 @@ async function saveRecovery() {
     const payAmt = Number(amount.value);
     const dueAmt = custCheck ? Number(custCheck.outstanding || 0) : 0;
     if (custCheck && payAmt > dueAmt + 0.001) {
-        alert("❌ Recovery entry allow nathi\n\nCustomer: " + (custCheck.name || "-") + "\nCurrent Outstanding: ₹" + dueAmt.toLocaleString("en-IN") + "\nYou entered: ₹" + payAmt.toLocaleString("en-IN") + "\nExtra: ₹" + (payAmt - dueAmt).toLocaleString("en-IN") + "\n\nOutstanding karta vadhare amount recovery ma nathi kari shakat.\nPlease ₹" + dueAmt.toLocaleString("en-IN") + " ke ochu amount enter karo.");
+        alert("❌ Recovery entry not allowed\n\nCustomer: " + (custCheck.name || "-") + "\nCurrent Outstanding: ₹" + dueAmt.toLocaleString("en-IN") + "\nYou entered: ₹" + payAmt.toLocaleString("en-IN") + "\nExtra: ₹" + (payAmt - dueAmt).toLocaleString("en-IN") + "\n\nAmount cannot exceed outstanding balance.\nPlease ₹" + dueAmt.toLocaleString("en-IN") + " or less.");
         amount.focus();
         return;
     }
-    if (payAmt <= 0) { alert("Recovery amount 0 karta vadhare hovu joiye."); return; }
+    if (payAmt <= 0) { alert("Recovery amount must be greater than 0."); return; }
 
 
     let finalShopId = currentShopId();
@@ -676,7 +676,7 @@ function onRecoveryCustomerChange() {
         if (!val) {
             outBox.value = "";
             if (hint) {
-                hint.textContent = "Customer select karo – pending amount ahiya dekhase";
+                hint.textContent = "Select a customer to see pending amount";
                 hint.style.color = "#73879B";
             }
             return;
@@ -697,10 +697,10 @@ function onRecoveryCustomerChange() {
         outBox.value = "₹" + out.toLocaleString("en-IN");
         if (hint) {
             if (out > 0) {
-                hint.textContent = "Pending dues — recovery aa amount sudhi";
+                hint.textContent = "Pending dues — recover up to this amount";
                 hint.style.color = "#b91c1c";
             } else {
-                hint.textContent = "Outstanding 0 — already cleared";
+                hint.textContent = "Outstanding ₹0 — already cleared";
                 hint.style.color = "#15803d";
             }
         }
@@ -1115,7 +1115,7 @@ async function deleteUser(usernameOrId) {
                 return;
             }
             if (target.username === "superadmin" || target.role === "super_admin") {
-                alert("Super Admin account delete nathi kari shakat.");
+                alert("Super Admin account cannot be deleted.");
                 return;
             }
             userId = target.id;
@@ -1124,7 +1124,7 @@ async function deleteUser(usernameOrId) {
             const users = await sbGetUsers(null);
             const t = (users || []).find(u => String(u.id) === String(usernameOrId));
             if (t && (t.username === "superadmin" || t.role === "super_admin")) {
-                alert("Super Admin account delete nathi kari shakat.");
+                alert("Super Admin account cannot be deleted.");
                 return;
             }
         }
@@ -1225,16 +1225,16 @@ async function saveCompanyBranding() {
         if (!shopId) {
             const uid = session.userId || session.user_id || "";
             if (!uid) {
-                alert("Session expire thai gayu. Logout kari farithi login karo.");
+                alert("Session expired. Please logout and login again.");
                 return;
             }
             if (!emailVal) {
-                alert("Email Address box ma recovery email lakho, pachhi Save dabavo.");
+                alert("Enter recovery email in Email Address, then Save.");
                 return;
             }
             const sb = getSupabase();
             if (!sb) {
-                alert("Cloud connection fail.");
+                alert("Cloud connection failed.");
                 return;
             }
             const { error } = await sb.from("users").update({ recovery_email: emailVal }).eq("id", uid);
@@ -1245,7 +1245,7 @@ async function saveCompanyBranding() {
             }
             const reField = document.getElementById("recoveryEmail");
             if (reField) reField.value = emailVal;
-            alert("✅ Recovery email save thai gayu: " + emailVal + "\n\nForgot Password ma Username + aa email use karo.\n\nNote: Company logo/name shop Admin login thi save thase.");
+            alert("✅ Recovery email saved: " + emailVal + "\n\nUse Username + this email on Forgot Password.\n\nNote: Company logo/name is saved by Shop Admin login.");
             return;
         }
 
@@ -1325,12 +1325,12 @@ async function addExecutive() {
     if (!input) return;
     const name = input.value.trim();
     if (!name) {
-        alert("Executive name enter karo");
+        alert("Please enter executive name");
         return;
     }
     const shopId = (typeof currentShopId === "function") ? currentShopId() : null;
     if (!shopId) {
-        alert("Shop context nathi. Shop Admin thi login karo.");
+        alert("No shop context. Please login as Shop Admin.");
         return;
     }
     if (typeof settings !== "object" || !settings) settings = {};
@@ -1357,7 +1357,7 @@ async function removeExecutive(index) {
     if (!confirm("Aa executive remove karvu?")) return;
     const shopId = (typeof currentShopId === "function") ? currentShopId() : null;
     if (!shopId) {
-        alert("Shop context nathi.");
+        alert("No shop context.");
         return;
     }
     if (!Array.isArray(settings.executives)) settings.executives = getExecutivesList();
@@ -1673,7 +1673,7 @@ function printCleanReport() {
         var totalReceived = 0, totalDue = 0;
 
         if (!rows.length) {
-            body.innerHTML = '<tr><td colspan="7" style="text-align:center">Aa period ma koi recovery nathi</td></tr>';
+            body.innerHTML = '<tr><td colspan="7" style="text-align:center">No recovery in this period</td></tr>';
         } else {
             body.innerHTML = rows.map(function(r, i) {
                 var totalAmt = r.bill || (r.due + r.received);
@@ -1725,14 +1725,14 @@ function onRecoveryAmountInput() {
         amount.style.borderColor = "#ef4444";
         amount.style.background = "#fef2f2";
         if (hint) {
-            hint.textContent = "Error: Outstanding ₹" + due.toLocaleString("en-IN") + " — tamaru ₹" + pay.toLocaleString("en-IN") + " vadhare che";
+            hint.textContent = "Error: Outstanding ₹" + due.toLocaleString("en-IN") + " — you entered ₹" + pay.toLocaleString("en-IN") + " more than due";
             hint.style.color = "#b91c1c";
         }
     } else {
         amount.style.borderColor = "";
         amount.style.background = "";
         if (hint && due > 0) {
-            hint.textContent = "Pending dues — recovery aa amount sudhi";
+            hint.textContent = "Pending dues — recover up to this amount";
             hint.style.color = "#b91c1c";
         }
     }
