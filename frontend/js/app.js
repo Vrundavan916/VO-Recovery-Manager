@@ -629,43 +629,107 @@ function loadRecoveryCustomers() {
     const select = document.getElementById("recoveryCustomer");
     if (!select) return;
     const prev = select.value;
-    select.innerHTML = `<option value="">Select Customer</option>`;
-    (customers || []).forEach(customer => {
+    select.innerHTML = "";
+    const opt0 = document.createElement("option");
+    opt0.value = "";
+    opt0.textContent = "Select Customer";
+    select.appendChild(opt0);
+
+    (customers || []).forEach(function(customer) {
         const out = Number(customer.outstanding || 0);
-        const label = customer.name + (out > 0 ? " — ₹" + out.toLocaleString("en-IN") + " due" : " — Paid");
-        select.innerHTML += `<option value="${customer.id}" data-outstanding="${out}">${label}</option>`;
+        const opt = document.createElement("option");
+        opt.value = String(customer.id);
+        opt.setAttribute("data-outstanding", String(out));
+        opt.textContent = customer.name + (out > 0 ? (" — ₹" + out.toLocaleString("en-IN") + " due") : " — Paid");
+        select.appendChild(opt);
     });
+
     if (prev) select.value = prev;
+
+    // bind every time (mobile safe)
+    select.onchange = onRecoveryCustomerChange;
+    select.addEventListener("change", onRecoveryCustomerChange);
+    select.addEventListener("input", onRecoveryCustomerChange);
+
     onRecoveryCustomerChange();
 }
 
 function onRecoveryCustomerChange() {
-    const select = document.getElementById("recoveryCustomer");
-    const outBox = document.getElementById("recoveryOutstanding");
-    const amtBox = document.getElementById("recoveryAmount");
-    const hint = document.getElementById("recoveryOutHint");
-    if (!select || !outBox) return;
-    if (!select.value) {
-        outBox.value = "";
-        if (hint) hint.textContent = "Customer select karo – pending amount ahiya dekhase";
-        return;
-    }
-    const c = (customers || []).find(x => String(x.id) === String(select.value));
-    const out = c ? Number(c.outstanding || 0) : 0;
-    outBox.value = "₹" + out.toLocaleString("en-IN");
-    if (hint) {
-        hint.textContent = out > 0
-            ? "Max recovery aa outstanding sudhi kari sakay"
-            : "Outstanding 0 – already paid";
-        hint.style.color = out > 0 ? "#b91c1c" : "#15803d";
-    }
-    // optional: prefill amount empty but validate on save
-    if (amtBox && !amtBox.value && out > 0) {
-        amtBox.setAttribute("max", String(out));
-        amtBox.placeholder = "Max ₹" + out.toLocaleString("en-IN");
+    try {
+        const select = document.getElementById("recoveryCustomer");
+        const outBox = document.getElementById("recoveryOutstanding");
+        const amtBox = document.getElementById("recoveryAmount");
+        const hint = document.getElementById("recoveryOutHint");
+        if (!select || !outBox) return;
+
+        const val = select.value;
+        if (!val) {
+            outBox.value = "";
+            if (hint) {
+                hint.textContent = "Customer select karo – pending amount ahiya dekhase";
+                hint.style.color = "#73879B";
+            }
+            return;
+        }
+
+        let out = 0;
+        const selected = select.options[select.selectedIndex];
+        if (selected && selected.getAttribute("data-outstanding") != null) {
+            out = Number(selected.getAttribute("data-outstanding") || 0);
+        }
+
+        // also from customers array (source of truth)
+        const c = (customers || []).find(function(x) {
+            return String(x.id) === String(val) || String(x.id) === val;
+        });
+        if (c) out = Number(c.outstanding || 0);
+
+        outBox.value = "₹" + out.toLocaleString("en-IN");
+        if (hint) {
+            if (out > 0) {
+                hint.textContent = "Pending dues — recovery aa amount sudhi";
+                hint.style.color = "#b91c1c";
+            } else {
+                hint.textContent = "Outstanding 0 — already cleared";
+                hint.style.color = "#15803d";
+            }
+        }
+        if (amtBox) {
+            amtBox.setAttribute("max", String(out > 0 ? out : ""));
+            amtBox.placeholder = out > 0 ? ("Max ₹" + out.toLocaleString("en-IN")) : "Enter amount";
+        }
+    } catch (e) {
+        console.error("onRecoveryCustomerChange", e);
     }
 }
 window.onRecoveryCustomerChange = onRecoveryCustomerChange;
+window.loadRecoveryCustomers = loadRecoveryCustomers;
+
+function bindRecoveryOutstandingUI() {
+    var select = document.getElementById("recoveryCustomer");
+    if (!select) return;
+    select.onchange = onRecoveryCustomerChange;
+    select.onclick = onRecoveryCustomerChange;
+    select.onblur = onRecoveryCustomerChange;
+    if (select.dataset.outBound === "1") return;
+    select.dataset.outBound = "1";
+    ["change","input","blur","keyup"].forEach(function(ev){
+        select.addEventListener(ev, onRecoveryCustomerChange);
+    });
+}
+window.bindRecoveryOutstandingUI = bindRecoveryOutstandingUI;
+
+document.addEventListener("DOMContentLoaded", function(){
+    try {
+        if (document.getElementById("recoveryCustomer")) {
+            if (typeof loadRecoveryCustomers === "function") loadRecoveryCustomers();
+            bindRecoveryOutstandingUI();
+            setTimeout(onRecoveryCustomerChange, 300);
+            setTimeout(onRecoveryCustomerChange, 1000);
+        }
+    } catch(e) {}
+});
+
 
 
 // ================================
