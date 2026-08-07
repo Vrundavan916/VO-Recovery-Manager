@@ -1028,3 +1028,50 @@ body.login-body {
   .sidebar-overlay { display: none !important; }
   .sidebar { transform: none !important; }
 }
+
+
+/* =========================================================
+   REPORTS PAGE – Premium design (add-only)
+========================================================= */
+.print-header{display:none;text-align:center;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #1A3D63}
+.print-header h1{font-size:22px;color:#1A3D63;margin:0 0 4px}
+.print-header p{color:#73879B;font-size:13px;margin:2px 0}
+
+.dashboard-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px}
+.dashboard-grid .card{background:#fff;border:1px solid #D9E7F3;border-radius:18px;padding:20px 18px;box-shadow:0 8px 28px rgba(26,61,99,.07);position:relative;overflow:hidden;transition:.25s;min-height:110px}
+.dashboard-grid .card::before{content:"";position:absolute;top:0;left:0;right:0;height:4px}
+.dashboard-grid .card:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(26,61,99,.12)}
+.dashboard-grid .card i{font-size:22px;margin-bottom:10px;display:block}
+.dashboard-grid .card h3{font-size:13px;font-weight:600;color:#73879B;margin:0 0 6px}
+.dashboard-grid .card h1{font-size:26px;font-weight:700;color:#1A3D63;margin:0;line-height:1.2}
+.dashboard-grid .card small{font-size:11px;color:#94a3b8;display:block;margin-top:6px}
+
+.dashboard-grid .card.blue::before{background:linear-gradient(90deg,#1A3D63,#4A7FA7)}
+.dashboard-grid .card.blue i{color:#4A7FA7}
+.dashboard-grid .card.green::before{background:linear-gradient(90deg,#15803d,#22C55E)}
+.dashboard-grid .card.green i{color:#22C55E}
+.dashboard-grid .card.green h1{color:#15803d}
+.dashboard-grid .card.orange::before{background:linear-gradient(90deg,#c2410c,#F59E0B)}
+.dashboard-grid .card.orange i{color:#F59E0B}
+.dashboard-grid .card.orange h1{color:#c2410c}
+.dashboard-grid .card.red::before{background:linear-gradient(90deg,#b91c1c,#EF4444)}
+.dashboard-grid .card.red i{color:#EF4444}
+.dashboard-grid .card.red h1{color:#b91c1c}
+
+.table-section .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:16px}
+.table-responsive{width:100%;overflow-x:auto}
+
+@media print{
+  .sidebar,.menu-toggle,.sidebar-overlay,.topbar,.user-info,.add-btn,button,.no-print{display:none!important}
+  .main-content{margin:0!important;padding:0!important;width:100%!important}
+  .print-header{display:block!important}
+  .dashboard-grid{grid-template-columns:repeat(4,1fr);gap:8px}
+  .dashboard-grid .card{box-shadow:none;border:1px solid #ccc;padding:10px;min-height:auto}
+  .dashboard-grid .card h1{font-size:16px}
+  .table-section,.content-box{box-shadow:none;border:1px solid #ddd}
+  table{font-size:10px!important}
+  thead th{background:#1A3D63!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  @page{size:A4 portrait;margin:10mm}
+}
+@media (max-width:992px){.dashboard-grid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:560px){.dashboard-grid{grid-template-columns:1fr}}
