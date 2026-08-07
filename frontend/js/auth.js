@@ -254,35 +254,46 @@ Settings ma je Recovery Email save karyu hoy ae.");
             return;
         }
 
-        let expectedEmail = (user.recovery_email || "").trim().toLowerCase();
-
-        // If user has no recovery_email, try shop settings recovery_email / email
-        if (!expectedEmail && user.shop_id) {
-            const { data: st } = await sb.from("settings").select("recovery_email, email").eq("shop_id", user.shop_id).maybeSingle();
-            expectedEmail = ((st && (st.recovery_email || st.email)) || "").trim().toLowerCase();
+        // Allowed emails: user recovery + shop register email + settings emails
+        const allowed = new Set();
+        if (user.recovery_email) {
+            allowed.add(String(user.recovery_email).trim().toLowerCase());
         }
-
-        // Super admin without recovery_email: allow team email match from any settings row with recovery
-        if (!expectedEmail && user.role === "super_admin") {
-            const { data: anySt } = await sb.from("settings").select("recovery_email, email").limit(20);
-            const emails = (anySt || []).map(x => (x.recovery_email || x.email || "").trim().toLowerCase()).filter(Boolean);
-            if (emails.includes(email)) {
-                expectedEmail = email;
+        if (user.shop_id) {
+            const { data: shop } = await sb.from("shops")
+                .select("email")
+                .eq("id", user.shop_id)
+                .maybeSingle();
+            if (shop && shop.email) {
+                allowed.add(String(shop.email).trim().toLowerCase());
+            }
+            const { data: st } = await sb.from("settings")
+                .select("recovery_email, email")
+                .eq("shop_id", user.shop_id)
+                .maybeSingle();
+            if (st) {
+                if (st.recovery_email) allowed.add(String(st.recovery_email).trim().toLowerCase());
+                if (st.email) allowed.add(String(st.email).trim().toLowerCase());
             }
         }
-
-        if (!expectedEmail) {
-            alert("Aa account par Recovery Email set nathi.
-
-Pehla login kari Settings → Recovery Email save karo,
-athva Super Admin Company Management mathi password reset karo.");
+        if (user.role === "super_admin") {
+            const { data: shops } = await sb.from("shops").select("email").limit(50);
+            (shops || []).forEach(sh => {
+                if (sh.email) allowed.add(String(sh.email).trim().toLowerCase());
+            });
+            const { data: anySt } = await sb.from("settings").select("recovery_email, email").limit(50);
+            (anySt || []).forEach(x => {
+                if (x.recovery_email) allowed.add(String(x.recovery_email).trim().toLowerCase());
+                if (x.email) allowed.add(String(x.email).trim().toLowerCase());
+            });
+        }
+        allowed.delete("");
+        if (!allowed.size) {
+            alert("Aa account mate registered email nathi.\nCompany Management ma shop Email add karo.");
             return;
         }
-
-        if (email !== expectedEmail) {
-            alert("Recovery email match nathi thatu.
-
-Sahi registered recovery email nakho.");
+        if (!allowed.has(email)) {
+            alert("Email match nathi.\nCompany register time je Email save thayu ae j nakho.");
             return;
         }
 

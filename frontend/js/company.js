@@ -14,6 +14,16 @@ function fmtDate(d) {
     return dt.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 }
 
+
+/** Single source of truth for license end date */
+function getEffectiveLicenseExpiry(shop, subscription) {
+    const a = shop && shop.license_expiry ? String(shop.license_expiry).slice(0, 10) : "";
+    const b = subscription && (subscription.end_date || subscription.endDate)
+        ? String(subscription.end_date || subscription.endDate).slice(0, 10) : "";
+    if (a && b) return a >= b ? a : b; // later date wins
+    return b || a || "";
+}
+
 function daysLeft(endDate) {
     if (!endDate) return null;
     const today = new Date();
@@ -46,7 +56,7 @@ async function loadSuperDashboard() {
         document.getElementById("statTotalOutstanding").innerText = fmtMoney(stats.totalOutstanding);
 
         body.innerHTML = stats.shops.map((shop, i) => {
-            const status = computeSubStatus(shop.license_expiry);
+            const status = computeSubStatus(shop.license_expiry || shop.endDate);
             return `<tr>
                 <td>${i + 1}</td>
                 <td>${shop.name}</td>
@@ -72,11 +82,31 @@ async function loadCompanies() {
     if (!body) return;
 
     try {
-        allShopsCache = await sbGetAllShopsFull();
-        renderCompaniesTable();
+        const rows = await sbGetSubscriptionsWithShops();
+        body.innerHTML = rows.map((r, i) => {
+            const shop = r.shop;
+            const status = r.liveStatus;
+            const exp = r.endDate;
+            return `<tr>
+            <td>${i + 1}</td>
+            <td>${shop.name || ""}</td>
+            <td>${shop.code || ""}</td>
+            <td>${shop.contact_number || "-"}</td>
+            <td>${(r.subscription && r.subscription.plan_name) || shop.plan_name || "Basic"}</td>
+            <td>${fmtDate(exp)}</td>
+            <td>${shop.is_active
+                ? statusBadge(status)
+                : '<span class="badge badge-danger">Inactive</span>'}</td>
+            <td>
+                <button type="button" onclick="openEditShopModal('${shop.id}')" title="Edit">✏️</button>
+                <button type="button" onclick="toggleShopActiveHandler('${shop.id}', ${shop.is_active ? 'false' : 'true'})" title="Toggle">⏸️</button>
+                <button type="button" onclick="deleteShopHandler('${shop.id}')" title="Delete">🗑️</button>
+            </td>
+        </tr>`;
+        }).join("") || `<tr><td colspan="8" style="text-align:center;color:#94a3b8;">No shops yet</td></tr>`;
     } catch (e) {
         console.error(e);
-        body.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#ef4444;">Failed to load: ${e.message || e}</td></tr>`;
+        body.innerHTML = `<tr><td colspan="8" style="color:#ef4444;">Failed: ${e.message || e}</td></tr>`;
     }
 }
 

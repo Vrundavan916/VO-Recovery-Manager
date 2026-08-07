@@ -553,6 +553,33 @@ async function sbUpdateShop(shopId, form) {
     const { data, error } = await sb.from("shops").update(payload).eq("id", shopId).select().single();
     if (error) throw error;
     await sbAddAuditLog("shop.update", "shop", shopId, `Updated shop details`, shopId);
+    
+    // Keep latest subscription end_date in sync with shop license
+    if (form.licenseExpiry) {
+        try {
+            const { data: latest } = await sb.from("subscriptions")
+                .select("id")
+                .eq("shop_id", shopId)
+                .order("end_date", { ascending: false })
+                .limit(1)
+                .maybeSingle();
+            if (latest && latest.id) {
+                await sb.from("subscriptions").update({
+                    end_date: form.licenseExpiry,
+                    plan_name: form.planName || form.plan || "Basic",
+                    status: "active"
+                }).eq("id", latest.id);
+            } else {
+                await sb.from("subscriptions").insert({
+                    shop_id: shopId,
+                    plan_name: form.planName || form.plan || "Basic",
+                    end_date: form.licenseExpiry,
+                    start_date: new Date().toISOString().slice(0,10),
+                    status: "active"
+                });
+            }
+        } catch (e) { console.warn("sub sync", e); }
+    }
     return data;
 }
 
@@ -573,6 +600,13 @@ async function sbDeleteShop(shopId) {
 }
 
 /* ---------- SUBSCRIPTIONS ---------- */
+function getEffectiveLicenseExpiry(shop, sub) {
+    const a = shop && shop.license_expiry ? String(shop.license_expiry).slice(0, 10) : "";
+    const b = sub && sub.end_date ? String(sub.end_date).slice(0, 10) : "";
+    if (a && b) return a >= b ? a : b;
+    return b || a || "";
+}
+
 function computeSubStatus(endDate) {
     if (!endDate) return "unknown";
     const today = new Date();
@@ -605,7 +639,23 @@ async function sbGetSubscriptionsWithShops() {
 
     return (shops || []).map(shop => {
         const sub = latestByShop[shop.id] || null;
-        const endDate = sub ? sub.end_date : shop.license_expiry;
+        // Same rule on every page: later of shop.license_expiry vs subscription.end_date
+        const a = shop.license_expiry ? String(shop.license_expiry).slice(0, 10) : "";
+        const b = sub && sub.end_date ? String(sub.end_date).slice(0, 10) : "";
+        let endDate = "";
+        if (a && b) endDate = a >= b ? a : b;
+        else endDate = b || a || null;
+        // Auto-heal: if subscription is later than shop.license_expiry, trust later and update shop async
+        if (endDate && shop.license_expiry && String(shop.license_expiry).slice(0,10) !== String(endDate).slice(0,10)) {
+            const later = String(endDate).slice(0,10);
+            if (!shop.license_expiry || later > String(shop.license_expiry).slice(0,10)) {
+                sb.from("shops").update({ license_expiry: later }).eq("id", shop.id).then(() => {});
+                shop.license_expiry = later;
+            } else if (sub && sub.id && String(shop.license_expiry).slice(0,10) > String(sub.end_date).slice(0,10)) {
+                sb.from("subscriptions").update({ end_date: shop.license_expiry }).eq("id", sub.id).then(() => {});
+                endDate = shop.license_expiry;
+            }
+        }
         return {
             shop,
             subscription: sub,
@@ -682,3 +732,5 @@ async function sbMarkReminderSent(customerId, nextDate) {
     return true;
 }
 window.sbMarkReminderSent = sbMarkReminderSent;
+
+window.getEffectiveLicenseExpiry = getEffectiveLicenseExpiry;
