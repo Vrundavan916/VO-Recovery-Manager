@@ -311,7 +311,7 @@ Record Customer Payment
 
 <label>Select Customer</label>
 
-<select id="recoveryCustomer" required>
+<select id="recoveryCustomer" required onchange="onRecoveryCustomerChange()">
 
 <option value="">
 
@@ -321,6 +321,12 @@ Select Customer
 
 </select>
 
+</div>
+
+<div>
+<label>Current Outstanding (₹)</label>
+<input type="text" id="recoveryOutstanding" readonly placeholder="Select customer" style="font-weight:700;color:#b91c1c;background:#fef2f2;">
+<small id="recoveryOutHint" style="color:#73879B;">Customer select karo – pending amount ahiya dekhase</small>
 </div>
 
 <!-- Recovery Amount -->
