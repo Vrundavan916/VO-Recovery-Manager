@@ -217,9 +217,7 @@ async function submitForgotPassword() {
         return;
     }
     if (!email) {
-        alert("Recovery email enter karo.
-
-Settings ma je Recovery Email save karyu hoy ae.");
+        alert("Recovery email enter karo.\n\nSettings ma je Recovery Email save karyu hoy ae.");
         return;
     }
     if (!newPass || newPass.length < 4) {
@@ -304,10 +302,7 @@ Settings ma je Recovery Email save karyu hoy ae.");
 
         if (upErr) throw upErr;
 
-        alert("✅ Password reset successful!
-
-Username: " + username + "
-Haji nava password thi login karo.");
+        alert("✅ Password reset successful!\n\nUsername: " + username + "\nHaji nava password thi login karo.");
         closeForgotPassword();
         const passInput = document.getElementById("password") || document.querySelector('input[type="password"]');
         const userInput = document.getElementById("username") || document.querySelector('input[type="text"]');
