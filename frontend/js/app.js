@@ -524,7 +524,17 @@ async function saveRecovery() {
 
     if (!customerId || !amount || !date) return;
     if (customerId.value === "") { alert("Please Select Customer"); return; }
-    if (amount.value === "") { alert("Please Enter Recovery Amount"); return; }
+    
+    const custCheck = (customers || []).find(c => String(c.id) === String(customerId.value));
+    const payAmt = Number(amount.value);
+    const dueAmt = custCheck ? Number(custCheck.outstanding || 0) : 0;
+    if (custCheck && payAmt > dueAmt + 0.001) {
+        alert("❌ Recovery entry allow nathi\n\nCustomer: " + (custCheck.name || "-") + "\nCurrent Outstanding: ₹" + dueAmt.toLocaleString("en-IN") + "\nYou entered: ₹" + payAmt.toLocaleString("en-IN") + "\nExtra: ₹" + (payAmt - dueAmt).toLocaleString("en-IN") + "\n\nOutstanding karta vadhare amount recovery ma nathi kari shakat.\nPlease ₹" + dueAmt.toLocaleString("en-IN") + " ke ochu amount enter karo.");
+        amount.focus();
+        return;
+    }
+    if (payAmt <= 0) { alert("Recovery amount 0 karta vadhare hovu joiye."); return; }
+
 
     let finalShopId = currentShopId();
     const cust = customers.find(c => c.id == customerId.value);
@@ -1701,3 +1711,30 @@ function printCleanReport() {
     }
 }
 window.printCleanReport = printCleanReport;
+
+function onRecoveryAmountInput() {
+    var amount = document.getElementById("recoveryAmount");
+    var select = document.getElementById("recoveryCustomer");
+    var hint = document.getElementById("recoveryOutHint");
+    if (!amount || !select || !select.value) return;
+    var c = (customers || []).find(function(x){ return String(x.id) === String(select.value); });
+    if (!c) return;
+    var due = Number(c.outstanding || 0);
+    var pay = Number(amount.value || 0);
+    if (pay > due + 0.001) {
+        amount.style.borderColor = "#ef4444";
+        amount.style.background = "#fef2f2";
+        if (hint) {
+            hint.textContent = "Error: Outstanding ₹" + due.toLocaleString("en-IN") + " — tamaru ₹" + pay.toLocaleString("en-IN") + " vadhare che";
+            hint.style.color = "#b91c1c";
+        }
+    } else {
+        amount.style.borderColor = "";
+        amount.style.background = "";
+        if (hint && due > 0) {
+            hint.textContent = "Pending dues — recovery aa amount sudhi";
+            hint.style.color = "#b91c1c";
+        }
+    }
+}
+window.onRecoveryAmountInput = onRecoveryAmountInput;
