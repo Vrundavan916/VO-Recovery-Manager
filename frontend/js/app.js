@@ -917,6 +917,13 @@ async function saveSettings() {
             sessionStorage.setItem("bk_username", newUsername);
         }
 
+        // Always save recovery email on the user account (works for Super Admin too)
+        if (recoveryEmailField && session.userId) {
+            const re = recoveryEmailField.value.trim();
+            const sb = getSupabase();
+            await sb.from("users").update({ recovery_email: re || null }).eq("id", session.userId);
+        }
+
         if (session.shopId) {
             const s = await sbGetSettings(session.shopId);
             if (recoveryEmailField) s.recoveryEmail = recoveryEmailField.value.trim();
@@ -1080,16 +1087,20 @@ function previewCompanyLogo(event) {
 }
 
 async function saveCompanyBranding() {
-    const shopId = currentShopId();
-    if (!shopId) {
-        alert("No shop context. Super Admin should manage shops in Supabase.");
-        return;
-    }
+    const session = (typeof getSession === "function") ? getSession() : {};
+    const shopId = (typeof currentShopId === "function") ? currentShopId() : (session.shopId || null);
+    const isSA = (typeof isSuperAdmin === "function" && isSuperAdmin())
+        || session.role === "super_admin"
+        || session.role === "Super Admin"
+        || session.username === "superadmin";
+
     const companyField = document.getElementById("companyName");
     const phoneField = document.getElementById("companyMobile") || document.getElementById("contactNumber");
     const emailField = document.getElementById("companyEmail") || document.getElementById("emailAddress");
     const addressField = document.getElementById("companyAddress");
     const softwareField = document.getElementById("softwareName");
+
+    if (typeof settings !== "object" || !settings) window.settings = {};
 
     if (companyField && companyField.value.trim()) settings.company = companyField.value.trim();
     if (phoneField && phoneField.value.trim()) settings.phone = phoneField.value.trim();
@@ -1097,8 +1108,47 @@ async function saveCompanyBranding() {
     if (addressField && addressField.value.trim()) settings.address = addressField.value.trim();
     if (softwareField && softwareField.value.trim()) settings.softwareName = softwareField.value.trim();
 
+    const emailVal = (emailField && emailField.value.trim()) || (settings.email || "");
+
     try {
+        // No shop (Super Admin / missing shop): save recovery email on user
+        if (!shopId) {
+            const uid = session.userId || session.user_id || "";
+            if (!uid) {
+                alert("Session expire thai gayu. Logout kari farithi login karo.");
+                return;
+            }
+            if (!emailVal) {
+                alert("Email Address box ma recovery email lakho, pachhi Save dabavo.");
+                return;
+            }
+            const sb = getSupabase();
+            if (!sb) {
+                alert("Cloud connection fail.");
+                return;
+            }
+            const { error } = await sb.from("users").update({ recovery_email: emailVal }).eq("id", uid);
+            if (error) {
+                // try by username
+                const { error: e2 } = await sb.from("users").update({ recovery_email: emailVal }).eq("username", session.username || "superadmin");
+                if (e2) throw e2;
+            }
+            const reField = document.getElementById("recoveryEmail");
+            if (reField) reField.value = emailVal;
+            alert("✅ Recovery email save thai gayu: " + emailVal + "\n\nForgot Password ma Username + aa email use karo.\n\nNote: Company logo/name shop Admin login thi save thase.");
+            return;
+        }
+
         await sbSaveSettings(shopId, settings);
+        if (emailVal) {
+            try {
+                const sb = getSupabase();
+                await sb.from("shops").update({ email: emailVal }).eq("id", shopId);
+                if (session.userId) {
+                    await sb.from("users").update({ recovery_email: emailVal }).eq("id", session.userId);
+                }
+            } catch (e) { console.warn(e); }
+        }
         alert("Company branding saved.");
     } catch (e) {
         console.error(e);
@@ -1106,7 +1156,6 @@ async function saveCompanyBranding() {
     }
 }
 
-window.previewCompanyLogo = previewCompanyLogo;
 window.saveCompanyBranding = saveCompanyBranding;
 
 
