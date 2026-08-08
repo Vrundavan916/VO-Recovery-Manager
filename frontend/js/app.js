@@ -456,6 +456,11 @@ function updateDashboard() {
     if (todayRecovery) {
         todayRecovery.innerHTML = "₹" + recoveryTotal.toLocaleString("en-IN");
     }
+
+    // Aging cards (async, non-blocking)
+    if (typeof loadAgingDashboard === "function") {
+        loadAgingDashboard().catch(function (e) { console.warn("aging", e); });
+    }
 }
 
 function loadRecentCustomers() {
@@ -536,23 +541,12 @@ async function saveRecovery() {
         return;
     }
     if (payAmt === 0 && !remarkText) {
-        alert("Amount is 0 (call / no payment).
-
-Please enter details in Remarks
-(e.g. Called customer – payment not received).");
+        alert("Amount is 0 (call / no payment).\n\nPlease enter details in Remarks\n(e.g. Called customer – payment not received).");
         if (remarks) remarks.focus();
         return;
     }
     if (custCheck && payAmt > dueAmt + 0.001) {
-        alert("❌ Recovery entry not allowed
-
-Customer: " + (custCheck.name || "-") + "
-Current Outstanding: ₹" + dueAmt.toLocaleString("en-IN") + "
-You entered: ₹" + payAmt.toLocaleString("en-IN") + "
-Extra: ₹" + (payAmt - dueAmt).toLocaleString("en-IN") + "
-
-Amount cannot exceed outstanding balance.
-Please enter ₹" + dueAmt.toLocaleString("en-IN") + " or less.");
+        alert("❌ Recovery entry not allowed\n\nCustomer: " + (custCheck.name || "-") + "\nCurrent Outstanding: ₹" + dueAmt.toLocaleString("en-IN") + "\nYou entered: ₹" + payAmt.toLocaleString("en-IN") + "\nExtra: ₹" + (payAmt - dueAmt).toLocaleString("en-IN") + "\n\nAmount cannot exceed outstanding balance.\nPlease enter ₹" + dueAmt.toLocaleString("en-IN") + " or less.");
         amount.focus();
         return;
     }
@@ -1770,3 +1764,86 @@ function onRecoveryAmountInput() {
     }
 }
 window.onRecoveryAmountInput = onRecoveryAmountInput;
+
+// ================================
+// Aging Dashboard
+// ================================
+let lastAgingSummary = null;
+
+function formatAgingINR(n) {
+    return "₹" + Number(n || 0).toLocaleString("en-IN");
+}
+
+async function loadAgingDashboard() {
+    const el030 = document.getElementById("agingBucket030");
+    if (!el030) return; // not on this page
+
+    try {
+        const session = (typeof getSession === "function") ? getSession() : {};
+        const shopId = session.shopId || null;
+        if (!shopId) {
+            // super admin without shop context — show zeros
+            renderAgingSummary({
+                total_customers: 0, total_outstanding: 0,
+                bucket_0_30: 0, bucket_31_60: 0, bucket_61_90: 0, bucket_90_plus: 0,
+                total_overdue: 0, open_ptp: 0, open_escalations: 0
+            });
+            return;
+        }
+        if (typeof sbGetAgingSummary !== "function") return;
+        const summary = await sbGetAgingSummary(shopId);
+        lastAgingSummary = summary;
+        renderAgingSummary(summary);
+    } catch (e) {
+        console.error("loadAgingDashboard", e);
+    }
+}
+
+function renderAgingSummary(s) {
+    const set = (id, val, money) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = money ? formatAgingINR(val) : String(val ?? 0);
+    };
+    set("agingBucket030", s.bucket_0_30, true);
+    set("agingBucket3160", s.bucket_31_60, true);
+    set("agingBucket6190", s.bucket_61_90, true);
+    set("agingBucket90", s.bucket_90_plus, true);
+    set("agingTotalOverdue", s.total_overdue, true);
+    set("agingOpenPtp", s.open_ptp, false);
+    set("agingOpenEsc", s.open_escalations, false);
+    set("agingTotalCust", s.total_customers, false);
+}
+
+async function refreshAgingDashboard() {
+    try {
+        const session = (typeof getSession === "function") ? getSession() : {};
+        const shopId = session.shopId || null;
+        if (typeof sbRecalcAging === "function" && shopId) {
+            await sbRecalcAging(shopId);
+        }
+        await loadAgingDashboard();
+        if (typeof reloadAllData === "function") await reloadAllData();
+    } catch (e) {
+        console.error(e);
+        alert("Aging refresh failed: " + (e.message || e));
+    }
+}
+
+function filterByAgingBucket(bucket) {
+    // Navigate to customers with hash filter
+    const map = {
+        "0-30": "aging_0_30",
+        "31-60": "aging_31_60",
+        "61-90": "aging_61_90",
+        "90+": "aging_90"
+    };
+    const key = map[bucket] || bucket;
+    window.location.href = "customers.html#" + key;
+}
+
+window.loadAgingDashboard = loadAgingDashboard;
+window.refreshAgingDashboard = refreshAgingDashboard;
+window.filterByAgingBucket = filterByAgingBucket;
+window.renderAgingSummary = renderAgingSummary;
+

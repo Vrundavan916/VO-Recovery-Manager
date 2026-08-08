@@ -217,9 +217,7 @@ async function submitForgotPassword() {
         return;
     }
     if (!email) {
-        alert("Please enter recovery email.
-
-Use the Recovery Email saved in Settings.");
+        alert("Please enter recovery email.\n\nUse the Recovery Email saved in Settings.");
         return;
     }
     if (!newPass || newPass.length < 4) {
@@ -304,10 +302,7 @@ Use the Recovery Email saved in Settings.");
 
         if (upErr) throw upErr;
 
-        alert("✅ Password reset successful!
-
-Username: " + username + "
-Please login with the new password.");
+        alert("✅ Password reset successful!\n\nUsername: " + username + "\nPlease login with the new password.");
         closeForgotPassword();
         const passInput = document.getElementById("password") || document.querySelector('input[type="password"]');
         const userInput = document.getElementById("username") || document.querySelector('input[type="text"]');
@@ -318,6 +313,14 @@ Please login with the new password.");
         alert("Reset failed: " + (e.message || e));
     }
 }
+
+
+window.sbLogin = sbLogin;
+window.login = login;
+window.checkLogin = checkLogin;
+window.injectSuperAdminNav = typeof injectSuperAdminNav === "function" ? injectSuperAdminNav : undefined;
+window.applyRoleRestrictions = typeof applyRoleRestrictions === "function" ? applyRoleRestrictions : undefined;
+window.logout = logout;
 
 window.openForgotPassword = openForgotPassword;
 window.closeForgotPassword = closeForgotPassword;

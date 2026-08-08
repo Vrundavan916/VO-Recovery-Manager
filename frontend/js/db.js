@@ -764,3 +764,48 @@ async function sbMarkReminderSent(customerId, nextDate) {
 window.sbMarkReminderSent = sbMarkReminderSent;
 
 window.getEffectiveLicenseExpiry = getEffectiveLicenseExpiry;
+
+/* ---------- AGING SUMMARY (RPC) ---------- */
+async function sbGetAgingSummary(shopId) {
+    const sb = getSupabase();
+    if (!sb) throw new Error("Supabase not ready");
+    if (!shopId) {
+        return {
+            total_customers: 0,
+            total_outstanding: 0,
+            bucket_0_30: 0,
+            bucket_31_60: 0,
+            bucket_61_90: 0,
+            bucket_90_plus: 0,
+            total_overdue: 0,
+            open_ptp: 0,
+            open_escalations: 0
+        };
+    }
+    const { data, error } = await sb.rpc("shop_aging_summary", { p_shop_id: shopId });
+    if (error) throw error;
+    // rpc returns array of rows for RETURNS TABLE
+    const row = Array.isArray(data) ? (data[0] || {}) : (data || {});
+    return {
+        total_customers: Number(row.total_customers || 0),
+        total_outstanding: Number(row.total_outstanding || 0),
+        bucket_0_30: Number(row.bucket_0_30 || 0),
+        bucket_31_60: Number(row.bucket_31_60 || 0),
+        bucket_61_90: Number(row.bucket_61_90 || 0),
+        bucket_90_plus: Number(row.bucket_90_plus || 0),
+        total_overdue: Number(row.total_overdue || 0),
+        open_ptp: Number(row.open_ptp || 0),
+        open_escalations: Number(row.open_escalations || 0)
+    };
+}
+window.sbGetAgingSummary = sbGetAgingSummary;
+
+async function sbRecalcAging(shopId) {
+    const sb = getSupabase();
+    if (!sb) throw new Error("Supabase not ready");
+    const { data, error } = await sb.rpc("recalc_all_aging", { p_shop_id: shopId || null });
+    if (error) throw error;
+    return data;
+}
+window.sbRecalcAging = sbRecalcAging;
+
