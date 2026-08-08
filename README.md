@@ -1,6 +1,6 @@
 # BK Recovery Manager
 
-**Version:** 3.0.0 – Production SaaS (Supabase Multi-Tenant)
+**Version:** 3.0.0 – Production SaaS (Supabase Multi-Tenant
 
 Commercial jewellery recovery management for multiple jewellers.  
 Only Super Admin can onboard new companies. No public registration.
