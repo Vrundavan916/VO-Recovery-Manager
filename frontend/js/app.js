@@ -526,14 +526,36 @@ async function saveRecovery() {
     if (customerId.value === "") { alert("Please Select Customer"); return; }
     
     const custCheck = (customers || []).find(c => String(c.id) === String(customerId.value));
-    const payAmt = Number(amount.value);
+    const payAmt = Number(amount.value || 0);
     const dueAmt = custCheck ? Number(custCheck.outstanding || 0) : 0;
+    const remarkText = remarks ? (remarks.value || "").trim() : "";
+
+    // Amount 0 allowed = call / follow-up only (must add comment)
+    if (payAmt < 0) {
+        alert("Recovery amount cannot be negative.");
+        return;
+    }
+    if (payAmt === 0 && !remarkText) {
+        alert("Amount is 0 (call / no payment).
+
+Please enter details in Remarks
+(e.g. Called customer – payment not received).");
+        if (remarks) remarks.focus();
+        return;
+    }
     if (custCheck && payAmt > dueAmt + 0.001) {
-        alert("❌ Recovery entry not allowed\n\nCustomer: " + (custCheck.name || "-") + "\nCurrent Outstanding: ₹" + dueAmt.toLocaleString("en-IN") + "\nYou entered: ₹" + payAmt.toLocaleString("en-IN") + "\nExtra: ₹" + (payAmt - dueAmt).toLocaleString("en-IN") + "\n\nAmount cannot exceed outstanding balance.\nPlease ₹" + dueAmt.toLocaleString("en-IN") + " or less.");
+        alert("❌ Recovery entry not allowed
+
+Customer: " + (custCheck.name || "-") + "
+Current Outstanding: ₹" + dueAmt.toLocaleString("en-IN") + "
+You entered: ₹" + payAmt.toLocaleString("en-IN") + "
+Extra: ₹" + (payAmt - dueAmt).toLocaleString("en-IN") + "
+
+Amount cannot exceed outstanding balance.
+Please enter ₹" + dueAmt.toLocaleString("en-IN") + " or less.");
         amount.focus();
         return;
     }
-    if (payAmt <= 0) { alert("Recovery amount must be greater than 0."); return; }
 
 
     let finalShopId = currentShopId();
@@ -558,9 +580,19 @@ async function saveRecovery() {
     try {
         await sbSaveRecovery(recovery, finalShopId);
 
-        if (cust) {
+        if (cust && Number(amount.value || 0) > 0) {
             const newOut = Math.max(0, Number(cust.outstanding || 0) - Number(amount.value));
             await sbUpdateCustomerOutstanding(cust.id, newOut);
+        }
+        // Also append call note to customer remarks when amount is 0
+        if (cust && Number(amount.value || 0) === 0 && remarks && remarks.value.trim()) {
+            try {
+                const note = "[" + (date.value || "") + "] " + remarks.value.trim();
+                const prev = (cust.remarks || "").trim();
+                const merged = prev ? (prev + " | " + note) : note;
+                const sb = getSupabase();
+                await sb.from("customers").update({ remarks: merged }).eq("id", cust.id);
+            } catch (e) { console.warn("remarks update", e); }
         }
 
         amount.value = "";
