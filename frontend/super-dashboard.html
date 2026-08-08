@@ -112,7 +112,7 @@
     <div class="summary-bar">
         <div>
             <h2><i class="fa-solid fa-power-off"></i> Website Maintenance Mode</h2>
-            <span>Website off karo to badha shops na users login/dashboard access nahi kari shake (Super Admin j chalu rakhi shake)</span>
+            <span>Turning the website off will block login/dashboard access for all shop users (only Super Admin can continue)</span>
         </div>
         <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
             <span id="maintStatusLabel" style="font-weight:700;color:#2ecc71;">Website ON</span>
@@ -126,7 +126,7 @@
     <div style="padding:0 20px 20px;">
         <label style="font-size:13px;color:#7a8699;font-weight:600;">Message users ne dekhashe (off hoy tyare):</label>
         <textarea id="maintenanceMessage" rows="2" style="width:100%;margin-top:6px;padding:10px;border-radius:8px;border:1px solid #ddd;font-family:inherit;" placeholder="Amara system ma have update chalu che. Thoda time ma pacha aavo."></textarea>
-        <button class="add-btn" style="margin-top:10px;" onclick="saveMaintenanceMessage()"><i class="fa-solid fa-floppy-disk"></i> Message Save Karo</button>
+        <button class="add-btn" style="margin-top:10px;" onclick="saveMaintenanceMessage()"><i class="fa-solid fa-floppy-disk"></i> Save Message</button>
     </div>
 </section>
 
@@ -210,7 +210,7 @@ async function toggleMaintenanceMode() {
     const enabled = checkbox.checked;
     const message = document.getElementById("maintenanceMessage").value.trim();
 
-    if (enabled && !confirm("Website OFF karva mangho cho? Badha shops na users (Super Admin sivay) login/dashboard access nahi kari shake.")) {
+    if (enabled && !confirm("Are you sure you want to turn the website OFF? All shop users (except Super Admin) will be unable to login or access the dashboard.")) {
         checkbox.checked = false;
         return;
     }
@@ -218,7 +218,7 @@ async function toggleMaintenanceMode() {
     try {
         await sbSetMaintenanceMode(enabled, message);
         renderMaintSwitch(enabled);
-        alert(enabled ? "✅ Website OFF thai gayu. Users ne maintenance message dekhashe." : "✅ Website pacha ON thai gayu.");
+        alert(enabled ? "✅ Website is now OFF. Users will see the maintenance message." : "✅ Website is back ON.");
     } catch (e) {
         console.error(e);
         alert("Failed: " + (e.message || e));
@@ -231,7 +231,7 @@ async function saveMaintenanceMessage() {
     const message = document.getElementById("maintenanceMessage").value.trim();
     try {
         await sbSetMaintenanceMode(enabled, message);
-        alert("✅ Message save thai gayu.");
+        alert("✅ Message saved successfully.");
     } catch (e) {
         console.error(e);
         alert("Save failed: " + (e.message || e));
