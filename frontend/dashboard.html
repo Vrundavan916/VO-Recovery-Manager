@@ -259,7 +259,78 @@ DASHBOARD CARDS START
 
 <!-- =========================
 DASHBOARD CARDS END
-========================= --><!-- =========================
+========================= -->
+
+<!-- =========================
+AGING ANALYSIS START
+========================= -->
+<section class="content-box fade" id="agingSection" style="margin-top:8px;">
+  <div class="summary-bar">
+    <div>
+      <h2><i class="fa-solid fa-chart-pie" style="color:var(--primary,#1A3D63);"></i> Aging Analysis</h2>
+      <span>Outstanding by overdue period · Credit &amp; escalations</span>
+    </div>
+    <button type="button" class="add-btn" onclick="refreshAgingDashboard()" title="Refresh">
+      <i class="fa-solid fa-rotate"></i> Refresh Aging
+    </button>
+  </div>
+  <div class="dashboard-cards" id="agingCards" style="margin-top:12px;">
+    <div class="card" style="cursor:pointer;" onclick="filterByAgingBucket('0-30')">
+      <i class="fa-solid fa-clock"></i>
+      <h3>0–30 Days</h3>
+      <h1 id="agingBucket030">₹0</h1>
+      <small>Recent overdue</small>
+    </div>
+    <div class="card orange" style="cursor:pointer;" onclick="filterByAgingBucket('31-60')">
+      <i class="fa-solid fa-hourglass-half"></i>
+      <h3>31–60 Days</h3>
+      <h1 id="agingBucket3160">₹0</h1>
+      <small>Needs follow-up</small>
+    </div>
+    <div class="card" style="cursor:pointer;border-color:#F59E0B;" onclick="filterByAgingBucket('61-90')">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      <h3>61–90 Days</h3>
+      <h1 id="agingBucket6190">₹0</h1>
+      <small>High risk</small>
+    </div>
+    <div class="card red" style="cursor:pointer;" onclick="filterByAgingBucket('90+')">
+      <i class="fa-solid fa-skull-crossbones"></i>
+      <h3>90+ Days</h3>
+      <h1 id="agingBucket90">₹0</h1>
+      <small>Critical / Legal</small>
+    </div>
+  </div>
+  <div class="dashboard-cards" style="margin-top:12px;">
+    <div class="card green">
+      <i class="fa-solid fa-indian-rupee-sign"></i>
+      <h3>Total Overdue</h3>
+      <h1 id="agingTotalOverdue">₹0</h1>
+      <small>All aging buckets</small>
+    </div>
+    <div class="card">
+      <i class="fa-solid fa-handshake"></i>
+      <h3>Open PTP</h3>
+      <h1 id="agingOpenPtp">0</h1>
+      <small>Promise to Pay</small>
+    </div>
+    <div class="card orange">
+      <i class="fa-solid fa-arrow-up-right-dots"></i>
+      <h3>Escalations</h3>
+      <h1 id="agingOpenEsc">0</h1>
+      <small>Open escalations</small>
+    </div>
+    <div class="card">
+      <i class="fa-solid fa-users"></i>
+      <h3>Customers (shop)</h3>
+      <h1 id="agingTotalCust">0</h1>
+      <small>From aging summary</small>
+    </div>
+  </div>
+</section>
+<!-- =========================
+AGING ANALYSIS END
+========================= -->
+<!-- =========================
 RECENT CUSTOMERS START
 ========================= -->
 
