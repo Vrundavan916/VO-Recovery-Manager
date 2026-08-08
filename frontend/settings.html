@@ -11,7 +11,7 @@
 
 <title>Settings | BK Recovery Manager</title>
 
-<link rel="stylesheet" href="css/style.css?v=enterprise4">
+<link rel="stylesheet" href="css/style.css?v=enterprise3">
 
 <link rel="stylesheet"
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
@@ -19,6 +19,8 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
 </head>
 
 <body>
+<div id="authLoader"><div class="authLoaderSpinner"></div></div>
+
 
 <button type="button" class="menu-toggle" id="menuToggle" aria-label="Menu">☰</button>
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
@@ -497,7 +499,7 @@ PART 3B - USER MANAGEMENT
 
 <section class="table-section fade" id="executiveManagementSection">
     <h2><i class="fa-solid fa-user-tie"></i> Sales / Recovery Executives</h2>
-    <p style="color:#9CA6B8;margin-bottom:16px;">Customer ane Recovery form ma aa list dropdown ma aavse. Shop Admin can add/remove.</p>
+    <p style="color:#9CA6B8;margin-bottom:16px;">Customer ane Recovery form ma aa list dropdown ma aavse. Shop Admin add/remove kari shake.</p>
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
         <input type="text" id="newExecutiveName" class="form-control" placeholder="Executive name (e.g. Ramesh)" style="max-width:280px;">
         <button type="button" class="add-btn" onclick="addExecutive()"><i class="fa-solid fa-plus"></i> Add Executive</button>
@@ -1196,7 +1198,7 @@ JAVASCRIPT
 <script src="js/utils.js"></script>
 <script src="js/db.js"></script>
 <script src="js/auth.js"></script>
-<script src="js/app.js?v=sa1"></script>
+<script src="js/app.js"></script>
 <script src="js/company.js"></script>
 <script src="js/excel-import.js"></script>
 
