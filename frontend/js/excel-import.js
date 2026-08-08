@@ -23,7 +23,7 @@ const CUSTOMER_EXCEL_HEADERS = [
 
 function downloadCustomerTemplate() {
     if (typeof XLSX === "undefined") {
-        alert("Excel library load નથી થઈ. Internet check કરો.");
+        alert("Excel library failed to load. Please check your internet connection.");
         return;
     }
 
@@ -223,7 +223,7 @@ function handleCustomerExcelUpload(event) {
     const file = event.target.files && event.target.files[0];
     if (!file) return;
 
-    const mode = confirm("OK = નવા customers ADD (append)\nCancel = બધા REPLACE (note: replace inserts new rows)")
+    const mode = confirm("OK = ADD new customers (append)\nCancel = REPLACE all (note: replace inserts new rows)")
         ? "append"
         : "replace";
 
@@ -246,12 +246,12 @@ function handleCustomerExcelUpload(event) {
 
 function exportCustomersToExcel() {
     if (typeof XLSX === "undefined") {
-        alert("Excel library load નથી થઈ.");
+        alert("Excel library failed to load.");
         return;
     }
     const list = window.customers || [];
     if (!list.length) {
-        alert("Export કરવા customers નથી.");
+        alert("No customers to export.");
         return;
     }
     const rows = [CUSTOMER_EXCEL_HEADERS];

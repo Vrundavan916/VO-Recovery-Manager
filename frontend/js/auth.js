@@ -23,7 +23,7 @@ async function sbLogin(username, password) {
         if (se) throw se;
         shop = s;
         if (shop && shop.is_active === false) {
-            return { error: "shop_inactive", message: "This shop is deactivated. Please contact Super Admin." };
+            return { error: "shop_inactive", message: "This shop has been deactivated. Please contact the Super Admin." };
         }
         if (shop && shop.license_expiry) {
             const st = (typeof computeSubStatus === "function")
@@ -32,7 +32,7 @@ async function sbLogin(username, password) {
             if (st === "expired" && data.role !== "super_admin") {
                 return {
                     error: "license_expired",
-                    message: "Shop ni license expire thai gayi che.\n\nLogin band che.\nSuper Admin Subscription page parthi renew kari shake."
+                    message: "This shop's license has expired.\n\nLogin is blocked.\nPlease contact the Super Admin to renew via the Subscription page."
                 };
             }
         }
@@ -79,7 +79,7 @@ async function login() {
         }
     } catch (e) {
         console.error(e);
-        showLoginError(e.message || "Login failed. Check network / cloud connection.");
+        showLoginError(e.message || "Login failed. Please check your network / Supabase connection.");
     } finally {
         if (btn) {
             btn.disabled = false;
@@ -88,9 +88,9 @@ async function login() {
     }
 }
 
-function checkLogin() {
+async function checkLogin() {
     const page = window.location.pathname;
-    if (page.includes("login.html") || page.endsWith("/") || page.endsWith("/frontend")) return;
+    if (page.includes("login.html") || page.includes("maintenance.html") || page.endsWith("/") || page.endsWith("/frontend")) return;
 
     const session = getSession();
     if (!session.isLoggedIn) {
@@ -99,6 +99,28 @@ function checkLogin() {
     }
 
     const role = session.role;
+
+    // Super Admin should never see individual shop/customer data (privacy/trust).
+    // Only Super Dashboard (aggregate numbers), Company Management, Subscription allowed.
+    // NOTE: check "/dashboard.html" (leading slash) so it does NOT match "super-dashboard.html".
+    const superAdminBlockedPages = ["/dashboard.html", "customers.html", "recovery.html", "reports.html"];
+    if (role === "super_admin" && !page.includes("super-dashboard.html") && superAdminBlockedPages.some(p => page.includes(p))) {
+        alert("Super Admin cannot view shop-level customer data (privacy policy). Redirecting to Super Dashboard.");
+        window.location.href = "super-dashboard.html";
+        return;
+    }
+
+    if (role !== "super_admin") {
+        try {
+            const status = await sbGetMaintenanceStatus();
+            if (status.enabled) {
+                sessionStorage.setItem("bk_maintenance_message", status.message || "");
+                window.location.href = "maintenance.html";
+                return;
+            }
+        } catch (e) { console.error("maintenance check failed", e); }
+    }
+
     if (page.includes("settings.html") && role !== "admin" && role !== "super_admin") {
         alert("Access Denied. Settings is available to Admin only.");
         window.location.href = "dashboard.html";
@@ -167,7 +189,19 @@ function applyRoleRestrictions() {
         shopLabel.innerText = session.shopName || (role === "super_admin" ? "All Shops" : "");
     }
 
-    if (role === "admin" || role === "super_admin") return;
+    if (role === "super_admin") {
+        // Hide shop-level data links from Super Admin (privacy - no customer PII access)
+        ["dashboard.html", "customers.html", "recovery.html", "reports.html"].forEach(href => {
+            document.querySelectorAll('a[href="' + href + '"]').forEach(link => {
+                const li = link.closest("li");
+                if (li) li.style.display = "none";
+                else link.style.display = "none";
+            });
+        });
+        return;
+    }
+
+    if (role === "admin") return;
 
     document.querySelectorAll('a[href="settings.html"]').forEach(link => {
         link.style.display = "none";
@@ -217,13 +251,11 @@ async function submitForgotPassword() {
         return;
     }
     if (!email) {
-        alert("Please enter recovery email.
-
-Use the Recovery Email saved in Settings.");
+        alert("Please enter recovery email.\n\nUse the Recovery Email saved in Settings.");
         return;
     }
     if (!newPass || newPass.length < 4) {
-        alert("New password must be at least 4 characters.");
+        alert("New password minimum 4 characters.");
         return;
     }
     if (newPass !== confirmPass) {
@@ -234,7 +266,7 @@ Use the Recovery Email saved in Settings.");
     try {
         const sb = getSupabase();
         if (!sb) {
-            alert("Cloud connection failed.");
+            alert("Cloud connection fail.");
             return;
         }
 
@@ -250,7 +282,7 @@ Use the Recovery Email saved in Settings.");
             return;
         }
         if (user.is_active === false) {
-            alert("Account is inactive. Contact Super Admin.");
+            alert("Account is inactive. Please contact the Super Admin.");
             return;
         }
 
@@ -289,7 +321,7 @@ Use the Recovery Email saved in Settings.");
         }
         allowed.delete("");
         if (!allowed.size) {
-            alert("No registered email for this account.\nAdd shop Email in Company Management.");
+            alert("No registered email for this account.\nAdd the shop Email in Company Management.");
             return;
         }
         if (!allowed.has(email)) {
@@ -304,10 +336,7 @@ Use the Recovery Email saved in Settings.");
 
         if (upErr) throw upErr;
 
-        alert("✅ Password reset successful!
-
-Username: " + username + "
-Please login with the new password.");
+        alert("✅ Password reset successful!\n\nUsername: " + username + "\nPlease login with the new password.");
         closeForgotPassword();
         const passInput = document.getElementById("password") || document.querySelector('input[type="password"]');
         const userInput = document.getElementById("username") || document.querySelector('input[type="text"]');

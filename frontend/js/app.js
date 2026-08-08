@@ -281,7 +281,7 @@ Remarks :
 ${c.remarks}
 `;
     if (Number(c.outstanding || 0) > 0 && c.mobile) {
-        if (confirm(msg + "\n\nSend WhatsApp dues reminder?")) {
+        if (confirm(msg + "\n\nWhatsApp dues reminder moklvu?")) {
             sendWhatsAppReminder(index);
         }
     } else {
@@ -315,13 +315,13 @@ function buildWhatsAppReminderMessage(customer) {
         "",
         "*" + shopName + "* – Payment Reminder",
         "",
-        "Your account has *outstanding dues* pending.",
+        "Aapnu account ma *outstanding dues* baki che.",
         "",
         "📋 Bill Amount: ₹" + bill,
         "💰 *Pending Dues: ₹" + outstanding + "*",
         "",
-        "Please make payment soon to clear your account.",
-        "After payment, contact the shop for receipt / update.",
+        "Krupaya jaldi payment kari account clear karo.",
+        "Payment pachhi receipt / update mate shop contact karo.",
         phone ? ("📞 " + phone) : "",
         "",
         "Dhanyavaad,",
@@ -339,7 +339,7 @@ function sendWhatsAppReminder(index) {
     }
     const phone = normalizeWhatsAppNumber(customer.mobile);
     if (!phone || phone.length < 12) {
-        alert("Valid mobile number not found. Enter a 10-digit mobile on the customer.");
+        alert("Valid mobile number not found. Please enter a 10-digit mobile number for the customer.");
         return;
     }
     const amt = Number(customer.outstanding || 0);
@@ -394,7 +394,7 @@ async function processWhatsAppReminders(autoOpen) {
         alert("No auto-reminders pending today.\n\n• Outstanding > 0\n• Auto Reminder ON\n• Follow-up / Due date today or past");
         return;
     }
-    if (!confirm(list.length + " customer(s) — send WhatsApp due reminder?\n\nOK = WhatsApp will open one by one.")) return;
+    if (!confirm(list.length + " customer(s) ne WhatsApp due reminder moklvu?\n\nOK = ek-ek WhatsApp open thase.")) return;
 
     for (let i = 0; i < list.length; i++) {
         const c = list[i];
@@ -524,39 +524,7 @@ async function saveRecovery() {
 
     if (!customerId || !amount || !date) return;
     if (customerId.value === "") { alert("Please Select Customer"); return; }
-    
-    const custCheck = (customers || []).find(c => String(c.id) === String(customerId.value));
-    const payAmt = Number(amount.value || 0);
-    const dueAmt = custCheck ? Number(custCheck.outstanding || 0) : 0;
-    const remarkText = remarks ? (remarks.value || "").trim() : "";
-
-    // Amount 0 allowed = call / follow-up only (must add comment)
-    if (payAmt < 0) {
-        alert("Recovery amount cannot be negative.");
-        return;
-    }
-    if (payAmt === 0 && !remarkText) {
-        alert("Amount is 0 (call / no payment).
-
-Please enter details in Remarks
-(e.g. Called customer – payment not received).");
-        if (remarks) remarks.focus();
-        return;
-    }
-    if (custCheck && payAmt > dueAmt + 0.001) {
-        alert("❌ Recovery entry not allowed
-
-Customer: " + (custCheck.name || "-") + "
-Current Outstanding: ₹" + dueAmt.toLocaleString("en-IN") + "
-You entered: ₹" + payAmt.toLocaleString("en-IN") + "
-Extra: ₹" + (payAmt - dueAmt).toLocaleString("en-IN") + "
-
-Amount cannot exceed outstanding balance.
-Please enter ₹" + dueAmt.toLocaleString("en-IN") + " or less.");
-        amount.focus();
-        return;
-    }
-
+    if (amount.value === "") { alert("Please Enter Recovery Amount"); return; }
 
     let finalShopId = currentShopId();
     const cust = customers.find(c => c.id == customerId.value);
@@ -564,6 +532,13 @@ Please enter ₹" + dueAmt.toLocaleString("en-IN") + " or less.");
 
     if (!finalShopId) {
         alert("No shop context.");
+        return;
+    }
+
+    const outstandingNow = Number(cust ? cust.outstanding || 0 : 0);
+    if (Number(amount.value) > outstandingNow) {
+        alert("❌ Recovery Amount (₹" + Number(amount.value).toLocaleString("en-IN") +
+            ") outstanding amount (₹" + outstandingNow.toLocaleString("en-IN") + ") thi vadhu che.\n\nAmount ghatado.");
         return;
     }
 
@@ -580,19 +555,9 @@ Please enter ₹" + dueAmt.toLocaleString("en-IN") + " or less.");
     try {
         await sbSaveRecovery(recovery, finalShopId);
 
-        if (cust && Number(amount.value || 0) > 0) {
+        if (cust) {
             const newOut = Math.max(0, Number(cust.outstanding || 0) - Number(amount.value));
             await sbUpdateCustomerOutstanding(cust.id, newOut);
-        }
-        // Also append call note to customer remarks when amount is 0
-        if (cust && Number(amount.value || 0) === 0 && remarks && remarks.value.trim()) {
-            try {
-                const note = "[" + (date.value || "") + "] " + remarks.value.trim();
-                const prev = (cust.remarks || "").trim();
-                const merged = prev ? (prev + " | " + note) : note;
-                const sb = getSupabase();
-                await sb.from("customers").update({ remarks: merged }).eq("id", cust.id);
-            } catch (e) { console.warn("remarks update", e); }
         }
 
         amount.value = "";
@@ -601,8 +566,7 @@ Please enter ₹" + dueAmt.toLocaleString("en-IN") + " or less.");
         if (paymentMode) paymentMode.selectedIndex = 0;
         if (collectedBy) collectedBy.selectedIndex = 0;
         customerId.value = "";
-        const outBox = document.getElementById("recoveryOutstanding");
-        if (outBox) outBox.value = "";
+        updateRecoveryOutstandingDisplay();
 
         await reloadAllData();
         alert("Recovery Saved Successfully.");
@@ -670,109 +634,31 @@ async function deleteRecovery(index) {
 function loadRecoveryCustomers() {
     const select = document.getElementById("recoveryCustomer");
     if (!select) return;
-    const prev = select.value;
-    select.innerHTML = "";
-    const opt0 = document.createElement("option");
-    opt0.value = "";
-    opt0.textContent = "Select Customer";
-    select.appendChild(opt0);
-
-    (customers || []).forEach(function(customer) {
+    select.innerHTML = `<option value="">Select Customer</option>`;
+    customers.forEach(customer => {
         const out = Number(customer.outstanding || 0);
-        const opt = document.createElement("option");
-        opt.value = String(customer.id);
-        opt.setAttribute("data-outstanding", String(out));
-        opt.textContent = customer.name + (out > 0 ? (" — ₹" + out.toLocaleString("en-IN") + " due") : " — Paid");
-        select.appendChild(opt);
+        select.innerHTML += `<option value="${customer.id}" data-outstanding="${out}">${customer.name} — ₹${out.toLocaleString("en-IN")} outstanding</option>`;
     });
-
-    if (prev) select.value = prev;
-
-    // bind every time (mobile safe)
-    select.onchange = onRecoveryCustomerChange;
-    select.addEventListener("change", onRecoveryCustomerChange);
-    select.addEventListener("input", onRecoveryCustomerChange);
-
-    onRecoveryCustomerChange();
+    updateRecoveryOutstandingDisplay();
 }
 
-function onRecoveryCustomerChange() {
-    try {
-        const select = document.getElementById("recoveryCustomer");
-        const outBox = document.getElementById("recoveryOutstanding");
-        const amtBox = document.getElementById("recoveryAmount");
-        const hint = document.getElementById("recoveryOutHint");
-        if (!select || !outBox) return;
+function updateRecoveryOutstandingDisplay() {
+    const select = document.getElementById("recoveryCustomer");
+    const box = document.getElementById("recoveryOutstandingBox");
+    const valueEl = document.getElementById("recoveryOutstandingValue");
+    if (!select || !box || !valueEl) return;
 
-        const val = select.value;
-        if (!val) {
-            outBox.value = "";
-            if (hint) {
-                hint.textContent = "Select a customer to see pending amount";
-                hint.style.color = "#73879B";
-            }
-            return;
-        }
+    const opt = select.options[select.selectedIndex];
+    const out = opt ? Number(opt.getAttribute("data-outstanding") || 0) : 0;
 
-        let out = 0;
-        const selected = select.options[select.selectedIndex];
-        if (selected && selected.getAttribute("data-outstanding") != null) {
-            out = Number(selected.getAttribute("data-outstanding") || 0);
-        }
-
-        // also from customers array (source of truth)
-        const c = (customers || []).find(function(x) {
-            return String(x.id) === String(val) || String(x.id) === val;
-        });
-        if (c) out = Number(c.outstanding || 0);
-
-        outBox.value = "₹" + out.toLocaleString("en-IN");
-        if (hint) {
-            if (out > 0) {
-                hint.textContent = "Pending dues — recover up to this amount";
-                hint.style.color = "#b91c1c";
-            } else {
-                hint.textContent = "Outstanding ₹0 — already cleared";
-                hint.style.color = "#15803d";
-            }
-        }
-        if (amtBox) {
-            amtBox.setAttribute("max", String(out > 0 ? out : ""));
-            amtBox.placeholder = out > 0 ? ("Max ₹" + out.toLocaleString("en-IN")) : "Enter amount";
-        }
-    } catch (e) {
-        console.error("onRecoveryCustomerChange", e);
+    if (select.value) {
+        valueEl.textContent = "₹" + out.toLocaleString("en-IN");
+        box.style.display = "block";
+    } else {
+        box.style.display = "none";
     }
 }
-window.onRecoveryCustomerChange = onRecoveryCustomerChange;
-window.loadRecoveryCustomers = loadRecoveryCustomers;
-
-function bindRecoveryOutstandingUI() {
-    var select = document.getElementById("recoveryCustomer");
-    if (!select) return;
-    select.onchange = onRecoveryCustomerChange;
-    select.onclick = onRecoveryCustomerChange;
-    select.onblur = onRecoveryCustomerChange;
-    if (select.dataset.outBound === "1") return;
-    select.dataset.outBound = "1";
-    ["change","input","blur","keyup"].forEach(function(ev){
-        select.addEventListener(ev, onRecoveryCustomerChange);
-    });
-}
-window.bindRecoveryOutstandingUI = bindRecoveryOutstandingUI;
-
-document.addEventListener("DOMContentLoaded", function(){
-    try {
-        if (document.getElementById("recoveryCustomer")) {
-            if (typeof loadRecoveryCustomers === "function") loadRecoveryCustomers();
-            bindRecoveryOutstandingUI();
-            setTimeout(onRecoveryCustomerChange, 300);
-            setTimeout(onRecoveryCustomerChange, 1000);
-        }
-    } catch(e) {}
-});
-
-
+window.updateRecoveryOutstandingDisplay = updateRecoveryOutstandingDisplay;
 
 // ================================
 // Reports
@@ -953,6 +839,9 @@ function updateRecoverySummary() {
     let pendingTotal = 0;
     customers.forEach(c => { pendingTotal += Number(c.outstanding || 0); });
 
+    const today2 = new Date().toISOString().split("T")[0];
+    const todayFollowupCount = customers.filter(c => c.followup === today2).length;
+
     const totalRecoveryAmount = getTotalRecovery();
     const monthlyAmount = getMonthlyCollection();
     const transactionCount = recoveries.length;
@@ -975,7 +864,10 @@ function updateRecoverySummary() {
         reportPendingBalance: formatCurrency(pendingTotal),
         todayCollection: formatCurrency(todayTotal),
         thisMonthCollection: formatCurrency(monthlyAmount),
-        reportOutstanding: formatCurrency(pendingTotal)
+        reportOutstanding: formatCurrency(pendingTotal),
+        reportOutstandingKPI: formatCurrency(pendingTotal),
+        reportTodayFollowupKPI: todayFollowupCount,
+        reportTodayRecoveryKPI: formatCurrency(todayTotal)
     };
 
     Object.keys(fields).forEach(id => {
@@ -1057,13 +949,6 @@ async function saveSettings() {
         if (newUsername !== session.username) {
             await sbUpdateUsername(session.userId, newUsername);
             sessionStorage.setItem("bk_username", newUsername);
-        }
-
-        // Always save recovery email on the user account (works for Super Admin too)
-        if (recoveryEmailField && session.userId) {
-            const re = recoveryEmailField.value.trim();
-            const sb = getSupabase();
-            await sb.from("users").update({ recovery_email: re || null }).eq("id", session.userId);
         }
 
         if (session.shopId) {
@@ -1229,20 +1114,16 @@ function previewCompanyLogo(event) {
 }
 
 async function saveCompanyBranding() {
-    const session = (typeof getSession === "function") ? getSession() : {};
-    const shopId = (typeof currentShopId === "function") ? currentShopId() : (session.shopId || null);
-    const isSA = (typeof isSuperAdmin === "function" && isSuperAdmin())
-        || session.role === "super_admin"
-        || session.role === "Super Admin"
-        || session.username === "superadmin";
-
+    const shopId = currentShopId();
+    if (!shopId) {
+        alert("No shop context. Super Admin should manage shops in Supabase.");
+        return;
+    }
     const companyField = document.getElementById("companyName");
     const phoneField = document.getElementById("companyMobile") || document.getElementById("contactNumber");
     const emailField = document.getElementById("companyEmail") || document.getElementById("emailAddress");
     const addressField = document.getElementById("companyAddress");
     const softwareField = document.getElementById("softwareName");
-
-    if (typeof settings !== "object" || !settings) window.settings = {};
 
     if (companyField && companyField.value.trim()) settings.company = companyField.value.trim();
     if (phoneField && phoneField.value.trim()) settings.phone = phoneField.value.trim();
@@ -1250,47 +1131,8 @@ async function saveCompanyBranding() {
     if (addressField && addressField.value.trim()) settings.address = addressField.value.trim();
     if (softwareField && softwareField.value.trim()) settings.softwareName = softwareField.value.trim();
 
-    const emailVal = (emailField && emailField.value.trim()) || (settings.email || "");
-
     try {
-        // No shop (Super Admin / missing shop): save recovery email on user
-        if (!shopId) {
-            const uid = session.userId || session.user_id || "";
-            if (!uid) {
-                alert("Session expired. Please logout and login again.");
-                return;
-            }
-            if (!emailVal) {
-                alert("Enter recovery email in Email Address, then Save.");
-                return;
-            }
-            const sb = getSupabase();
-            if (!sb) {
-                alert("Cloud connection failed.");
-                return;
-            }
-            const { error } = await sb.from("users").update({ recovery_email: emailVal }).eq("id", uid);
-            if (error) {
-                // try by username
-                const { error: e2 } = await sb.from("users").update({ recovery_email: emailVal }).eq("username", session.username || "superadmin");
-                if (e2) throw e2;
-            }
-            const reField = document.getElementById("recoveryEmail");
-            if (reField) reField.value = emailVal;
-            alert("✅ Recovery email saved: " + emailVal + "\n\nUse Username + this email on Forgot Password.\n\nNote: Company logo/name is saved by Shop Admin login.");
-            return;
-        }
-
         await sbSaveSettings(shopId, settings);
-        if (emailVal) {
-            try {
-                const sb = getSupabase();
-                await sb.from("shops").update({ email: emailVal }).eq("id", shopId);
-                if (session.userId) {
-                    await sb.from("users").update({ recovery_email: emailVal }).eq("id", session.userId);
-                }
-            } catch (e) { console.warn(e); }
-        }
         alert("Company branding saved.");
     } catch (e) {
         console.error(e);
@@ -1298,6 +1140,7 @@ async function saveCompanyBranding() {
     }
 }
 
+window.previewCompanyLogo = previewCompanyLogo;
 window.saveCompanyBranding = saveCompanyBranding;
 
 
@@ -1368,7 +1211,7 @@ async function addExecutive() {
     if (typeof settings !== "object" || !settings) settings = {};
     if (!Array.isArray(settings.executives)) settings.executives = getExecutivesList();
     if (settings.executives.some(e => e.toLowerCase() === name.toLowerCase())) {
-        alert("Aa executive pehla thi che");
+        alert("This executive already exists.");
         return;
     }
     settings.executives.push(name);
@@ -1378,7 +1221,7 @@ async function addExecutive() {
         loadExecutiveListUI();
         fillExecutiveDropdowns();
         try { applyShopBranding(); } catch (e) {}
-        alert("Sales Executive add thai gayo.");
+        alert("Sales Executive added successfully.");
     } catch (e) {
         console.error(e);
         alert("Save failed: " + (e.message || e));
@@ -1386,7 +1229,7 @@ async function addExecutive() {
 }
 
 async function removeExecutive(index) {
-    if (!confirm("Aa executive remove karvu?")) return;
+    if (!confirm("Remove this executive?")) return;
     const shopId = (typeof currentShopId === "function") ? currentShopId() : null;
     if (!shopId) {
         alert("No shop context.");
@@ -1545,7 +1388,7 @@ window.addEventListener("load", async function () {
         try { await supabaseBoot(); } catch (e) { console.error(e); }
     }
 
-    checkLogin();
+    await checkLogin();
 
     const session = getSession();
     if (!session.isLoggedIn && !window.location.pathname.includes("login.html")) return;
@@ -1644,129 +1487,3 @@ async function logAudit(action, entityType, entityId, details) {
     } catch (e) { console.warn("audit", e); }
 }
 window.logAudit = logAudit;
-
-function printCleanReport() {
-    try {
-        const body = document.getElementById("cprBody");
-        if (!body) { window.print(); return; }
-
-        const fromEl = document.getElementById("fromDate");
-        const toEl = document.getElementById("toDate");
-        const searchEl = document.getElementById("reportSearch");
-        const custEl = document.getElementById("reportCustomer");
-
-        // ONLY recoveries in selected period (today if dates = today)
-        let recs = (typeof recoveries !== "undefined" && recoveries) ? recoveries.slice() : [];
-        if (fromEl && fromEl.value) {
-            recs = recs.filter(function(r){
-                return String(r.date || r.recovery_date || "").slice(0,10) >= fromEl.value;
-            });
-        }
-        if (toEl && toEl.value) {
-            recs = recs.filter(function(r){
-                return String(r.date || r.recovery_date || "").slice(0,10) <= toEl.value;
-            });
-        }
-        if (custEl && custEl.value) {
-            recs = recs.filter(function(r){
-                return String(r.customerId || r.customer_id) === String(custEl.value);
-            });
-        }
-        if (searchEl && searchEl.value && searchEl.value.trim()) {
-            var q = searchEl.value.trim().toLowerCase();
-            recs = recs.filter(function(r){
-                var c = (customers || []).find(function(x){ return String(x.id) === String(r.customerId || r.customer_id); }) || {};
-                return String(c.name || "").toLowerCase().indexOf(q) >= 0
-                    || String(c.mobile || "").indexOf(q) >= 0
-                    || String(c.village || "").toLowerCase().indexOf(q) >= 0;
-            });
-        }
-
-        // Group by customer for sheet columns (only who recovered in period)
-        var map = {};
-        recs.forEach(function(r) {
-            var id = String(r.customerId || r.customer_id || "");
-            var c = (customers || []).find(function(x){ return String(x.id) === id; }) || {};
-            if (!map[id]) {
-                map[id] = {
-                    name: c.name || "-",
-                    city: c.village || c.city || c.district || "-",
-                    bill: Number(c.bill || 0),
-                    received: 0,
-                    due: Number(c.outstanding || 0),
-                    comment: c.remarks || ""
-                };
-            }
-            map[id].received += Number(r.amount || 0);
-            if (r.remarks) map[id].comment = r.remarks;
-        });
-
-        var rows = Object.keys(map).map(function(k){ return map[k]; });
-        var totalReceived = 0, totalDue = 0;
-
-        if (!rows.length) {
-            body.innerHTML = '<tr><td colspan="7" style="text-align:center">No recovery in this period</td></tr>';
-        } else {
-            body.innerHTML = rows.map(function(r, i) {
-                var totalAmt = r.bill || (r.due + r.received);
-                totalReceived += r.received;
-                totalDue += r.due;
-                var comment = String(r.comment || "-").replace(/</g, "&lt;");
-                return "<tr><td>" + (i+1) + "</td><td>" + r.name + "</td><td>" + r.city + "</td><td>₹" + Number(totalAmt).toLocaleString("en-IN") + "</td><td>₹" + Number(r.received).toLocaleString("en-IN") + "</td><td>₹" + Number(r.due).toLocaleString("en-IN") + "</td><td>" + comment + "</td></tr>";
-            }).join("");
-        }
-
-        var elT = document.getElementById("cprTotalAmt");
-        var elO = document.getElementById("cprTotalOut");
-        if (elT) elT.textContent = "₹" + totalReceived.toLocaleString("en-IN");
-        if (elO) elO.textContent = "₹" + totalDue.toLocaleString("en-IN");
-
-        var shop = "";
-        try { if (typeof getSession === "function") shop = getSession().shopName || ""; } catch(e) {}
-        var sn = document.getElementById("cprShopName");
-        if (sn) sn.textContent = shop || (typeof settings !== "undefined" && settings && settings.company) || "BK Recovery Manager";
-        var dl = document.getElementById("cprDateLine");
-        if (dl) dl.textContent = "Printed: " + new Date().toLocaleString("en-IN");
-        var fl = document.getElementById("cprFilterLine");
-        if (fl) fl.textContent = "Period: " + ((fromEl && fromEl.value) || "All") + " to " + ((toEl && toEl.value) || "All") + " | Recovery only";
-
-        var box = document.getElementById("cleanPrintReport");
-        if (box) box.style.display = "block";
-        setTimeout(function() {
-            window.print();
-            setTimeout(function(){ if (box) box.style.display = ""; }, 500);
-        }, 200);
-    } catch (err) {
-        console.error("printCleanReport", err);
-        alert("Print error: " + (err.message || err));
-        window.print();
-    }
-}
-window.printCleanReport = printCleanReport;
-
-function onRecoveryAmountInput() {
-    var amount = document.getElementById("recoveryAmount");
-    var select = document.getElementById("recoveryCustomer");
-    var hint = document.getElementById("recoveryOutHint");
-    if (!amount || !select || !select.value) return;
-    var c = (customers || []).find(function(x){ return String(x.id) === String(select.value); });
-    if (!c) return;
-    var due = Number(c.outstanding || 0);
-    var pay = Number(amount.value || 0);
-    if (pay > due + 0.001) {
-        amount.style.borderColor = "#ef4444";
-        amount.style.background = "#fef2f2";
-        if (hint) {
-            hint.textContent = "Error: Outstanding ₹" + due.toLocaleString("en-IN") + " — you entered ₹" + pay.toLocaleString("en-IN") + " more than due";
-            hint.style.color = "#b91c1c";
-        }
-    } else {
-        amount.style.borderColor = "";
-        amount.style.background = "";
-        if (hint && due > 0) {
-            hint.textContent = "Pending dues — recover up to this amount";
-            hint.style.color = "#b91c1c";
-        }
-    }
-}
-window.onRecoveryAmountInput = onRecoveryAmountInput;
