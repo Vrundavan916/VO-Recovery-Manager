@@ -49,14 +49,75 @@
     </div>
   </header>
 
-  <div class="dashboard-cards" style="margin-bottom:16px;">
+  
+  <section class="content-box fade" style="margin-bottom:16px;border-left:4px solid #16a34a;">
+    <div class="summary-bar">
+      <div>
+        <h2><i class="fa-solid fa-link"></i> Employee link (login vagar)</h2>
+        <span>Staff ne full site login ni jarur nathi — only check-in page</span>
+      </div>
+    </div>
+    <p style="font-size:14px;color:#475569;margin:8px 0;">
+      Share: <code id="publicCheckinUrl">checkin.html</code>
+      <button type="button" class="add-btn" style="padding:6px 12px;margin-left:8px;" onclick="copyCheckinLink()">Copy link</button>
+    </p>
+    <p style="font-size:13px;color:#64748b;">Setup: Supabase ma user par <b>agent_code</b> + <b>field_pin</b> set karo (SQL). Employee code + PIN thi check-in kare.</p>
+  </section>
+  <script>
+  (function(){
+    var el = document.getElementById("publicCheckinUrl");
+    if (el) {
+      try {
+        var u = new URL("checkin.html", window.location.href);
+        el.textContent = u.href;
+      } catch(e) {}
+    }
+    window.copyCheckinLink = function(){
+      var t = document.getElementById("publicCheckinUrl");
+      if (!t) return;
+      var text = t.textContent;
+      if (navigator.clipboard) navigator.clipboard.writeText(text);
+      else prompt("Copy", text);
+      alert("Link copied — WhatsApp thi employee ne moklo");
+    };
+  })();
+  </script>
+<div class="dashboard-cards" style="margin-bottom:16px;">
     <div class="card"><i class="fa-solid fa-user-tie"></i><h3>Field staff</h3><h1 id="fieldCountAgents">0</h1><small>Tracked employees</small></div>
     <div class="card green"><i class="fa-solid fa-clipboard-check"></i><h3>Today activity</h3><h1 id="fieldCountToday">0</h1><small>Check-ins / calls</small></div>
     <div class="card orange"><i class="fa-solid fa-users"></i><h3>Assigned A/cs</h3><h1 id="fieldCountAssigned">0</h1><small>With executive</small></div>
     <div class="card"><i class="fa-solid fa-map-location-dot"></i><h3>GPS today</h3><h1 id="fieldCountGps">0</h1><small>Location captured</small></div>
   </div>
 
-  <section class="content-box fade">
+  
+  <section class="content-box fade" style="margin-bottom:16px;">
+    <div class="summary-bar">
+      <div>
+        <h2><i class="fa-solid fa-link"></i> Generate employee tracking links</h2>
+        <span>Code + PIN save → Copy link / WhatsApp — employee ne full login ni jarur nathi</span>
+      </div>
+      <button type="button" class="add-btn" onclick="loadEmployeeLinkGenerator()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+    </div>
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Employee</th>
+            <th>Agent code</th>
+            <th>PIN</th>
+            <th>Link</th>
+          </tr>
+        </thead>
+        <tbody id="empLinkBody"><tr><td colspan="5">Loading…</td></tr></tbody>
+      </table>
+    </div>
+    <p style="font-size:12px;color:#64748b;margin-top:10px;">
+      Link example: <code>…/checkin.html?code=MUKESH01</code> — employee PIN enter kari check-in kare.
+      Columns <code>agent_code</code> / <code>field_pin</code> Supabase users table ma joi e.
+    </p>
+  </section>
+<section class="content-box fade">
     <div class="summary-bar">
       <div><h2><i class="fa-solid fa-location-crosshairs"></i> Field check-in</h2>
       <span>Employee location + customer visit log</span></div>

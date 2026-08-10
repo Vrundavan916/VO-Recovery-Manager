@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1A3D63">
+<title>Field Check-in | BK Recovery</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<style>
+  :root { --p:#1A3D63; --g:#16a34a; --bg:#f1f5f9; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui, -apple-system, sans-serif; background: linear-gradient(160deg,#e8eef5,#f8fafc); min-height:100vh; color:#0f172a; }
+  .wrap { max-width: 440px; margin: 0 auto; padding: 20px 16px 40px; }
+  .card { background:#fff; border-radius:16px; padding:20px; box-shadow:0 8px 30px rgba(26,61,99,.08); margin-bottom:14px; }
+  h1 { font-size:1.25rem; margin:0 0 4px; color:var(--p); }
+  .sub { color:#64748b; font-size:13px; margin:0 0 16px; }
+  label { display:block; font-size:12px; font-weight:600; color:#475569; margin:10px 0 4px; }
+  input, select, textarea { width:100%; padding:12px 14px; border:1px solid #cbd5e1; border-radius:10px; font-size:15px; }
+  textarea { min-height:70px; resize:vertical; }
+  button { width:100%; margin-top:14px; padding:14px; border:none; border-radius:12px; font-size:16px; font-weight:700; cursor:pointer; }
+  .btn-main { background:var(--p); color:#fff; }
+  .btn-main:disabled { opacity:.6; }
+  .btn-gps { background:var(--g); color:#fff; }
+  .status { font-size:13px; margin-top:10px; padding:10px; border-radius:8px; display:none; }
+  .status.ok { display:block; background:#dcfce7; color:#166534; }
+  .status.err { display:block; background:#fee2e2; color:#991b1b; }
+  .status.info { display:block; background:#e0f2fe; color:#075985; }
+  .gps-box { font-size:12px; color:#64748b; margin-top:8px; word-break:break-all; }
+  .logo { text-align:center; margin-bottom:12px; font-weight:800; color:var(--p); font-size:18px; }
+  .step { font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:#94a3b8; margin-bottom:8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo"><i class="fa-solid fa-location-dot"></i> BK Field Check-in</div>
+  <div class="card">
+    <div class="step">Employee — no full login</div>
+    <h1>Field Check-in</h1>
+    <p class="sub">Agent code + PIN thi location + visit log. Website admin login jaruri nathi.</p>
+
+    <label>Agent code *</label>
+    <input id="agentCode" placeholder="e.g. MUKESH01" autocomplete="username">
+
+    <label>PIN *</label>
+    <input id="agentPin" type="password" inputmode="numeric" placeholder="4–8 digit PIN" autocomplete="current-password">
+
+    <button type="button" class="btn-main" id="btnUnlock" onclick="unlockAgent()">Continue</button>
+    <div id="unlockMsg" class="status"></div>
+  </div>
+
+  <div class="card" id="checkinPanel" style="display:none;">
+    <div class="step">Visit details</div>
+    <h1 id="agentHello">Hello</h1>
+    <p class="sub">Customer select kari Check-in dabavo — GPS capture thase.</p>
+
+    <label>Customer *</label>
+    <select id="customerSel"><option value="">Loading…</option></select>
+
+    <label>Type</label>
+    <select id="actType">
+      <option value="visit">Visit</option>
+      <option value="call">Call</option>
+      <option value="whatsapp">WhatsApp</option>
+    </select>
+
+    <label>Notes</label>
+    <textarea id="notes" placeholder="Met customer / promised date…"></textarea>
+
+    <div class="gps-box" id="gpsInfo">GPS: not captured yet</div>
+
+    <button type="button" class="btn-gps" id="btnGps" onclick="captureGps()">1) Capture GPS</button>
+    <button type="button" class="btn-main" id="btnSubmit" onclick="submitCheckin()" disabled>2) Submit Check-in</button>
+    <div id="submitMsg" class="status"></div>
+  </div>
+
+  <p class="sub" style="text-align:center;margin-top:8px;">Admin reports: Field Tracking page (login required)</p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+<script>
+let agent = null;
+let gps = { lat: null, lng: null };
+
+function show(el, type, text) {
+  el.className = "status " + type;
+  el.textContent = text;
+}
+
+async function unlockAgent() {
+  const code = (document.getElementById("agentCode").value || "").trim();
+  const pin = (document.getElementById("agentPin").value || "").trim();
+  const msg = document.getElementById("unlockMsg");
+  if (!code || !pin) { show(msg, "err", "Agent code and PIN required"); return; }
+
+  try {
+    if (typeof supabaseBoot === "function") await supabaseBoot();
+    const sb = typeof getSupabase === "function" ? getSupabase() : null;
+    if (!sb) { show(msg, "err", "Connection failed"); return; }
+
+    const { data, error } = await sb.from("users")
+      .select("id, username, display_name, shop_id, is_active, agent_code, field_pin, is_field_agent")
+      .eq("agent_code", code)
+      .eq("is_active", true)
+      .maybeSingle();
+
+    if (error) throw error;
+    if (!data) { show(msg, "err", "Invalid agent code"); return; }
+    if (String(data.field_pin || "") !== pin) { show(msg, "err", "Invalid PIN"); return; }
+    if (!data.shop_id) { show(msg, "err", "No shop linked to this agent"); return; }
+
+    agent = data;
+    show(msg, "ok", "Verified");
+    document.getElementById("checkinPanel").style.display = "block";
+    document.getElementById("agentHello").textContent = "Hi, " + (data.display_name || data.username || code);
+    await loadCustomers(data.shop_id, data);
+  } catch (e) {
+    console.error(e);
+    show(msg, "err", e.message || String(e));
+  }
+}
+
+async function loadCustomers(shopId, agentRow) {
+  const sel = document.getElementById("customerSel");
+  const sb = getSupabase();
+  let q = sb.from("customers").select("id, name, outstanding, executive, village").eq("shop_id", shopId).order("name");
+  const { data, error } = await q;
+  if (error) { sel.innerHTML = "<option value=''>Error loading</option>"; return; }
+  let list = data || [];
+  // Prefer assigned to this executive name if matches
+  const dname = (agentRow.display_name || "").trim();
+  if (dname) {
+    const mine = list.filter(c => (c.executive || "").trim() === dname);
+    if (mine.length) list = mine.concat(list.filter(c => (c.executive || "").trim() !== dname));
+  }
+  sel.innerHTML = '<option value="">Select customer</option>' +
+    list.map(c => {
+      const out = Number(c.outstanding || 0);
+      return `<option value="${c.id}">${c.name}${out ? " — ₹" + out.toLocaleString("en-IN") : ""}${c.village ? " (" + c.village + ")" : ""}</option>`;
+    }).join("");
+}
+
+function captureGps() {
+  const info = document.getElementById("gpsInfo");
+  const msg = document.getElementById("submitMsg");
+  info.textContent = "Getting GPS…";
+  if (!navigator.geolocation) {
+    info.textContent = "GPS not supported on this device";
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    function (pos) {
+      gps.lat = pos.coords.latitude;
+      gps.lng = pos.coords.longitude;
+      info.innerHTML = "GPS OK: " + gps.lat.toFixed(5) + ", " + gps.lng.toFixed(5) +
+        ' · <a target="_blank" href="https://maps.google.com/?q=' + gps.lat + ',' + gps.lng + '">Map</a>';
+      document.getElementById("btnSubmit").disabled = false;
+      show(msg, "info", "GPS ready — now Submit Check-in");
+    },
+    function (err) {
+      gps = { lat: null, lng: null };
+      info.textContent = "GPS failed: " + (err.message || "permission denied");
+      document.getElementById("btnSubmit").disabled = false; // allow without GPS with confirm
+      show(msg, "err", "GPS fail — Submit optional without location");
+    },
+    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+  );
+}
+
+async function submitCheckin() {
+  const msg = document.getElementById("submitMsg");
+  if (!agent) { show(msg, "err", "Unlock first"); return; }
+  const customerId = document.getElementById("customerSel").value;
+  if (!customerId) { show(msg, "err", "Select customer"); return; }
+  if (gps.lat == null && !confirm("GPS nathi. Without location submit?")) return;
+
+  const notes = (document.getElementById("notes").value || "").trim();
+  const type = document.getElementById("actType").value || "visit";
+  const btn = document.getElementById("btnSubmit");
+  btn.disabled = true;
+  try {
+    const sb = getSupabase();
+    const payload = {
+      shop_id: agent.shop_id,
+      agent_id: String(agent.id),
+      customer_id: customerId,
+      activity_type: type,
+      outcome: "field_checkin",
+      notes: notes || "Public check-in",
+      gps_lat: gps.lat,
+      gps_lng: gps.lng,
+      created_at: new Date().toISOString()
+    };
+    const { error } = await sb.from("agent_activity_log").insert(payload);
+    if (error) throw error;
+    show(msg, "ok", "Check-in saved. Thank you!");
+    document.getElementById("notes").value = "";
+    gps = { lat: null, lng: null };
+    document.getElementById("gpsInfo").textContent = "GPS: not captured yet";
+    document.getElementById("btnSubmit").disabled = true;
+  } catch (e) {
+    console.error(e);
+    show(msg, "err", e.message || String(e));
+    btn.disabled = false;
+  }
+}
+</script>
+
+<script>
+(function prefillCode(){
+  try {
+    var q = new URLSearchParams(window.location.search);
+    var c = q.get("code");
+    if (c) {
+      var el = document.getElementById("agentCode");
+      if (el) el.value = c;
+    }
+  } catch (e) {}
+})();
+</script>
+
+</body>
+</html>
