@@ -187,7 +187,7 @@ async function sbUpdateCustomerOutstanding(customerId, newOutstanding) {
 /* ---------- USERS ---------- */
 async function sbGetUsers(shopId) {
     const sb = getSupabase();
-    let q = sb.from("users").select("id, username, role, shop_id, display_name, is_active").order("username");
+    let q = sb.from("users").select("id, username, role, shop_id, display_name, is_active, is_field_agent, mobile, agent_code").order("username");
     if (shopId) q = q.eq("shop_id", shopId);
     // Super admin can see all; shop admin sees only own shop
     const { data, error } = await q;
@@ -1052,3 +1052,28 @@ window.sbAddActivity = sbAddActivity;
 window.sbGetActivities = sbGetActivities;
 window.sbSaveLegalNotice = sbSaveLegalNotice;
 
+
+
+async function sbGetActivitiesByAgent(shopId, agentId, limit) {
+    const sb = getSupabase();
+    if (!sb) throw new Error("Supabase not ready");
+    let q = sb.from("agent_activity_log").select("*").order("created_at", { ascending: false });
+    if (shopId) q = q.eq("shop_id", shopId);
+    if (agentId) q = q.eq("agent_id", String(agentId));
+    if (limit) q = q.limit(limit);
+    const { data, error } = await q;
+    if (error) throw error;
+    return data || [];
+}
+window.sbGetActivitiesByAgent = sbGetActivitiesByAgent;
+
+async function sbSetFieldAgent(userId, isField) {
+    const sb = getSupabase();
+    if (!sb) throw new Error("Supabase not ready");
+    const { data, error } = await sb.from("users").update({
+        is_field_agent: !!isField
+    }).eq("id", userId).select().maybeSingle();
+    if (error) throw error;
+    return data;
+}
+window.sbSetFieldAgent = sbSetFieldAgent;

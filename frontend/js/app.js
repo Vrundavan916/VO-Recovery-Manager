@@ -2642,3 +2642,231 @@ window.openLegalNoticeForCustomer = openLegalNoticeForCustomer;
 window.computeAnalyticsStats = computeAnalyticsStats;
 window.renderAnalyticsOnReports = renderAnalyticsOnReports;
 
+// ================================
+// Field Employee Tracking
+// ================================
+async function initFieldTrackingPage() {
+    if (!document.getElementById("fieldAgentBody")) return;
+    await loadFieldTracking();
+}
+
+async function loadFieldTracking() {
+    const session = (typeof getSession === "function") ? getSession() : {};
+    const shopId = session.shopId;
+    const tbody = document.getElementById("fieldAgentBody");
+    const actBody = document.getElementById("fieldTodayBody");
+    if (!tbody) return;
+
+    tbody.innerHTML = "<tr><td colspan='6'>Loading…</td></tr>";
+    if (actBody) actBody.innerHTML = "<tr><td colspan='6'>Loading…</td></tr>";
+
+    try {
+        if (typeof reloadAllData === "function" && (!customers || !customers.length)) {
+            await reloadAllData();
+        }
+        let users = [];
+        try {
+            users = typeof sbGetUsers === "function" ? await sbGetUsers(shopId) : [];
+        } catch (e) {
+            console.warn(e);
+            users = [];
+        }
+        // Field agents: flagged OR role user/admin with activity
+        const execNames = (typeof getExecutivesList === "function")
+            ? getExecutivesList()
+            : ((settings && settings.executives) || []);
+
+        const activities = typeof sbGetActivities === "function"
+            ? await sbGetActivities(shopId, 200)
+            : [];
+
+        const today = new Date().toISOString().slice(0, 10);
+
+        // Build agent rows from users + executives
+        const agentMap = {};
+        (users || []).forEach(u => {
+            const key = String(u.id);
+            agentMap[key] = {
+                id: u.id,
+                key: key,
+                name: u.display_name || u.username,
+                username: u.username,
+                isField: u.is_field_agent === true,
+                mobile: u.mobile || "",
+                assigned: 0,
+                todayActs: 0,
+                lastGps: null,
+                lastAt: null
+            };
+        });
+        // Also track by executive name string (customers.executive)
+        (execNames || []).forEach(name => {
+            const k = "exec:" + name;
+            if (!Object.values(agentMap).some(a => a.name === name)) {
+                agentMap[k] = {
+                    id: null,
+                    key: k,
+                    name: name,
+                    username: "—",
+                    isField: true,
+                    mobile: "",
+                    assigned: 0,
+                    todayActs: 0,
+                    lastGps: null,
+                    lastAt: null
+                };
+            }
+        });
+
+        (customers || []).forEach(c => {
+            const exec = (c.executive || "").trim();
+            if (!exec) return;
+            let row = Object.values(agentMap).find(a => a.name === exec);
+            if (!row) {
+                const k = "exec:" + exec;
+                agentMap[k] = {
+                    id: null, key: k, name: exec, username: "—", isField: true,
+                    mobile: "", assigned: 0, todayActs: 0, lastGps: null, lastAt: null
+                };
+                row = agentMap[k];
+            }
+            row.assigned++;
+        });
+
+        (activities || []).forEach(a => {
+            const when = (a.created_at || "").toString();
+            const isToday = when.slice(0, 10) === today;
+            const agentKey = String(a.agent_id || "");
+            let row = agentMap[agentKey];
+            if (!row) {
+                // match display name
+                row = Object.values(agentMap).find(x => String(x.id) === agentKey || x.username === agentKey);
+            }
+            if (!row) {
+                agentMap["id:" + agentKey] = {
+                    id: agentKey, key: "id:" + agentKey, name: agentKey, username: agentKey,
+                    isField: true, mobile: "", assigned: 0, todayActs: 0, lastGps: null, lastAt: null
+                };
+                row = agentMap["id:" + agentKey];
+            }
+            if (isToday) row.todayActs++;
+            if (a.gps_lat != null && a.gps_lng != null) {
+                if (!row.lastAt || when > row.lastAt) {
+                    row.lastAt = when;
+                    row.lastGps = { lat: a.gps_lat, lng: a.gps_lng };
+                }
+            } else if (!row.lastAt || when > (row.lastAt || "")) {
+                row.lastAt = when;
+            }
+        });
+
+        const agents = Object.values(agentMap).filter(a =>
+            a.isField || a.assigned > 0 || a.todayActs > 0 || a.lastAt
+        );
+        agents.sort((a, b) => b.todayActs - a.todayActs || b.assigned - a.assigned);
+
+        const setN = (id, n) => { const el = document.getElementById(id); if (el) el.textContent = n; };
+        setN("fieldCountAgents", agents.length);
+        setN("fieldCountToday", activities.filter(a => (a.created_at || "").toString().slice(0, 10) === today).length);
+        setN("fieldCountAssigned", (customers || []).filter(c => c.executive).length);
+        setN("fieldCountGps", activities.filter(a => a.gps_lat != null && (a.created_at || "").toString().slice(0, 10) === today).length);
+
+        if (!agents.length) {
+            tbody.innerHTML = "<tr><td colspan='6'>Koi field employee nathi. Settings ma Executive add karo athva User ne field agent banavo.</td></tr>";
+        } else {
+            tbody.innerHTML = agents.map((a, i) => {
+                const gps = a.lastGps
+                    ? `<a target="_blank" rel="noopener" href="https://maps.google.com/?q=${a.lastGps.lat},${a.lastGps.lng}">📍 Map</a>`
+                    : "—";
+                const last = a.lastAt ? a.lastAt.slice(0, 16).replace("T", " ") : "—";
+                return `<tr>
+                  <td>${i + 1}</td>
+                  <td><strong>${a.name}</strong><br><small style="color:#64748b">${a.username}</small></td>
+                  <td>${a.assigned}</td>
+                  <td>${a.todayActs}</td>
+                  <td>${last}</td>
+                  <td>${gps}</td>
+                </tr>`;
+            }).join("");
+        }
+
+        // Today activity detail
+        if (actBody) {
+            const todayActs = activities.filter(a => (a.created_at || "").toString().slice(0, 10) === today);
+            if (!todayActs.length) {
+                actBody.innerHTML = "<tr><td colspan='6'>Aaje koi field activity nathi</td></tr>";
+            } else {
+                actBody.innerHTML = todayActs.map((a, i) => {
+                    const cust = (customers || []).find(c => String(c.id) === String(a.customer_id));
+                    const gps = (a.gps_lat != null)
+                        ? `<a target="_blank" href="https://maps.google.com/?q=${a.gps_lat},${a.gps_lng}">📍</a>`
+                        : "—";
+                    return `<tr>
+                      <td>${i + 1}</td>
+                      <td>${(a.created_at || "").toString().slice(11, 16)}</td>
+                      <td>${a.agent_id || "—"}</td>
+                      <td>${cust ? cust.name : "—"}</td>
+                      <td>${a.activity_type || ""} / ${a.outcome || ""} ${a.notes || ""}</td>
+                      <td>${gps}</td>
+                    </tr>`;
+                }).join("");
+            }
+        }
+
+        // Fill check-in customer dropdown
+        const sel = document.getElementById("fieldCheckinCustomer");
+        if (sel) {
+            sel.innerHTML = '<option value="">Select customer</option>' +
+                (customers || []).slice().sort((a, b) => Number(b.outstanding || 0) - Number(a.outstanding || 0))
+                    .map(c => `<option value="${c.id}">${c.name} (₹${Number(c.outstanding || 0).toLocaleString("en-IN")})</option>`)
+                    .join("");
+        }
+    } catch (e) {
+        console.error(e);
+        tbody.innerHTML = "<tr><td colspan='6'>Error: " + (e.message || e) + "</td></tr>";
+    }
+}
+
+async function fieldCheckIn() {
+    const customerId = (document.getElementById("fieldCheckinCustomer") || {}).value;
+    const notes = ((document.getElementById("fieldCheckinNotes") || {}).value || "").trim();
+    const type = (document.getElementById("fieldCheckinType") || {}).value || "visit";
+    if (!customerId) { alert("Customer select karo"); return; }
+    const session = getSession();
+    if (!session.shopId) { alert("Shop login joi e"); return; }
+
+    let gps_lat = null, gps_lng = null;
+    try {
+        const pos = await new Promise((resolve, reject) => {
+            if (!navigator.geolocation) return reject(new Error("GPS not available"));
+            navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 12000 });
+        });
+        gps_lat = pos.coords.latitude;
+        gps_lng = pos.coords.longitude;
+    } catch (e) {
+        if (!confirm("GPS nathi malyu. Without location check-in?")) return;
+    }
+
+    try {
+        await sbAddActivity({
+            shop_id: session.shopId,
+            agent_id: session.userId || session.username || "unknown",
+            customer_id: customerId,
+            activity_type: type,
+            outcome: "field_checkin",
+            notes: notes || "Field check-in",
+            gps_lat: gps_lat,
+            gps_lng: gps_lng
+        });
+        alert("Check-in saved." + (gps_lat != null ? "\nGPS captured." : ""));
+        if (document.getElementById("fieldCheckinNotes")) document.getElementById("fieldCheckinNotes").value = "";
+        await loadFieldTracking();
+    } catch (e) {
+        alert("Failed: " + (e.message || e));
+    }
+}
+
+window.initFieldTrackingPage = initFieldTrackingPage;
+window.loadFieldTracking = loadFieldTracking;
+window.fieldCheckIn = fieldCheckIn;
+
