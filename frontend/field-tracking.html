@@ -5,7 +5,7 @@
 <meta name="theme-color" content="#1A3D63">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Activity Log | BK Recovery Manager</title>
+<title>Field Tracking | BK Recovery Manager</title>
 <link rel="stylesheet" href="css/style.css?v=enterprise3">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 </head>
@@ -32,9 +32,9 @@
     <li><a href="dashboard.html"><i class="fa-solid fa-house"></i><span>Dashboard</span></a></li>
     <li><a href="customers.html"><i class="fa-solid fa-users"></i><span>Customers</span></a></li>
     <li><a href="recovery.html"><i class="fa-solid fa-money-bill-wave"></i><span>Recovery</span></a></li>
+    <li><a href="field-tracking.html" class="active"><i class="fa-solid fa-location-dot"></i><span>Field Tracking</span></a></li>
+    <li><a href="activity.html"><i class="fa-solid fa-phone-volume"></i><span>Activity Log</span></a></li>
     <li><a href="ptp.html"><i class="fa-solid fa-handshake"></i><span>Promise to Pay</span></a></li>
-    <li><a href="activity.html" class="active"><i class="fa-solid fa-phone-volume"></i><span>Activity Log</span></a></li>
-<li><a href="field-tracking.html"><i class="fa-solid fa-location-dot"></i><span>Field Tracking</span></a></li>
     <li><a href="escalations.html"><i class="fa-solid fa-arrow-up-right-dots"></i><span>Escalations</span></a></li>
     <li><a href="reports.html"><i class="fa-solid fa-chart-column"></i><span>Reports</span></a></li>
     <li><a href="settings.html"><i class="fa-solid fa-gear"></i><span>Settings</span></a></li>
@@ -44,48 +44,77 @@
 <main class="main-content">
   <header class="topbar">
     <div>
-      <h1 class="page-title">Call / Visit Activity</h1>
-      <span class="page-subtitle">Log calls, visits, notes · optional GPS</span>
+      <h1 class="page-title">Employee Field Tracking</h1>
+      <span class="page-subtitle">Field staff · check-in · GPS · assigned customers</span>
     </div>
   </header>
+
+  <div class="dashboard-cards" style="margin-bottom:16px;">
+    <div class="card"><i class="fa-solid fa-user-tie"></i><h3>Field staff</h3><h1 id="fieldCountAgents">0</h1><small>Tracked employees</small></div>
+    <div class="card green"><i class="fa-solid fa-clipboard-check"></i><h3>Today activity</h3><h1 id="fieldCountToday">0</h1><small>Check-ins / calls</small></div>
+    <div class="card orange"><i class="fa-solid fa-users"></i><h3>Assigned A/cs</h3><h1 id="fieldCountAssigned">0</h1><small>With executive</small></div>
+    <div class="card"><i class="fa-solid fa-map-location-dot"></i><h3>GPS today</h3><h1 id="fieldCountGps">0</h1><small>Location captured</small></div>
+  </div>
+
   <section class="content-box fade">
-    <div class="summary-bar"><div><h2>Log activity</h2></div></div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;">
-      <div><label>Customer *</label><select id="actCustomer"><option value="">Select</option></select></div>
-      <div><label>Type</label>
-        <select id="actType">
-          <option value="call">Call</option>
-          <option value="visit">Visit</option>
-          <option value="whatsapp">WhatsApp</option>
-          <option value="note">Note</option>
-        </select>
-      </div>
-      <div><label>Outcome</label>
-        <select id="actOutcome">
-          <option value="">—</option>
-          <option value="connected">Connected</option>
-          <option value="no_answer">No answer</option>
-          <option value="promised">Promised to pay</option>
-          <option value="paid">Paid</option>
-          <option value="dispute">Dispute</option>
-          <option value="not_reachable">Not reachable</option>
-        </select>
-      </div>
-      <div style="grid-column:1/-1;"><label>Notes</label><input type="text" id="actNotes" placeholder="Details…"></div>
-      <div><label><input type="checkbox" id="actCaptureGps"> Capture GPS (field visit)</label></div>
+    <div class="summary-bar">
+      <div><h2><i class="fa-solid fa-location-crosshairs"></i> Field check-in</h2>
+      <span>Employee location + customer visit log</span></div>
     </div>
-    <div style="margin-top:14px;">
-      <button type="button" class="add-btn" onclick="saveActivityForm()"><i class="fa-solid fa-floppy-disk"></i> Save activity</button>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;">
+      <div>
+        <label>Customer *</label>
+        <select id="fieldCheckinCustomer"><option value="">Select</option></select>
+      </div>
+      <div>
+        <label>Type</label>
+        <select id="fieldCheckinType">
+          <option value="visit">Visit</option>
+          <option value="call">Call</option>
+          <option value="whatsapp">WhatsApp</option>
+        </select>
+      </div>
+      <div style="grid-column:1/-1;">
+        <label>Notes</label>
+        <input type="text" id="fieldCheckinNotes" placeholder="e.g. Met customer, promised Friday">
+      </div>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
+      <button type="button" class="add-btn" onclick="fieldCheckIn()">
+        <i class="fa-solid fa-location-dot"></i> Check-in (GPS)
+      </button>
+      <button type="button" class="add-btn" onclick="loadFieldTracking()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+      <a class="add-btn" href="activity.html" style="text-decoration:none;"><i class="fa-solid fa-list"></i> Full activity log</a>
     </div>
   </section>
+
   <section class="table-section fade" style="margin-top:16px;">
-    <div class="summary-bar"><div><h2>Recent activity</h2></div>
-      <button type="button" class="add-btn" onclick="loadActivityTable()"><i class="fa-solid fa-rotate"></i> Refresh</button>
-    </div>
+    <div class="summary-bar"><div><h2>Employees overview</h2><span>Assigned accounts · today work · last GPS</span></div></div>
     <div class="table-responsive">
       <table>
-        <thead><tr><th>#</th><th>When</th><th>Customer</th><th>Type</th><th>Outcome / Notes</th><th>GPS</th></tr></thead>
-        <tbody id="activityBody"><tr><td colspan="6">Loading…</td></tr></tbody>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Employee</th>
+            <th>Assigned</th>
+            <th>Today acts</th>
+            <th>Last activity</th>
+            <th>Last GPS</th>
+          </tr>
+        </thead>
+        <tbody id="fieldAgentBody"><tr><td colspan="6">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="table-section fade" style="margin-top:16px;">
+    <div class="summary-bar"><div><h2>Today’s field activity</h2></div></div>
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Time</th><th>Agent</th><th>Customer</th><th>Detail</th><th>GPS</th></tr>
+        </thead>
+        <tbody id="fieldTodayBody"><tr><td colspan="6">Loading…</td></tr></tbody>
       </table>
     </div>
   </section>
@@ -102,7 +131,7 @@ window.addEventListener("load", async function(){
   if (typeof checkLogin === "function") checkLogin();
   if (typeof supabaseBoot === "function") await supabaseBoot();
   if (typeof reloadAllData === "function") await reloadAllData();
-  if (typeof initActivityPage === "function") await initActivityPage();
+  if (typeof initFieldTrackingPage === "function") await initFieldTrackingPage();
 });
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function(){});
 </script>
