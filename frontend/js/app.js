@@ -2648,6 +2648,7 @@ window.renderAnalyticsOnReports = renderAnalyticsOnReports;
 async function initFieldTrackingPage() {
     if (!document.getElementById("fieldAgentBody")) return;
     await loadFieldTracking();
+    if (typeof loadEmployeeLinkGenerator === "function") await loadEmployeeLinkGenerator();
 }
 
 async function loadFieldTracking() {
@@ -2869,4 +2870,120 @@ async function fieldCheckIn() {
 window.initFieldTrackingPage = initFieldTrackingPage;
 window.loadFieldTracking = loadFieldTracking;
 window.fieldCheckIn = fieldCheckIn;
+
+// ================================
+// Generate employee check-in links
+// ================================
+function getPublicCheckinBaseUrl() {
+    try {
+        return new URL("checkin.html", window.location.href).href.split("?")[0];
+    } catch (e) {
+        return "checkin.html";
+    }
+}
+
+function buildEmployeeCheckinLink(agentCode) {
+    const base = getPublicCheckinBaseUrl();
+    if (!agentCode) return base;
+    return base + "?code=" + encodeURIComponent(String(agentCode).trim());
+}
+
+async function loadEmployeeLinkGenerator() {
+    const tbody = document.getElementById("empLinkBody");
+    if (!tbody) return;
+    const session = getSession();
+    if (!session.shopId && session.role !== "super_admin") {
+        tbody.innerHTML = "<tr><td colspan='5'>Shop login required</td></tr>";
+        return;
+    }
+    tbody.innerHTML = "<tr><td colspan='5'>Loading…</td></tr>";
+    try {
+        const users = await sbGetUsers(session.shopId);
+        const list = (users || []).filter(u => u.role !== "super_admin");
+        if (!list.length) {
+            tbody.innerHTML = "<tr><td colspan='5'>No users. Settings / company ma user add karo.</td></tr>";
+            return;
+        }
+        tbody.innerHTML = list.map((u, i) => {
+            const code = u.agent_code || "";
+            const pin = u.field_pin ? "••••" : "— not set —";
+            const link = code ? buildEmployeeCheckinLink(code) : "";
+            const id = u.id;
+            return `<tr>
+              <td>${i + 1}</td>
+              <td><strong>${u.display_name || u.username}</strong><br><small>${u.username}</small></td>
+              <td>
+                <input type="text" id="code_${id}" value="${code.replace(/"/g, "&quot;")}" placeholder="e.g. MUKESH01" style="width:110px;padding:6px;">
+              </td>
+              <td>
+                <input type="text" id="pin_${id}" value="${(u.field_pin || "").replace(/"/g, "&quot;")}" placeholder="PIN" style="width:90px;padding:6px;" autocomplete="off">
+              </td>
+              <td style="white-space:nowrap;">
+                <button type="button" class="add-btn" style="padding:6px 10px;font-size:12px;" onclick="saveAgentCheckinCreds('${id}')">Save</button>
+                <button type="button" class="add-btn" style="padding:6px 10px;font-size:12px;background:#16a34a;" onclick="copyAgentCheckinLink('${id}')" ${code ? "" : "disabled"}>Copy link</button>
+                <button type="button" class="add-btn" style="padding:6px 10px;font-size:12px;background:#128C7E;" onclick="shareAgentCheckinWa('${id}')" ${code ? "" : "disabled"}>WA</button>
+              </td>
+            </tr>`;
+        }).join("");
+    } catch (e) {
+        console.error(e);
+        tbody.innerHTML = "<tr><td colspan='5'>Error: " + (e.message || e) + "</td></tr>";
+    }
+}
+
+async function saveAgentCheckinCreds(userId) {
+    const codeEl = document.getElementById("code_" + userId);
+    const pinEl = document.getElementById("pin_" + userId);
+    const code = (codeEl && codeEl.value || "").trim();
+    const pin = (pinEl && pinEl.value || "").trim();
+    if (!code) { alert("Agent code required"); return; }
+    if (!pin || pin.length < 4) { alert("PIN minimum 4 characters"); return; }
+    try {
+        const sb = getSupabase();
+        const { error } = await sb.from("users").update({
+            agent_code: code,
+            field_pin: pin,
+            is_field_agent: true
+        }).eq("id", userId);
+        if (error) throw error;
+        alert("Saved.\n\nLink:\n" + buildEmployeeCheckinLink(code));
+        await loadEmployeeLinkGenerator();
+        if (typeof loadFieldTracking === "function") loadFieldTracking();
+    } catch (e) {
+        alert("Save failed: " + (e.message || e));
+    }
+}
+
+function copyAgentCheckinLink(userId) {
+    const codeEl = document.getElementById("code_" + userId);
+    const code = (codeEl && codeEl.value || "").trim();
+    if (!code) { alert("Pehla agent code save karo"); return; }
+    const link = buildEmployeeCheckinLink(code);
+    if (navigator.clipboard) navigator.clipboard.writeText(link);
+    else prompt("Copy link", link);
+    alert("Link copied:\n" + link);
+}
+
+function shareAgentCheckinWa(userId) {
+    const codeEl = document.getElementById("code_" + userId);
+    const pinEl = document.getElementById("pin_" + userId);
+    const code = (codeEl && codeEl.value || "").trim();
+    const pin = (pinEl && pinEl.value || "").trim();
+    if (!code) { alert("Agent code required"); return; }
+    const link = buildEmployeeCheckinLink(code);
+    const text =
+        "BK Recovery — Field Check-in\n\n" +
+        "Link: " + link + "\n" +
+        "Agent code: " + code + "\n" +
+        (pin ? ("PIN: " + pin + "\n") : "") +
+        "\nApp login ni jarur nathi. Location allow karjo.";
+    window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank");
+}
+
+window.getPublicCheckinBaseUrl = getPublicCheckinBaseUrl;
+window.buildEmployeeCheckinLink = buildEmployeeCheckinLink;
+window.loadEmployeeLinkGenerator = loadEmployeeLinkGenerator;
+window.saveAgentCheckinCreds = saveAgentCheckinCreds;
+window.copyAgentCheckinLink = copyAgentCheckinLink;
+window.shareAgentCheckinWa = shareAgentCheckinWa;
 
