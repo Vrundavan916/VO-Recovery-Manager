@@ -277,6 +277,8 @@ function loadCustomers() {
                 <button onclick="viewCustomer(${index})" title="View">👁</button>
                 <button onclick="editCustomer(${index})" title="Edit">✏️</button>
                 ${waBtn}
+                <button type="button" onclick="openPaymentLinkForCustomer(${index})" title="UPI / Payment link"
+                  style="display:inline-flex;align-items:center;gap:4px;background:#1A3D63;color:#fff;border:none;border-radius:16px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;margin:2px;">₹ Pay</button>
                 ${deleteButton}
             </td>
         </tr>`;
@@ -678,6 +680,17 @@ async function saveRecovery() {
             } catch (e) { console.warn("remarks update", e); }
         }
 
+        const paidAmt = Number(amount.value || 0);
+        const newOutForReceipt = cust ? Math.max(0, Number(cust.outstanding || 0) - paidAmt) : 0;
+        const receiptSnapshot = {
+            amount: paidAmt,
+            date: date.value,
+            paymentMode: paymentMode ? paymentMode.value : "",
+            receiptNo: receiptNo ? receiptNo.value : "",
+            remarks: remarks ? remarks.value : "",
+            id: null
+        };
+
         amount.value = "";
         if (remarks) remarks.value = "";
         if (receiptNo) receiptNo.value = "";
@@ -689,6 +702,9 @@ async function saveRecovery() {
 
         await reloadAllData();
         alert("Recovery Saved Successfully.");
+        if (paidAmt > 0 && typeof afterRecoveryReceipt === "function") {
+            try { await afterRecoveryReceipt(receiptSnapshot, cust, newOutForReceipt); } catch (re) { console.warn(re); }
+        }
     } catch (e) {
         console.error(e);
         alert("Save failed: " + (e.message || e));
@@ -1098,6 +1114,7 @@ function firebaseFullRestore() { restoreData(); }
 // Settings / Users
 // ================================
 async function saveSettings() {
+    if (typeof readUpiSettingsIntoSettingsObj === 'function') readUpiSettingsIntoSettingsObj();
     const usernameField = document.getElementById("adminUsername");
     const currentPasswordField = document.getElementById("currentPassword");
     const newPasswordField = document.getElementById("newPassword");
@@ -2136,3 +2153,249 @@ window.markPtpBroken = markPtpBroken;
 window.markPtpCancelled = markPtpCancelled;
 window.runBrokenPtpCheck = runBrokenPtpCheck;
 
+// ================================
+// PHASE 2: Payment link, Receipt, Agent, Escalations
+// ================================
+
+function getShopUpiId() {
+    // settings.extra.upi_id or settings.upiId or local
+    try {
+        if (typeof settings !== "undefined" && settings) {
+            if (settings.upiId) return String(settings.upiId).trim();
+            if (settings.extra && settings.extra.upi_id) return String(settings.extra.upi_id).trim();
+        }
+    } catch (e) {}
+    try {
+        const s = JSON.parse(localStorage.getItem("settings") || "{}");
+        return (s.upiId || (s.extra && s.extra.upi_id) || "").trim();
+    } catch (e) {}
+    return "";
+}
+
+function buildUpiPayUrl(upiId, name, amount, note) {
+    const pa = encodeURIComponent(upiId);
+    const pn = encodeURIComponent(name || "Payment");
+    const am = amount ? ("&am=" + encodeURIComponent(Number(amount).toFixed(2))) : "";
+    const tn = note ? ("&tn=" + encodeURIComponent(note)) : "";
+    return "upi://pay?pa=" + pa + "&pn=" + pn + am + tn + "&cu=INR";
+}
+
+async function openPaymentLinkForCustomer(index) {
+    const c = customers[index];
+    if (!c) return;
+    const upi = getShopUpiId();
+    const amount = Number(c.outstanding || 0);
+    if (amount <= 0) {
+        alert("Outstanding ₹0 — payment link ni jarur nathi.");
+        return;
+    }
+    let upiId = upi;
+    if (!upiId) {
+        upiId = prompt("Shop UPI ID enter karo (e.g. shop@oksbi):\n\n(Settings ma save kari shako)", "");
+        if (!upiId) return;
+        try {
+            if (typeof settings === "undefined" || !settings) window.settings = {};
+            settings.upiId = upiId.trim();
+            if (typeof sbSaveSettings === "function" && typeof currentShopId === "function" && currentShopId()) {
+                await sbSaveSettings(settings, currentShopId());
+            }
+        } catch (e) { console.warn(e); }
+    }
+    const shopName = (typeof getSession === "function" && getSession().shopName) || "Shop";
+    const note = "Due " + (c.name || "");
+    const upiUrl = buildUpiPayUrl(upiId.trim(), shopName, amount, note);
+    const text =
+        "Namaste " + (c.name || "") + ",\n\n" +
+        "Apnu outstanding: ₹" + amount.toLocaleString("en-IN") + "\n" +
+        "Shop: " + shopName + "\n" +
+        "UPI: " + upiId.trim() + "\n\n" +
+        "Pay kari ne receipt jarur rakhjo.\n" +
+        "Thank you.";
+
+    // save row (best effort)
+    try {
+        const session = getSession();
+        if (session.shopId && c.id) {
+            await sbCreatePaymentLinkRow({
+                shop_id: session.shopId,
+                customer_id: c.id,
+                amount: amount,
+                gateway: "upi",
+                short_url: upiUrl,
+                notes: "UPI link for " + c.name,
+                created_by: session.userId
+            });
+        }
+    } catch (e) { console.warn("payment_links", e); }
+
+    const mobile = String(c.mobile || "").replace(/\D/g, "");
+    const wa = mobile.length >= 10
+        ? ("https://wa.me/91" + mobile.slice(-10) + "?text=" + encodeURIComponent(text + "\n\nUPI app: " + upiUrl))
+        : null;
+
+    if (wa && confirm("WhatsApp par payment request moklvi?\n\nOK = WhatsApp\nCancel = UPI link copy")) {
+        window.open(wa, "_blank");
+    } else {
+        try {
+            await navigator.clipboard.writeText(text + "\n" + upiUrl);
+            alert("Payment message + UPI link copy thai gayu.\n\nUPI: " + upiId);
+        } catch (e) {
+            prompt("Copy karo:", text + "\n" + upiUrl);
+        }
+    }
+}
+
+function printRecoveryReceipt(opts) {
+    const shop = (typeof getSession === "function" && getSession().shopName) || "BK Recovery Manager";
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Receipt</title>
+    <style>
+      body{font-family:system-ui,sans-serif;padding:24px;max-width:420px;margin:auto;color:#111}
+      h1{font-size:18px;margin:0 0 4px}
+      .muted{color:#666;font-size:12px}
+      .box{border:1px solid #ddd;border-radius:12px;padding:16px;margin-top:16px}
+      .row{display:flex;justify-content:space-between;margin:8px 0;font-size:14px}
+      .amt{font-size:22px;font-weight:700;color:#1A3D63}
+      @media print{button{display:none}}
+    </style></head><body>
+    <h1>${shop}</h1>
+    <div class="muted">Payment Receipt</div>
+    <div class="box">
+      <div class="row"><span>Receipt No</span><strong>${opts.receiptNo || "—"}</strong></div>
+      <div class="row"><span>Date</span><strong>${opts.date || ""}</strong></div>
+      <div class="row"><span>Customer</span><strong>${opts.customerName || ""}</strong></div>
+      <div class="row"><span>Mobile</span><strong>${opts.mobile || "—"}</strong></div>
+      <div class="row"><span>Mode</span><strong>${opts.mode || "—"}</strong></div>
+      <div class="row"><span>Amount</span><span class="amt">₹${Number(opts.amount || 0).toLocaleString("en-IN")}</span></div>
+      <div class="row"><span>Outstanding after</span><strong>₹${Number(opts.outstandingAfter || 0).toLocaleString("en-IN")}</strong></div>
+      ${opts.remarks ? '<div class="row"><span>Notes</span><span>' + opts.remarks + "</span></div>" : ""}
+    </div>
+    <p class="muted" style="margin-top:16px;">Thank you for your payment.</p>
+    <button onclick="window.print()">Print</button>
+    </body></html>`;
+    const w = window.open("", "_blank", "width=480,height=640");
+    if (!w) {
+        alert("Popup blocked — allow popups for receipt.");
+        return;
+    }
+    w.document.write(html);
+    w.document.close();
+}
+
+async function afterRecoveryReceipt(recovery, cust, newOut) {
+    if (!recovery || Number(recovery.amount || 0) <= 0) return;
+    const session = getSession();
+    let receiptNo = recovery.receiptNo || "";
+    let saved = null;
+    try {
+        if (recovery.id && session.shopId) {
+            saved = await sbSaveReceiptRow({
+                shop_id: session.shopId,
+                recovery_id: recovery.id,
+                customer_id: cust && cust.id,
+                receipt_no: receiptNo || undefined,
+                amount: recovery.amount
+            });
+            if (saved && saved.receipt_no) receiptNo = saved.receipt_no;
+        }
+    } catch (e) {
+        console.warn("receipt save", e);
+        if (!receiptNo) receiptNo = "R-" + Date.now();
+    }
+    if (confirm("Receipt print / open karvu?")) {
+        printRecoveryReceipt({
+            receiptNo: receiptNo,
+            date: recovery.date,
+            customerName: cust ? cust.name : "",
+            mobile: cust ? cust.mobile : "",
+            mode: recovery.paymentMode,
+            amount: recovery.amount,
+            outstandingAfter: newOut,
+            remarks: recovery.remarks
+        });
+    }
+}
+
+// Patch note: saveRecovery should call afterRecoveryReceipt — done via wrap below
+
+window.openPaymentLinkForCustomer = openPaymentLinkForCustomer;
+window.printRecoveryReceipt = printRecoveryReceipt;
+window.afterRecoveryReceipt = afterRecoveryReceipt;
+window.getShopUpiId = getShopUpiId;
+
+async function loadEscalationsTable() {
+    const tbody = document.getElementById("escTableBody");
+    if (!tbody) return;
+    const status = (document.getElementById("escStatusFilter") || {}).value || "open";
+    const session = getSession();
+    tbody.innerHTML = '<tr><td colspan="7">Loading…</td></tr>';
+    try {
+        if ((!customers || !customers.length) && typeof reloadAllData === "function") await reloadAllData();
+        const all = await sbGetEscalations(session.shopId, "all");
+        const setN = (id, n) => { const el = document.getElementById(id); if (el) el.textContent = n; };
+        setN("escOpen", all.filter(e => e.status === "open").length);
+        setN("escProgress", all.filter(e => e.status === "in_progress").length);
+        setN("escResolved", all.filter(e => e.status === "resolved").length);
+        const list = status === "all" ? all : all.filter(e => e.status === status);
+        if (!list.length) {
+            tbody.innerHTML = '<tr><td colspan="7">No escalations</td></tr>';
+            return;
+        }
+        tbody.innerHTML = list.map((e, i) => {
+            const cust = (customers || []).find(c => String(c.id) === String(e.customer_id));
+            const name = cust ? cust.name : (e.customer_id || "—");
+            let actions = "";
+            if (e.status === "open" || e.status === "in_progress") {
+                actions =
+                    (e.status === "open" ? `<button type="button" class="add-btn" style="padding:6px 10px;font-size:12px;" onclick="setEscalationStatus('${e.id}','in_progress')">Start</button> ` : "") +
+                    `<button type="button" class="add-btn" style="padding:6px 10px;font-size:12px;background:#16a34a;" onclick="setEscalationStatus('${e.id}','resolved')">Resolve</button> ` +
+                    `<button type="button" class="btn-cancel" style="padding:6px 10px;font-size:12px;" onclick="setEscalationStatus('${e.id}','dismissed')">Dismiss</button>`;
+            } else actions = "—";
+            return `<tr>
+              <td>${i + 1}</td>
+              <td>${name}</td>
+              <td>${e.reason || ""}</td>
+              <td>${e.level || 1}</td>
+              <td>${e.notes || "—"}</td>
+              <td>${e.status || ""}</td>
+              <td style="white-space:nowrap;">${actions}</td>
+            </tr>`;
+        }).join("");
+    } catch (err) {
+        console.error(err);
+        tbody.innerHTML = '<tr><td colspan="7">Error: ' + (err.message || err) + "</td></tr>";
+    }
+}
+
+async function setEscalationStatus(id, status) {
+    try {
+        const patch = { status: status };
+        if (status === "resolved") {
+            patch.resolved_at = new Date().toISOString();
+            const session = getSession();
+            patch.resolved_by = session.userId ? String(session.userId) : null;
+        }
+        await sbUpdateEscalation(id, patch);
+        await loadEscalationsTable();
+    } catch (e) {
+        alert("Failed: " + (e.message || e));
+    }
+}
+
+window.loadEscalationsTable = loadEscalationsTable;
+window.setEscalationStatus = setEscalationStatus;
+
+
+
+function fillUpiSettingsField() {
+    const el = document.getElementById("upiId");
+    if (!el) return;
+    el.value = getShopUpiId() || "";
+}
+function readUpiSettingsIntoSettingsObj() {
+    const el = document.getElementById("upiId");
+    if (!el) return;
+    if (typeof settings === "undefined" || !settings) window.settings = {};
+    settings.upiId = (el.value || "").trim();
+}
+window.fillUpiSettingsField = fillUpiSettingsField;
+window.readUpiSettingsIntoSettingsObj = readUpiSettingsIntoSettingsObj;

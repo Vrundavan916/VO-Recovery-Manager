@@ -44,6 +44,7 @@ function mapCustomerFromDb(row) {
         nextReminderDate: row.next_reminder_date || "",
         dueDate: row.due_date || row.followup || "",
         agingBucket: row.aging_bucket || "",
+        assignedAgentId: row.assigned_agent_id || "",
         photo_url: row.photo_url || "",
         aadhaar_photo_url: row.aadhaar_photo_url || "",
         pan_photo_url: row.pan_photo_url || "",
@@ -902,4 +903,91 @@ window.sbGetPtp = sbGetPtp;
 window.sbSavePtp = sbSavePtp;
 window.sbUpdatePtpStatus = sbUpdatePtpStatus;
 window.sbDeletePtp = sbDeletePtp;
+
+/* ---------- PHASE 2: Payment links, receipts, escalations, agents ---------- */
+async function sbCreatePaymentLinkRow(row) {
+    const sb = getSupabase();
+    if (!sb) throw new Error("Supabase not ready");
+    const payload = {
+        shop_id: row.shop_id,
+        customer_id: row.customer_id,
+        amount: Number(row.amount || 0),
+        currency: "INR",
+        gateway: row.gateway || "upi",
+        short_url: row.short_url || null,
+        qr_data: row.qr_data || null,
+        status: row.status || "created",
+        notes: row.notes || "",
+        created_by: row.created_by ? String(row.created_by) : null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+    };
+    const { data, error } = await sb.from("payment_links").insert(payload).select().maybeSingle();
+    if (error) throw error;
+    return data;
+}
+
+async function sbSaveReceiptRow(row) {
+    const sb = getSupabase();
+    if (!sb) throw new Error("Supabase not ready");
+    let receiptNo = row.receipt_no;
+    if (!receiptNo && row.shop_id) {
+        try {
+            const { data: rn } = await sb.rpc("next_receipt_no", { p_shop_id: row.shop_id });
+            receiptNo = rn || ("R-" + Date.now());
+        } catch (e) {
+            receiptNo = "R-" + Date.now();
+        }
+    }
+    const payload = {
+        shop_id: row.shop_id,
+        recovery_id: row.recovery_id,
+        customer_id: row.customer_id || null,
+        receipt_no: receiptNo,
+        amount: Number(row.amount || 0),
+        pdf_url: row.pdf_url || null,
+        whatsapp_sent: !!row.whatsapp_sent,
+        created_at: new Date().toISOString()
+    };
+    const { data, error } = await sb.from("receipts").insert(payload).select().maybeSingle();
+    if (error) throw error;
+    return data;
+}
+
+async function sbGetEscalations(shopId, status) {
+    const sb = getSupabase();
+    if (!sb) throw new Error("Supabase not ready");
+    let q = sb.from("escalations").select("*").order("created_at", { ascending: false });
+    if (shopId) q = q.eq("shop_id", shopId);
+    if (status && status !== "all") q = q.eq("status", status);
+    const { data, error } = await q;
+    if (error) throw error;
+    return data || [];
+}
+
+async function sbUpdateEscalation(id, patch) {
+    const sb = getSupabase();
+    if (!sb) throw new Error("Supabase not ready");
+    const payload = Object.assign({}, patch, { updated_at: new Date().toISOString() });
+    const { data, error } = await sb.from("escalations").update(payload).eq("id", id).select().maybeSingle();
+    if (error) throw error;
+    return data;
+}
+
+async function sbAssignAgent(customerId, agentId, executiveName) {
+    const sb = getSupabase();
+    if (!sb) throw new Error("Supabase not ready");
+    const payload = { updated_at: new Date().toISOString() };
+    if (agentId !== undefined) payload.assigned_agent_id = agentId;
+    if (executiveName !== undefined) payload.executive = executiveName;
+    const { data, error } = await sb.from("customers").update(payload).eq("id", customerId).select().maybeSingle();
+    if (error) throw error;
+    return data;
+}
+
+window.sbCreatePaymentLinkRow = sbCreatePaymentLinkRow;
+window.sbSaveReceiptRow = sbSaveReceiptRow;
+window.sbGetEscalations = sbGetEscalations;
+window.sbUpdateEscalation = sbUpdateEscalation;
+window.sbAssignAgent = sbAssignAgent;
 
