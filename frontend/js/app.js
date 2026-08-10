@@ -1847,3 +1847,203 @@ window.refreshAgingDashboard = refreshAgingDashboard;
 window.filterByAgingBucket = filterByAgingBucket;
 window.renderAgingSummary = renderAgingSummary;
 
+// ================================
+// Promise to Pay (PTP) Module
+// ================================
+let ptpListCache = [];
+
+async function initPtpPage() {
+    if (!document.getElementById("ptpTableBody")) return;
+    // default date = today
+    const d = document.getElementById("ptpDate");
+    if (d && !d.value) d.value = new Date().toISOString().split("T")[0];
+    await fillPtpCustomerDropdown();
+    await loadPtpTable();
+}
+
+async function fillPtpCustomerDropdown() {
+    const sel = document.getElementById("ptpCustomer");
+    if (!sel) return;
+    try {
+        if (typeof reloadAllData === "function" && (!window.customers || !customers.length)) {
+            await reloadAllData();
+        }
+        const list = (typeof customers !== "undefined" && customers) ? customers : [];
+        // prefer outstanding > 0 first
+        const sorted = list.slice().sort((a, b) => Number(b.outstanding || 0) - Number(a.outstanding || 0));
+        sel.innerHTML = '<option value="">Select customer</option>' +
+            sorted.map(c => {
+                const out = Number(c.outstanding || 0);
+                const label = (c.name || "-") + (out ? " (₹" + out.toLocaleString("en-IN") + ")" : "");
+                return '<option value="' + c.id + '" data-out="' + out + '">' + label + "</option>";
+            }).join("");
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+function clearPtpForm() {
+    const c = document.getElementById("ptpCustomer");
+    const a = document.getElementById("ptpAmount");
+    const d = document.getElementById("ptpDate");
+    const n = document.getElementById("ptpNotes");
+    if (c) c.value = "";
+    if (a) a.value = "";
+    if (d) d.value = new Date().toISOString().split("T")[0];
+    if (n) n.value = "";
+}
+
+async function savePtpForm() {
+    const customerId = (document.getElementById("ptpCustomer") || {}).value;
+    const amount = Number((document.getElementById("ptpAmount") || {}).value || 0);
+    const date = (document.getElementById("ptpDate") || {}).value;
+    const notes = ((document.getElementById("ptpNotes") || {}).value || "").trim();
+
+    if (!customerId) { alert("Please select customer"); return; }
+    if (!date) { alert("Please select promised date"); return; }
+    if (amount < 0) { alert("Amount cannot be negative"); return; }
+
+    const session = (typeof getSession === "function") ? getSession() : {};
+    const shopId = session.shopId;
+    if (!shopId) {
+        alert("No shop context. Login as shop admin/user.");
+        return;
+    }
+
+    try {
+        await sbSavePtp({
+            shop_id: shopId,
+            customer_id: customerId,
+            agent_id: session.userId || null,
+            promised_amount: amount,
+            promised_date: date,
+            notes: notes,
+            status: "open",
+            created_by: session.userId || null
+        });
+        alert("Promise saved successfully.");
+        clearPtpForm();
+        await loadPtpTable();
+        if (typeof loadAgingDashboard === "function") loadAgingDashboard();
+    } catch (e) {
+        console.error(e);
+        alert("Save failed: " + (e.message || e));
+    }
+}
+
+async function loadPtpTable() {
+    const tbody = document.getElementById("ptpTableBody");
+    if (!tbody) return;
+    const status = (document.getElementById("ptpStatusFilter") || {}).value || "open";
+    const session = (typeof getSession === "function") ? getSession() : {};
+    const shopId = session.shopId || null;
+
+    tbody.innerHTML = '<tr><td colspan="7">Loading…</td></tr>';
+    try {
+        if (typeof customers === "undefined" || !customers.length) {
+            if (typeof reloadAllData === "function") await reloadAllData();
+        }
+        ptpListCache = await sbGetPtp(shopId, status);
+        // counts from all statuses for cards
+        const all = await sbGetPtp(shopId, "all");
+        const today = new Date().toISOString().split("T")[0];
+        const setN = (id, n) => { const el = document.getElementById(id); if (el) el.textContent = n; };
+        setN("ptpCountOpen", all.filter(p => p.status === "open").length);
+        setN("ptpCountToday", all.filter(p => p.status === "open" && p.promised_date === today).length);
+        setN("ptpCountKept", all.filter(p => p.status === "kept").length);
+        setN("ptpCountBroken", all.filter(p => p.status === "broken").length);
+
+        if (!ptpListCache.length) {
+            tbody.innerHTML = '<tr><td colspan="7">No promises found</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = ptpListCache.map((p, i) => {
+            const cust = (customers || []).find(c => String(c.id) === String(p.customer_id));
+            const name = cust ? cust.name : (p.customer_id || "-");
+            const st = p.status || "open";
+            const badge =
+                st === "open" ? "badge-info" :
+                st === "kept" ? "badge-success" :
+                st === "broken" ? "badge-danger" : "badge-warning";
+            let actions = "";
+            if (st === "open") {
+                actions =
+                    '<button type="button" class="add-btn" style="padding:6px 10px;font-size:12px;" onclick="markPtpKept(\'' + p.id + '\')">Kept</button> ' +
+                    '<button type="button" class="add-btn" style="padding:6px 10px;font-size:12px;background:#dc2626;" onclick="markPtpBroken(\'' + p.id + '\')">Broken</button> ' +
+                    '<button type="button" class="btn-cancel" style="padding:6px 10px;font-size:12px;" onclick="markPtpCancelled(\'' + p.id + '\')">Cancel</button>';
+            } else {
+                actions = '<span style="color:#73879B;font-size:12px;">—</span>';
+            }
+            return '<tr>' +
+                '<td>' + (i + 1) + '</td>' +
+                '<td>' + name + '</td>' +
+                '<td>₹' + Number(p.promised_amount || 0).toLocaleString("en-IN") + '</td>' +
+                '<td>' + (p.promised_date || "") + '</td>' +
+                '<td><span class="badge ' + badge + '">' + st + '</span></td>' +
+                '<td>' + (p.notes || "—") + '</td>' +
+                '<td>' + actions + '</td>' +
+                '</tr>';
+        }).join("");
+    } catch (e) {
+        console.error(e);
+        tbody.innerHTML = '<tr><td colspan="7">Error: ' + (e.message || e) + '</td></tr>';
+    }
+}
+
+async function markPtpKept(id) {
+    if (!confirm("Mark this promise as KEPT? (Customer paid as promised)")) return;
+    try {
+        await sbUpdatePtpStatus(id, "kept");
+        alert("Marked as kept.");
+        await loadPtpTable();
+    } catch (e) {
+        alert("Failed: " + (e.message || e));
+    }
+}
+
+async function markPtpBroken(id) {
+    if (!confirm("Mark as BROKEN? This will create an escalation.")) return;
+    try {
+        await sbUpdatePtpStatus(id, "broken");
+        alert("Marked as broken + escalation created.");
+        await loadPtpTable();
+        if (typeof loadAgingDashboard === "function") loadAgingDashboard();
+    } catch (e) {
+        alert("Failed: " + (e.message || e));
+    }
+}
+
+async function markPtpCancelled(id) {
+    if (!confirm("Cancel this promise?")) return;
+    try {
+        await sbUpdatePtpStatus(id, "cancelled");
+        await loadPtpTable();
+    } catch (e) {
+        alert("Failed: " + (e.message || e));
+    }
+}
+
+async function runBrokenPtpCheck() {
+    if (!confirm("Process all overdue open PTPs as broken (server function)?")) return;
+    try {
+        const sb = getSupabase();
+        if (!sb) throw new Error("Supabase not ready");
+        const { data, error } = await sb.rpc("process_broken_ptp", { p_grace_days: 1 });
+        if (error) throw error;
+        alert("Processed. Broken count: " + (data ?? 0));
+        await loadPtpTable();
+    } catch (e) {
+        alert("Failed: " + (e.message || e));
+    }
+}
+
+window.initPtpPage = initPtpPage;
+window.savePtpForm = savePtpForm;
+window.clearPtpForm = clearPtpForm;
+window.loadPtpTable = loadPtpTable;
+window.markPtpKept = markPtpKept;
+window.markPtpBroken = markPtpBroken;
+window.markPtpCancelled = markPtpCancelled;
+window.runBrokenPtpCheck = runBrokenPtpCheck;
+
