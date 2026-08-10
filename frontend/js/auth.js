@@ -1,3 +1,65 @@
+
+/* ========== Password security (SHA-256 + app pepper) ========== */
+const PASSWORD_PEPPER = "VO-RM-v1-";
+const MIN_PASSWORD_LEN = 8;
+const MIN_SUPERADMIN_PASSWORD_LEN = 12;
+
+async function hashPassword(plain) {
+    const text = PASSWORD_PEPPER + String(plain || "");
+    if (window.crypto && crypto.subtle) {
+        const data = new TextEncoder().encode(text);
+        const buf = await crypto.subtle.digest("SHA-256", data);
+        return Array.from(new Uint8Array(buf))
+            .map(function (b) { return b.toString(16).padStart(2, "0"); })
+            .join("");
+    }
+    let hash = 0;
+    for (let i = 0; i < text.length; i++) {
+        hash = ((hash << 5) - hash) + text.charCodeAt(i);
+        hash |= 0;
+    }
+    return "fallback_" + Math.abs(hash).toString(16);
+}
+
+function isHashedPassword(stored) {
+    if (!stored || typeof stored !== "string") return false;
+    return /^[a-f0-9]{64}$/i.test(stored.trim());
+}
+
+function validatePasswordStrength(password, role) {
+    const p = String(password || "");
+    const isSuper = role === "super_admin";
+    const min = isSuper ? MIN_SUPERADMIN_PASSWORD_LEN : MIN_PASSWORD_LEN;
+    if (p.length < min) {
+        return {
+            ok: false,
+            message: isSuper
+                ? ("Super Admin password minimum " + min + " characters joi e.")
+                : ("Password minimum " + min + " characters joi e.")
+        };
+    }
+    if (isSuper) {
+        const hasLetter = /[a-zA-Z]/.test(p);
+        const hasNumber = /[0-9]/.test(p);
+        const hasSpecial = /[^a-zA-Z0-9]/.test(p);
+        if (!hasLetter || !hasNumber || !hasSpecial) {
+            return {
+                ok: false,
+                message: "Super Admin password ma letter + number + special character (e.g. @#$) joi e."
+            };
+        }
+        const weak = ["1234", "123456", "password", "admin", "superadmin", "admin@123"];
+        if (weak.some(function (w) { return p.toLowerCase().indexOf(w) >= 0; })) {
+            return { ok: false, message: "Password too weak / common. Strong password choose karo." };
+        }
+    }
+    return { ok: true };
+}
+
+window.hashPassword = hashPassword;
+window.isHashedPassword = isHashedPassword;
+window.validatePasswordStrength = validatePasswordStrength;
+
 /* ==========================================================
    BK Recovery Manager – Authentication
 ========================================================== */
@@ -6,16 +68,44 @@ async function sbLogin(username, password) {
     const sb = getSupabase();
     if (!sb) throw new Error("Supabase not ready");
 
+    const plain = String(password || "").trim();
+    const uname = String(username || "").trim();
+    if (!uname || !plain) return null;
+
+    // Fetch by username only (never filter by plain password in query)
     const { data, error } = await sb
         .from("users")
         .select("id, username, password, role, shop_id, display_name, is_active")
-        .eq("username", username.trim())
-        .eq("password", password.trim())
+        .eq("username", uname)
         .eq("is_active", true)
         .maybeSingle();
 
     if (error) throw error;
     if (!data) return null;
+
+    const stored = String(data.password || "");
+    const hashedInput = await hashPassword(plain);
+    let matched = false;
+
+    if (isHashedPassword(stored)) {
+        matched = (stored.toLowerCase() === hashedInput.toLowerCase());
+    } else {
+        // Legacy plain-text password — verify then upgrade to hash
+        matched = (stored === plain);
+        if (matched) {
+            try {
+                await sb.from("users").update({ password: hashedInput }).eq("id", data.id);
+                data.password = hashedInput;
+            } catch (upErr) {
+                console.warn("password upgrade failed", upErr);
+            }
+        }
+    }
+
+    if (!matched) return null;
+
+    // Do not keep password on session object
+    try { delete data.password; } catch (e) { data.password = undefined; }
 
     let shop = null;
     if (data.shop_id) {
@@ -220,10 +310,6 @@ async function submitForgotPassword() {
         alert("Please enter recovery email.\n\nUse the Recovery Email saved in Settings.");
         return;
     }
-    if (!newPass || newPass.length < 4) {
-        alert("New password must be at least 4 characters.");
-        return;
-    }
     if (newPass !== confirmPass) {
         alert("New password and confirm password do not match.");
         return;
@@ -295,9 +381,15 @@ async function submitForgotPassword() {
             return;
         }
 
+        const strength = validatePasswordStrength(newPass, user.role || "user");
+        if (!strength.ok) {
+            alert(strength.message);
+            return;
+        }
+
         const { error: upErr } = await sb
             .from("users")
-            .update({ password: newPass })
+            .update({ password: await hashPassword(newPass) })
             .eq("id", user.id);
 
         if (upErr) throw upErr;

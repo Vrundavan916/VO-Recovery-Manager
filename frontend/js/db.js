@@ -199,7 +199,7 @@ async function sbAddUser(user) {
     const sb = getSupabase();
     const payload = {
         username: user.username,
-        password: user.password,
+        password: (typeof hashPassword === 'function' ? await hashPassword(user.password) : user.password),
         role: user.role || "user",
         shop_id: user.shop_id || currentShopId(),
         display_name: user.display_name || user.username
@@ -218,7 +218,7 @@ async function sbDeleteUser(userId) {
 
 async function sbUpdateUserPassword(userId, newPassword) {
     const sb = getSupabase();
-    const { error } = await sb.from("users").update({ password: newPassword }).eq("id", userId);
+    const { error } = await sb.from("users").update({ password: (typeof hashPassword === 'function' ? await hashPassword(newPassword) : newPassword) }).eq("id", userId);
     if (error) throw error;
     return true;
 }
@@ -429,7 +429,7 @@ async function sbRegisterShop(form) {
         .from("users")
         .insert({
             username: adminUsername,
-            password: adminPassword,
+            password: (typeof hashPassword === 'function' ? await hashPassword(adminPassword) : adminPassword),
             role: "admin",
             shop_id: shop.id,
             display_name: adminName,
@@ -537,7 +537,7 @@ async function sbAddShop(form) {
         if (!existingUser) {
             await sb.from("users").insert({
                 username: adminUsername,
-                password: adminPassword || "1234",
+                password: (typeof hashPassword === 'function' ? await hashPassword(adminPassword || "ChangeMe@1234") : (adminPassword || "ChangeMe@1234")),
                 role: "admin",
                 shop_id: shop.id,
                 display_name: form.adminName || adminUsername,
