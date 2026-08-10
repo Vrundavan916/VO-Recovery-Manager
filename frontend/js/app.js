@@ -116,7 +116,7 @@ function getCustomerData() {
         remarks: document.getElementById("remarks")?.value || "",
         autoReminder: document.getElementById("autoReminder") ? document.getElementById("autoReminder").checked : true,
         reminderInterval: Number(document.getElementById("reminderInterval")?.value || 3),
-        dueDate: document.getElementById("followup")?.value || "",
+        dueDate: document.getElementById("dueDate")?.value || document.getElementById("followup")?.value || "",
         nextReminderDate: document.getElementById("followup")?.value || ""
     };
 }
@@ -163,6 +163,74 @@ function clearCustomerForm() {
 // ================================
 // Load Customers
 // ================================
+function getCustomerAgingBucket(c) {
+    if (c.agingBucket && c.agingBucket !== "none" && c.agingBucket !== "current") {
+        return c.agingBucket;
+    }
+    // client-side fallback from due date
+    const due = (c.dueDate || c.followup || "").toString().slice(0, 10);
+    if (!due || Number(c.outstanding || 0) <= 0) return "none";
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const d = new Date(due);
+    if (isNaN(d.getTime())) return "none";
+    d.setHours(0, 0, 0, 0);
+    const diff = Math.floor((today - d) / 86400000);
+    if (diff <= 0) return "current";
+    if (diff <= 30) return "0-30";
+    if (diff <= 60) return "31-60";
+    if (diff <= 90) return "61-90";
+    return "90+";
+}
+
+function agingBadgeHtml(bucket) {
+    const map = {
+        "0-30": { bg: "#e0f2fe", color: "#075985", label: "0–30" },
+        "31-60": { bg: "#fef3c7", color: "#92400e", label: "31–60" },
+        "61-90": { bg: "#ffedd5", color: "#9a3412", label: "61–90" },
+        "90+": { bg: "#fee2e2", color: "#991b1b", label: "90+" },
+        "current": { bg: "#dcfce7", color: "#166534", label: "Current" },
+        "none": { bg: "#f1f5f9", color: "#64748b", label: "—" }
+    };
+    const m = map[bucket] || map.none;
+    return `<span class="badge" style="background:${m.bg};color:${m.color};">${m.label}</span>`;
+}
+
+let customerAgingFilter = "all";
+
+function setCustomerAgingFilter(bucket) {
+    customerAgingFilter = bucket || "all";
+    const label = document.getElementById("agingFilterLabel");
+    if (label) {
+        label.textContent = bucket && bucket !== "all" ? ("Showing: " + bucket) : "";
+    }
+    // update hash without reload
+    try {
+        if (bucket && bucket !== "all") {
+            const hashMap = { "0-30": "aging_0_30", "31-60": "aging_31_60", "61-90": "aging_61_90", "90+": "aging_90" };
+            history.replaceState(null, "", "#" + (hashMap[bucket] || bucket));
+        } else {
+            history.replaceState(null, "", window.location.pathname + window.location.search);
+        }
+    } catch (e) {}
+    loadCustomers();
+}
+
+function applyHashAgingFilter() {
+    const h = (window.location.hash || "").replace(/^#/, "");
+    const map = {
+        aging_0_30: "0-30",
+        aging_31_60: "31-60",
+        aging_61_90: "61-90",
+        aging_90: "90+",
+        "0-30": "0-30",
+        "31-60": "31-60",
+        "61-90": "61-90",
+        "90+": "90+"
+    };
+    if (map[h]) setCustomerAgingFilter(map[h]);
+}
+
 function loadCustomers() {
     const tbody = document.getElementById("customerBody");
     if (!tbody) return;
@@ -172,7 +240,14 @@ function loadCustomers() {
 
     tbody.innerHTML = "";
 
+    let rowNum = 0;
     customers.forEach((customer, index) => {
+        const bucket = getCustomerAgingBucket(customer);
+        if (customerAgingFilter && customerAgingFilter !== "all") {
+            if (bucket !== customerAgingFilter) return;
+        }
+
+        rowNum++;
         const deleteButton = (role === "admin" || role === "super_admin")
             ? `<button onclick="deleteCustomer(${index})" title="Delete">🗑️</button>`
             : "";
@@ -187,14 +262,17 @@ function loadCustomers() {
                 💬 No Mob
                </button>`;
 
+        const dueShow = (customer.dueDate || customer.followup || "").toString().slice(0, 10);
+
         tbody.innerHTML += `
         <tr>
-            <td>${index + 1}</td>
+            <td>${rowNum}</td>
             <td>${customer.name}</td>
             <td>${customer.mobile || "-"}</td>
             <td>${customer.village || ""}</td>
             <td>₹${Number(customer.outstanding || 0).toLocaleString("en-IN")}</td>
-            <td>${customer.followup || ""}${customer.autoReminder === false ? " 🔕" : ""}</td>
+            <td>${agingBadgeHtml(bucket)}</td>
+            <td>${dueShow}${customer.autoReminder === false ? " 🔕" : ""}</td>
             <td style="white-space:nowrap;">
                 <button onclick="viewCustomer(${index})" title="View">👁</button>
                 <button onclick="editCustomer(${index})" title="Edit">✏️</button>
@@ -203,7 +281,17 @@ function loadCustomers() {
             </td>
         </tr>`;
     });
+
+    if (rowNum === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:#73879B;">No customers in this filter</td></tr>`;
+    }
 }
+
+window.getCustomerAgingBucket = getCustomerAgingBucket;
+window.agingBadgeHtml = agingBadgeHtml;
+window.setCustomerAgingFilter = setCustomerAgingFilter;
+window.applyHashAgingFilter = applyHashAgingFilter;
+
 
 // ================================
 // Edit / Delete / Search / View
@@ -227,6 +315,7 @@ function editCustomer(index) {
     document.getElementById("outstanding").value = c.outstanding || 0;
     document.getElementById("executive").value = c.executive || "";
     document.getElementById("followup").value = c.followup || "";
+    const dueEl = document.getElementById("dueDate"); if (dueEl) dueEl.value = (c.dueDate || c.followup || "").toString().slice(0,10);
     document.getElementById("remarks").value = c.remarks || "";
 
     openModal();
@@ -1512,7 +1601,7 @@ async function reloadAllData() {
             settings = await sbGetSettings(session.shopId);
         }
 
-        if (document.getElementById("customerBody")) loadCustomers();
+        if (document.getElementById("customerBody")) { applyHashAgingFilter(); loadCustomers(); }
         if (document.getElementById("totalCustomers")) {
             updateDashboard();
             loadRecentCustomers();

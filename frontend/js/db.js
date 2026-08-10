@@ -43,6 +43,7 @@ function mapCustomerFromDb(row) {
         lastReminderAt: row.last_reminder_at || "",
         nextReminderDate: row.next_reminder_date || "",
         dueDate: row.due_date || row.followup || "",
+        agingBucket: row.aging_bucket || "",
         photo_url: row.photo_url || "",
         aadhaar_photo_url: row.aadhaar_photo_url || "",
         pan_photo_url: row.pan_photo_url || "",
