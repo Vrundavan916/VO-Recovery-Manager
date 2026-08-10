@@ -279,6 +279,8 @@ function loadCustomers() {
                 ${waBtn}
                 <button type="button" onclick="openPaymentLinkForCustomer(${index})" title="UPI / Payment link"
                   style="display:inline-flex;align-items:center;gap:4px;background:#1A3D63;color:#fff;border:none;border-radius:16px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;margin:2px;">₹ Pay</button>
+                <button type="button" onclick="openLegalNoticeForCustomer(${index})" title="Legal / reminder letter"
+                  style="display:inline-flex;align-items:center;gap:4px;background:#7c3aed;color:#fff;border:none;border-radius:16px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;margin:2px;">📜 Notice</button>
                 ${deleteButton}
             </td>
         </tr>`;
@@ -923,6 +925,8 @@ function renderReportRows(list) {
 }
 
 function loadReports() {
+    try { if (typeof renderAnalyticsOnReports === 'function') renderAnalyticsOnReports(); } catch (e) {}
+
     loadReportCustomers();
     renderReportRows(recoveries);
     updateRecoverySummary();
@@ -2399,3 +2403,242 @@ function readUpiSettingsIntoSettingsObj() {
 }
 window.fillUpiSettingsField = fillUpiSettingsField;
 window.readUpiSettingsIntoSettingsObj = readUpiSettingsIntoSettingsObj;
+
+// ================================
+// PHASE 3: Activity log, Legal notice, Analytics
+// ================================
+
+async function saveActivityForm() {
+    const customerId = (document.getElementById("actCustomer") || {}).value;
+    const type = (document.getElementById("actType") || {}).value || "call";
+    const outcome = (document.getElementById("actOutcome") || {}).value || "";
+    const notes = ((document.getElementById("actNotes") || {}).value || "").trim();
+    if (!customerId) { alert("Customer select karo"); return; }
+    if (!notes && !outcome) { alert("Notes or outcome enter karo"); return; }
+    const session = getSession();
+    if (!session.shopId) { alert("Shop context nathi"); return; }
+
+    let gps_lat = null, gps_lng = null;
+    if (document.getElementById("actCaptureGps") && document.getElementById("actCaptureGps").checked) {
+        try {
+            const pos = await new Promise((resolve, reject) => {
+                if (!navigator.geolocation) return reject(new Error("No GPS"));
+                navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 8000 });
+            });
+            gps_lat = pos.coords.latitude;
+            gps_lng = pos.coords.longitude;
+        } catch (e) {
+            console.warn("GPS", e);
+            if (!confirm("GPS nathi malyu. Without location save?")) return;
+        }
+    }
+
+    try {
+        await sbAddActivity({
+            shop_id: session.shopId,
+            agent_id: session.userId || session.username || "unknown",
+            customer_id: customerId,
+            activity_type: type,
+            outcome: outcome,
+            notes: notes,
+            gps_lat: gps_lat,
+            gps_lng: gps_lng
+        });
+        alert("Activity saved.");
+        if (document.getElementById("actNotes")) document.getElementById("actNotes").value = "";
+        await loadActivityTable();
+    } catch (e) {
+        alert("Save failed: " + (e.message || e));
+    }
+}
+
+async function loadActivityTable() {
+    const tbody = document.getElementById("activityBody");
+    if (!tbody) return;
+    const session = getSession();
+    tbody.innerHTML = "<tr><td colspan='6'>Loading…</td></tr>";
+    try {
+        if ((!customers || !customers.length) && typeof reloadAllData === "function") await reloadAllData();
+        const list = await sbGetActivities(session.shopId, 100);
+        if (!list.length) {
+            tbody.innerHTML = "<tr><td colspan='6'>No activity yet</td></tr>";
+            return;
+        }
+        tbody.innerHTML = list.map((a, i) => {
+            const cust = (customers || []).find(c => String(c.id) === String(a.customer_id));
+            const name = cust ? cust.name : "—";
+            const when = (a.created_at || "").toString().slice(0, 19).replace("T", " ");
+            const gps = (a.gps_lat != null && a.gps_lng != null)
+                ? ("📍 " + Number(a.gps_lat).toFixed(4) + ", " + Number(a.gps_lng).toFixed(4))
+                : "—";
+            return `<tr>
+              <td>${i + 1}</td>
+              <td>${when}</td>
+              <td>${name}</td>
+              <td>${a.activity_type || ""}</td>
+              <td>${(a.outcome || "") + (a.notes ? (" — " + a.notes) : "")}</td>
+              <td>${gps}</td>
+            </tr>`;
+        }).join("");
+    } catch (e) {
+        tbody.innerHTML = "<tr><td colspan='6'>Error: " + (e.message || e) + "</td></tr>";
+    }
+}
+
+async function fillActivityCustomers() {
+    const sel = document.getElementById("actCustomer");
+    if (!sel) return;
+    if ((!customers || !customers.length) && typeof reloadAllData === "function") await reloadAllData();
+    sel.innerHTML = '<option value="">Select customer</option>' +
+        (customers || []).map(c => `<option value="${c.id}">${c.name || ""} (₹${Number(c.outstanding || 0).toLocaleString("en-IN")})</option>`).join("");
+}
+
+async function initActivityPage() {
+    if (!document.getElementById("activityBody")) return;
+    await fillActivityCustomers();
+    await loadActivityTable();
+}
+
+function openLegalNoticeForCustomer(index) {
+    const c = customers[index];
+    if (!c) return;
+    const shop = (getSession().shopName) || "Shop";
+    const amt = Number(c.outstanding || 0);
+    const today = new Date().toLocaleDateString("en-IN");
+    const due = (c.dueDate || c.followup || "—").toString().slice(0, 10);
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Legal Notice</title>
+    <style>
+      body{font-family:Georgia,serif;max-width:700px;margin:40px auto;padding:24px;line-height:1.5;color:#111}
+      h1{font-size:20px;text-align:center;text-transform:uppercase;letter-spacing:.04em}
+      .meta{text-align:right;font-size:13px;color:#444}
+      .box{border:1px solid #333;padding:16px;margin:20px 0}
+      @media print{button{display:none}}
+    </style></head><body>
+    <div class="meta">${shop}<br>Date: ${today}</div>
+    <h1>Payment Reminder / Legal Notice</h1>
+    <p>To,<br><strong>${c.name || ""}</strong><br>
+    ${c.address || c.village || ""}<br>
+    Mobile: ${c.mobile || "—"}</p>
+    <p>Subject: <strong>Outstanding dues – ₹${amt.toLocaleString("en-IN")}</strong></p>
+    <div class="box">
+      <p>This is to inform you that an amount of <strong>₹${amt.toLocaleString("en-IN")}</strong>
+      is outstanding against your account. Due / follow-up reference: <strong>${due}</strong>.</p>
+      <p>You are requested to clear the dues within <strong>7 days</strong> of this notice.
+      Failing which, further recovery / legal steps may be initiated as per applicable law and shop policy.</p>
+    </div>
+    <p>This notice is issued without prejudice to other rights and remedies available.</p>
+    <p style="margin-top:40px;">For ${shop}<br><br>__________________<br>Authorized Signatory</p>
+    <button onclick="window.print()">Print</button>
+    </body></html>`;
+    const w = window.open("", "_blank", "width=720,height=900");
+    if (!w) { alert("Popup blocked"); return; }
+    w.document.write(html);
+    w.document.close();
+
+    // best-effort log
+    (async () => {
+        try {
+            const session = getSession();
+            if (session.shopId && c.id) {
+                await sbSaveLegalNotice({
+                    shop_id: session.shopId,
+                    customer_id: c.id,
+                    notice_type: amt > 0 && (typeof getCustomerAgingBucket === "function" && getCustomerAgingBucket(c) === "90+")
+                        ? "legal_notice_1" : "reminder_letter",
+                    amount_at_issue: amt,
+                    sent_via: "print",
+                    created_by: session.userId,
+                    notes: "Printed from app"
+                });
+            }
+        } catch (e) { console.warn("legal notice log", e); }
+    })();
+}
+
+function computeAnalyticsStats() {
+    const list = customers || [];
+    const recs = recoveries || [];
+    const totalOut = list.reduce((s, c) => s + Number(c.outstanding || 0), 0);
+    const totalBill = list.reduce((s, c) => s + Number(c.bill || 0), 0);
+    const totalRecovered = recs.reduce((s, r) => s + Number(r.amount || 0), 0);
+    const recoveryPct = totalBill > 0 ? (totalRecovered / totalBill) * 100 : 0;
+    // Simple DSO proxy: outstanding / (recovered last 30d / 30)
+    const today = new Date();
+    const d30 = new Date(today); d30.setDate(d30.getDate() - 30);
+    const rec30 = recs.filter(r => {
+        const d = new Date(r.date || r.recovery_date || 0);
+        return !isNaN(d) && d >= d30;
+    }).reduce((s, r) => s + Number(r.amount || 0), 0);
+    const daily = rec30 / 30;
+    const dso = daily > 0 ? (totalOut / daily) : (totalOut > 0 ? 999 : 0);
+
+    // Agent performance by executive field
+    const byExec = {};
+    list.forEach(c => {
+        const e = (c.executive || "Unassigned").trim() || "Unassigned";
+        if (!byExec[e]) byExec[e] = { name: e, customers: 0, outstanding: 0 };
+        byExec[e].customers++;
+        byExec[e].outstanding += Number(c.outstanding || 0);
+    });
+    recs.forEach(r => {
+        const cust = list.find(c => String(c.id) === String(r.customerId || r.customer_id));
+        const e = (cust && cust.executive) ? cust.executive : "Unassigned";
+        if (!byExec[e]) byExec[e] = { name: e, customers: 0, outstanding: 0, recovered: 0 };
+        byExec[e].recovered = (byExec[e].recovered || 0) + Number(r.amount || 0);
+    });
+    const agents = Object.values(byExec).map(a => ({
+        name: a.name,
+        customers: a.customers || 0,
+        outstanding: a.outstanding || 0,
+        recovered: a.recovered || 0
+    })).sort((a, b) => b.recovered - a.recovered);
+
+    return {
+        totalOut, totalBill, totalRecovered, recoveryPct, dso, rec30, agents
+    };
+}
+
+function renderAnalyticsOnReports() {
+    const box = document.getElementById("analyticsCards");
+    if (!box) return;
+    const s = computeAnalyticsStats();
+    const fmt = n => "₹" + Number(n || 0).toLocaleString("en-IN");
+    box.innerHTML = `
+      <div class="card green"><i class="fa-solid fa-percent"></i><h3>Recovery %</h3>
+        <h1>${s.recoveryPct.toFixed(1)}%</h1><small>Recovered vs bill</small></div>
+      <div class="card"><i class="fa-solid fa-calendar-days"></i><h3>DSO (proxy)</h3>
+        <h1>${Math.min(999, Math.round(s.dso))}</h1><small>Days sales outstanding</small></div>
+      <div class="card orange"><i class="fa-solid fa-wallet"></i><h3>30-day collection</h3>
+        <h1>${fmt(s.rec30)}</h1><small>Last 30 days recovery</small></div>
+      <div class="card"><i class="fa-solid fa-indian-rupee-sign"></i><h3>Total recovered</h3>
+        <h1>${fmt(s.totalRecovered)}</h1><small>All time in app</small></div>
+    `;
+    const tbody = document.getElementById("agentPerfBody");
+    if (tbody) {
+        if (!s.agents.length) {
+            tbody.innerHTML = "<tr><td colspan='4'>No data</td></tr>";
+        } else {
+            tbody.innerHTML = s.agents.map((a, i) =>
+                `<tr><td>${i + 1}</td><td>${a.name}</td><td>${a.customers}</td>
+                 <td>${fmt(a.recovered)}</td><td>${fmt(a.outstanding)}</td></tr>`
+            ).join("");
+        }
+    }
+}
+
+// enhance loadReports
+const _origLoadReports = typeof loadReports === "function" ? loadReports : null;
+async function loadReportsEnhanced() {
+    if (_origLoadReports) _origLoadReports();
+    else if (typeof loadReports === "function") { /* circular guard */ }
+    renderAnalyticsOnReports();
+}
+
+// Wrap: call analytics after existing loadReports if we patch callers
+window.saveActivityForm = saveActivityForm;
+window.loadActivityTable = loadActivityTable;
+window.initActivityPage = initActivityPage;
+window.openLegalNoticeForCustomer = openLegalNoticeForCustomer;
+window.computeAnalyticsStats = computeAnalyticsStats;
+window.renderAnalyticsOnReports = renderAnalyticsOnReports;
+

@@ -991,3 +991,64 @@ window.sbGetEscalations = sbGetEscalations;
 window.sbUpdateEscalation = sbUpdateEscalation;
 window.sbAssignAgent = sbAssignAgent;
 
+/* ---------- PHASE 3: Activity log + analytics helpers ---------- */
+async function sbAddActivity(row) {
+    const sb = getSupabase();
+    if (!sb) throw new Error("Supabase not ready");
+    const payload = {
+        shop_id: row.shop_id,
+        agent_id: String(row.agent_id || ""),
+        customer_id: row.customer_id || null,
+        task_id: row.task_id || null,
+        activity_type: row.activity_type || "note",
+        outcome: row.outcome || "",
+        notes: row.notes || "",
+        gps_lat: row.gps_lat != null ? row.gps_lat : null,
+        gps_lng: row.gps_lng != null ? row.gps_lng : null,
+        duration_sec: row.duration_sec != null ? row.duration_sec : null,
+        created_at: new Date().toISOString()
+    };
+    const { data, error } = await sb.from("agent_activity_log").insert(payload).select().maybeSingle();
+    if (error) throw error;
+    return data;
+}
+
+async function sbGetActivities(shopId, limit) {
+    const sb = getSupabase();
+    if (!sb) throw new Error("Supabase not ready");
+    let q = sb.from("agent_activity_log").select("*").order("created_at", { ascending: false });
+    if (shopId) q = q.eq("shop_id", shopId);
+    if (limit) q = q.limit(limit);
+    const { data, error } = await q;
+    if (error) throw error;
+    return data || [];
+}
+
+async function sbSaveLegalNotice(row) {
+    const sb = getSupabase();
+    if (!sb) throw new Error("Supabase not ready");
+    const payload = {
+        shop_id: row.shop_id,
+        customer_id: row.customer_id,
+        notice_type: row.notice_type || "reminder_letter",
+        amount_at_issue: Number(row.amount_at_issue || 0),
+        sent_via: row.sent_via || "print",
+        sent_at: row.sent_at || new Date().toISOString(),
+        created_by: row.created_by ? String(row.created_by) : null,
+        notes: row.notes || "",
+        created_at: new Date().toISOString()
+    };
+    const { data, error } = await sb.from("legal_notices").insert(payload).select().maybeSingle();
+    if (error) throw error;
+    try {
+        await sb.from("customers").update({
+            last_legal_notice_at: new Date().toISOString()
+        }).eq("id", row.customer_id);
+    } catch (e) {}
+    return data;
+}
+
+window.sbAddActivity = sbAddActivity;
+window.sbGetActivities = sbGetActivities;
+window.sbSaveLegalNotice = sbSaveLegalNotice;
+
