@@ -2678,7 +2678,7 @@ async function loadFieldTracking() {
             : ((settings && settings.executives) || []);
 
         const activities = typeof sbGetActivities === "function"
-            ? await sbGetActivities(shopId, 200)
+            ? await sbGetActivities(shopId, 500)
             : [];
 
         const today = new Date().toISOString().slice(0, 10);
@@ -2697,7 +2697,8 @@ async function loadFieldTracking() {
                 assigned: 0,
                 todayActs: 0,
                 lastGps: null,
-                lastAt: null
+                lastAt: null,
+                path: []
             };
         });
         // Also track by executive name string (customers.executive)
@@ -2752,6 +2753,17 @@ async function loadFieldTracking() {
             }
             if (isToday) row.todayActs++;
             if (a.gps_lat != null && a.gps_lng != null) {
+                if (!row.path) row.path = [];
+                const custN = (customers || []).find(c => String(c.id) === String(a.customer_id));
+                row.path.push({
+                    lat: Number(a.gps_lat),
+                    lng: Number(a.gps_lng),
+                    at: when,
+                    type: a.activity_type || "visit",
+                    notes: a.notes || "",
+                    customer: custN ? custN.name : "",
+                    customer_id: a.customer_id
+                });
                 if (!row.lastAt || when > row.lastAt) {
                     row.lastAt = when;
                     row.lastGps = { lat: a.gps_lat, lng: a.gps_lng };
@@ -2776,9 +2788,18 @@ async function loadFieldTracking() {
             tbody.innerHTML = "<tr><td colspan='6'>Koi field employee nathi. Settings ma Executive add karo athva User ne field agent banavo.</td></tr>";
         } else {
             tbody.innerHTML = agents.map((a, i) => {
-                const gps = a.lastGps
-                    ? `<a target="_blank" rel="noopener" href="https://maps.google.com/?q=${a.lastGps.lat},${a.lastGps.lng}">📍 Map</a>`
-                    : "—";
+                if (a.path && a.path.length) {
+                    a.path.sort((x, y) => String(x.at).localeCompare(String(y.at)));
+                }
+                const stops = (a.path && a.path.length) ? a.path.length : 0;
+                const pathJson = JSON.stringify(a.path || []).replace(/'/g, "&#39;");
+                const nameJson = JSON.stringify(a.name || "");
+                const gps = stops
+                    ? `<button type="button" class="add-btn" style="padding:5px 8px;font-size:11px;" onclick='showEmployeePath(${nameJson}, ${JSON.stringify(a.path)})'>📍 ${stops} places</button>`
+                    : (a.lastGps
+                        ? `<a target="_blank" rel="noopener" href="https://maps.google.com/?q=${a.lastGps.lat},${a.lastGps.lng}">📍 Last</a>`
+                        : "—");
+                const hist = `<button type="button" class="add-btn" style="padding:5px 8px;font-size:11px;background:#0ea5e9;" onclick="showEmployeeMovementHistory('${String(a.id || a.key).replace(/'/g,"")}','${String(a.name || "").replace(/'/g,"")}')">All history</button>`;
                 const last = a.lastAt ? a.lastAt.slice(0, 16).replace("T", " ") : "—";
                 return `<tr>
                   <td>${i + 1}</td>
@@ -2786,7 +2807,7 @@ async function loadFieldTracking() {
                   <td>${a.assigned}</td>
                   <td>${a.todayActs}</td>
                   <td>${last}</td>
-                  <td>${gps}</td>
+                  <td style="white-space:nowrap;">${gps} ${hist}</td>
                 </tr>`;
             }).join("");
         }
@@ -2986,4 +3007,147 @@ window.loadEmployeeLinkGenerator = loadEmployeeLinkGenerator;
 window.saveAgentCheckinCreds = saveAgentCheckinCreds;
 window.copyAgentCheckinLink = copyAgentCheckinLink;
 window.shareAgentCheckinWa = shareAgentCheckinWa;
+
+function googleMapsDirUrl(path) {
+    if (!path || !path.length) return "";
+    const pts = path.filter(p => p.lat != null && p.lng != null);
+    if (!pts.length) return "";
+    if (pts.length === 1) {
+        return "https://maps.google.com/?q=" + pts[0].lat + "," + pts[0].lng;
+    }
+    // Directions API-style URL: origin / destination / waypoints
+    const origin = pts[0].lat + "," + pts[0].lng;
+    const dest = pts[pts.length - 1].lat + "," + pts[pts.length - 1].lng;
+    let url = "https://www.google.com/maps/dir/?api=1&origin=" + encodeURIComponent(origin) +
+        "&destination=" + encodeURIComponent(dest) + "&travelmode=driving";
+    if (pts.length > 2) {
+        const mids = pts.slice(1, -1).map(p => p.lat + "," + p.lng);
+        // Google allows limited waypoints in URL
+        const limited = mids.slice(0, 8);
+        url += "&waypoints=" + encodeURIComponent(limited.join("|"));
+    }
+    return url;
+}
+
+function showEmployeePath(name, path) {
+    const panel = document.getElementById("employeePathPanel");
+    const title = document.getElementById("employeePathTitle");
+    const body = document.getElementById("employeePathBody");
+    const mapBtn = document.getElementById("employeePathMapBtn");
+    if (!panel || !body) {
+        alert((name || "Employee") + ": " + (path && path.length ? path.length + " GPS stops" : "No GPS path"));
+        return;
+    }
+    const list = Array.isArray(path) ? path.slice().sort((a, b) => String(a.at).localeCompare(String(b.at))) : [];
+    if (title) title.textContent = (name || "Employee") + " — places visited (" + list.length + ")";
+    if (!list.length) {
+        body.innerHTML = "<tr><td colspan='5'>GPS stops nathi — check-in with location joi e</td></tr>";
+    } else {
+        body.innerHTML = list.map((p, i) => {
+            const t = (p.at || "").toString().slice(0, 16).replace("T", " ");
+            const map = `<a target="_blank" rel="noopener" href="https://maps.google.com/?q=${p.lat},${p.lng}">📍 Open</a>`;
+            return `<tr>
+              <td>${i + 1}</td>
+              <td>${t}</td>
+              <td>${p.customer || "—"}</td>
+              <td>${p.type || ""} ${p.notes ? ("— " + p.notes) : ""}</td>
+              <td>${Number(p.lat).toFixed(5)}, ${Number(p.lng).toFixed(5)} ${map}</td>
+            </tr>`;
+        }).join("");
+    }
+    if (mapBtn) {
+        const url = googleMapsDirUrl(list);
+        mapBtn.style.display = url ? "inline-flex" : "none";
+        mapBtn.onclick = function () { if (url) window.open(url, "_blank"); };
+    }
+    panel.style.display = "block";
+    try { panel.scrollIntoView({ behavior: "smooth", block: "start" }); } catch (e) {}
+}
+
+window.showEmployeePath = showEmployeePath;
+window.googleMapsDirUrl = googleMapsDirUrl;
+
+// ================================
+// Employee movement history (where they went)
+// ================================
+async function showEmployeeMovementHistory(agentKey, agentLabel) {
+    const panel = document.getElementById("movementHistoryPanel");
+    const title = document.getElementById("movementHistoryTitle");
+    const tbody = document.getElementById("movementHistoryBody");
+    const mapLinks = document.getElementById("movementMapLinks");
+    if (!tbody) return;
+
+    if (panel) panel.style.display = "block";
+    if (title) title.textContent = "Movement: " + (agentLabel || agentKey || "Employee");
+    tbody.innerHTML = "<tr><td colspan='5'>Loading…</td></tr>";
+    if (mapLinks) mapLinks.innerHTML = "";
+
+    try {
+        const session = getSession();
+        const activities = typeof sbGetActivities === "function"
+            ? await sbGetActivities(session.shopId, 300)
+            : [];
+
+        // Match agent_id to this employee (id or username or name)
+        const key = String(agentKey || "");
+        const label = String(agentLabel || "");
+        let list = activities.filter(a => {
+            const aid = String(a.agent_id || "");
+            return aid === key || aid === label || (label && aid.indexOf(label) >= 0);
+        });
+        // Only with GPS = actual places visited
+        const withGps = list.filter(a => a.gps_lat != null && a.gps_lng != null);
+        // Show all activity but highlight GPS
+        list = list.slice(0, 50);
+
+        if (!list.length) {
+            tbody.innerHTML = "<tr><td colspan='5'>Aa employee ni koi check-in activity nathi</td></tr>";
+            return;
+        }
+
+        if ((!customers || !customers.length) && typeof reloadAllData === "function") {
+            await reloadAllData();
+        }
+
+        tbody.innerHTML = list.map((a, i) => {
+            const cust = (customers || []).find(c => String(c.id) === String(a.customer_id));
+            const when = (a.created_at || "").toString().slice(0, 16).replace("T", " ");
+            const place = (a.gps_lat != null)
+                ? (`<a target="_blank" rel="noopener" href="https://maps.google.com/?q=${a.gps_lat},${a.gps_lng}">📍 ${Number(a.gps_lat).toFixed(4)}, ${Number(a.gps_lng).toFixed(4)}</a>`)
+                : "— no GPS —";
+            return `<tr>
+              <td>${i + 1}</td>
+              <td>${when}</td>
+              <td>${cust ? cust.name : "—"}</td>
+              <td>${a.activity_type || ""} ${a.notes ? ("· " + a.notes) : ""}</td>
+              <td>${place}</td>
+            </tr>`;
+        }).join("");
+
+        // Multi-stop map: path of GPS points (Google maps dir approx via first-last or list)
+        if (mapLinks && withGps.length) {
+            const pts = withGps.slice().reverse(); // chronological
+            let html = "<strong>Places visited (GPS):</strong> ";
+            html += pts.map((a, i) => {
+                const cust = (customers || []).find(c => String(c.id) === String(a.customer_id));
+                const label = (cust && cust.name) || ("Stop " + (i + 1));
+                return `<a target="_blank" rel="noopener" style="margin-right:8px;" href="https://maps.google.com/?q=${a.gps_lat},${a.gps_lng}">${i + 1}. ${label}</a>`;
+            }).join(" ");
+            if (pts.length >= 2) {
+                // Google directions multi-stop limited — use path URL with | separators for search
+                const path = pts.map(p => p.gps_lat + "," + p.gps_lng).join("/");
+                html += `<br><a target="_blank" rel="noopener" href="https://www.google.com/maps/dir/${path}"><i class="fa-solid fa-route"></i> Open route on Google Maps</a>`;
+            }
+            mapLinks.innerHTML = html;
+        } else if (mapLinks) {
+            mapLinks.innerHTML = "<span style='color:#64748b'>GPS vali check-in nathi — places map nathi bani</span>";
+        }
+
+        try { panel.scrollIntoView({ behavior: "smooth", block: "start" }); } catch (e) {}
+    } catch (e) {
+        tbody.innerHTML = "<tr><td colspan='5'>Error: " + (e.message || e) + "</td></tr>";
+    }
+}
+
+window.showEmployeeMovementHistory = showEmployeeMovementHistory;
 
