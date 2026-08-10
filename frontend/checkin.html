@@ -123,20 +123,32 @@ async function unlockAgent() {
 async function loadCustomers(shopId, agentRow) {
   const sel = document.getElementById("customerSel");
   const sb = getSupabase();
-  let q = sb.from("customers").select("id, name, outstanding, executive, village").eq("shop_id", shopId).order("name");
+  // No financial columns — employee must not see customer money data
+  let q = sb.from("customers").select("id, name, executive, village").eq("shop_id", shopId).order("name");
   const { data, error } = await q;
   if (error) { sel.innerHTML = "<option value=''>Error loading</option>"; return; }
   let list = data || [];
-  // Prefer assigned to this executive name if matches
   const dname = (agentRow.display_name || "").trim();
+  // ONLY assigned customers for this agent (by executive name match)
   if (dname) {
     const mine = list.filter(c => (c.executive || "").trim() === dname);
-    if (mine.length) list = mine.concat(list.filter(c => (c.executive || "").trim() !== dname));
+    if (mine.length) {
+      list = mine;
+    } else {
+      // if none assigned, empty — do not show all shop customers
+      list = [];
+    }
+  } else {
+    list = [];
+  }
+  if (!list.length) {
+    sel.innerHTML = "<option value=''>No customers assigned to you</option>";
+    return;
   }
   sel.innerHTML = '<option value="">Select customer</option>' +
     list.map(c => {
-      const out = Number(c.outstanding || 0);
-      return `<option value="${c.id}">${c.name}${out ? " — ₹" + out.toLocaleString("en-IN") : ""}${c.village ? " (" + c.village + ")" : ""}</option>`;
+      const v = c.village ? (" — " + c.village) : "";
+      return `<option value="${c.id}">${c.name}${v}</option>`;
     }).join("");
 }
 

@@ -150,7 +150,7 @@
   </section>
 
   <section class="table-section fade" style="margin-top:16px;">
-    <div class="summary-bar"><div><h2>Employees overview</h2><span>Assigned accounts · today work · last GPS</span></div></div>
+    <div class="summary-bar"><div><h2>Employees overview</h2><span>Assigned · today · movement path (all GPS stops)</span></div></div>
     <div class="table-responsive">
       <table>
         <thead>
@@ -160,7 +160,7 @@
             <th>Assigned</th>
             <th>Today acts</th>
             <th>Last activity</th>
-            <th>Last GPS</th>
+            <th>Route / stops</th>
           </tr>
         </thead>
         <tbody id="fieldAgentBody"><tr><td colspan="6">Loading…</td></tr></tbody>
@@ -179,6 +179,56 @@
       </table>
     </div>
   </section>
+
+  <section class="table-section fade" id="employeePathPanel" style="display:none;margin-top:16px;border:2px solid #1A3D63;border-radius:12px;padding:8px;">
+    <div class="summary-bar">
+      <div>
+        <h2 id="employeePathTitle">Employee movement</h2>
+        <span>Time order ma jya-jya check-in / GPS thayu</span>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button type="button" class="add-btn" id="employeePathMapBtn" style="display:none;">
+          <i class="fa-solid fa-route"></i> Open full route (Maps)
+        </button>
+        <button type="button" class="btn-cancel" onclick="document.getElementById('employeePathPanel').style.display='none'">Close</button>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Time</th>
+            <th>Customer / place</th>
+            <th>Type / notes</th>
+            <th>GPS</th>
+          </tr>
+        </thead>
+        <tbody id="employeePathBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+
+  <section class="table-section fade" id="movementHistoryPanel" style="margin-top:16px;display:none;">
+    <div class="summary-bar">
+      <div>
+        <h2 id="movementHistoryTitle">Movement history</h2>
+        <span>Employee kahan-kahan gaya — check-in places + route</span>
+      </div>
+      <button type="button" class="add-btn" onclick="document.getElementById('movementHistoryPanel').style.display='none'">Close</button>
+    </div>
+    <div id="movementMapLinks" style="padding:8px 0 12px;font-size:13px;line-height:1.6;"></div>
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr><th>#</th><th>When</th><th>Customer</th><th>Detail</th><th>Location</th></tr>
+        </thead>
+        <tbody id="movementHistoryBody"><tr><td colspan="5">—</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
 </main>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
