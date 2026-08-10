@@ -272,6 +272,19 @@ onkeyup="searchCustomer()">
 CUSTOMER TABLE
 ========================= -->
 
+
+<!-- Aging filter bar -->
+<div id="agingFilterBar" class="customer-toolbar" style="margin:12px 0;display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+  <span style="font-weight:600;font-size:13px;color:#73879B;">Filter:</span>
+  <button type="button" class="add-btn" style="padding:8px 12px;font-size:12px;" onclick="setCustomerAgingFilter('all')">All</button>
+  <button type="button" class="add-btn" style="padding:8px 12px;font-size:12px;background:#0EA5E9;" onclick="setCustomerAgingFilter('0-30')">0–30</button>
+  <button type="button" class="add-btn" style="padding:8px 12px;font-size:12px;background:#F59E0B;" onclick="setCustomerAgingFilter('31-60')">31–60</button>
+  <button type="button" class="add-btn" style="padding:8px 12px;font-size:12px;background:#EA580C;" onclick="setCustomerAgingFilter('61-90')">61–90</button>
+  <button type="button" class="add-btn" style="padding:8px 12px;font-size:12px;background:#DC2626;" onclick="setCustomerAgingFilter('90+')">90+</button>
+  <button type="button" class="add-btn" style="padding:8px 12px;font-size:12px;background:#128C7E;" onclick="processWhatsAppReminders(true)"><i class="fa-brands fa-whatsapp"></i> WA Due</button>
+  <span id="agingFilterLabel" style="font-size:12px;color:#73879B;margin-left:8px;"></span>
+</div>
+
 <div class="table-responsive">
 
 <table>
@@ -290,7 +303,9 @@ CUSTOMER TABLE
 
 <th>Outstanding</th>
 
-<th>Follow-up</th>
+<th>Aging</th>
+
+<th>Due / Follow-up</th>
 
 <th>Action / WhatsApp</th>
 
@@ -539,6 +554,19 @@ placeholder="Auto Calculated">
 <input
 type="date"
 id="followup">
+
+</div>
+
+<!-- Due Date (for aging) -->
+
+<div>
+
+<label>Payment Due Date <small style="font-weight:500;color:#73879B;">(Aging mate)</small></label>
+
+<input
+type="date"
+id="dueDate"
+title="Outstanding ni due date – aging bucket aa date par thi">
 
 </div>
 
