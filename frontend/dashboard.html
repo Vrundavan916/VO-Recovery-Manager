@@ -298,25 +298,25 @@ AGING ANALYSIS START
     <div class="card" style="cursor:pointer;" onclick="filterByAgingBucket('0-30')">
       <i class="fa-solid fa-clock"></i>
       <h3>0–30 Days</h3>
-      <h1 id="agingBucket030">₹0</h1>
+      <h1 id="agingBucket030">₹0</h1><small id="agingCount030">0 accounts</small>
       <small>Recent overdue</small>
     </div>
     <div class="card orange" style="cursor:pointer;" onclick="filterByAgingBucket('31-60')">
       <i class="fa-solid fa-hourglass-half"></i>
       <h3>31–60 Days</h3>
-      <h1 id="agingBucket3160">₹0</h1>
+      <h1 id="agingBucket3160">₹0</h1><small id="agingCount3160">0 accounts</small>
       <small>Needs follow-up</small>
     </div>
     <div class="card" style="cursor:pointer;border-color:#F59E0B;" onclick="filterByAgingBucket('61-90')">
       <i class="fa-solid fa-triangle-exclamation"></i>
       <h3>61–90 Days</h3>
-      <h1 id="agingBucket6190">₹0</h1>
+      <h1 id="agingBucket6190">₹0</h1><small id="agingCount6190">0 accounts</small>
       <small>High risk</small>
     </div>
     <div class="card red" style="cursor:pointer;" onclick="filterByAgingBucket('90+')">
       <i class="fa-solid fa-skull-crossbones"></i>
       <h3>90+ Days</h3>
-      <h1 id="agingBucket90">₹0</h1>
+      <h1 id="agingBucket90">₹0</h1><small id="agingCount90">0 accounts</small>
       <small>Critical / Legal</small>
     </div>
   </div>
@@ -346,6 +346,32 @@ AGING ANALYSIS START
       <small>From aging summary</small>
     </div>
   </div>
+
+  <div class="table-section" style="margin-top:16px;">
+    <div class="summary-bar">
+      <div>
+        <h2><i class="fa-solid fa-calendar-days"></i> Day-wise overdue list</h2>
+        <span>Ketla divas pehlani due — customer, amount, days</span>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Customer</th>
+            <th>Outstanding</th>
+            <th>Days overdue</th>
+            <th>Bucket / Due date</th>
+          </tr>
+        </thead>
+        <tbody id="agingDaysBody">
+          <tr><td colspan="5" style="text-align:center;color:#64748b;">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
 </section>
 <!-- =========================
 AGING ANALYSIS END
