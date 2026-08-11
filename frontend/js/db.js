@@ -83,9 +83,18 @@ function mapCustomerToDb(c, shopId) {
 
 async function sbGetCustomers(shopId) {
     const sb = getSupabase();
-    let q = sb.from("customers").select("*").order("created_at", { ascending: false });
-    if (shopId) q = q.eq("shop_id", shopId);
-    const { data, error } = await q;
+    const token = (typeof getSession === "function" && getSession().sessionToken) || "";
+    if (token) {
+        try {
+            const { data, error } = await sb.rpc("app_get_customers", { p_token: token });
+            if (!error) return (data || []).map(mapCustomerFromDb);
+            console.warn("app_get_customers", error);
+        } catch (e) { console.warn(e); }
+    }
+    if (!shopId) return [];
+    const { data, error } = await sb.from("customers").select("*")
+        .eq("shop_id", shopId)
+        .order("created_at", { ascending: false });
     if (error) throw error;
     return (data || []).map(mapCustomerFromDb);
 }
@@ -142,6 +151,15 @@ function mapRecoveryFromDb(row) {
 
 async function sbGetRecoveries(shopId) {
     const sb = getSupabase();
+    const token = (typeof getSession === "function" && getSession().sessionToken) || "";
+    if (token) {
+        try {
+            const { data, error } = await sb.rpc("app_get_recoveries", { p_token: token });
+            if (!error) {
+                return (data || []).map(mapRecoveryFromDb);
+            }
+        } catch (e) { console.warn(e); }
+    }
     if (!shopId) return [];
     const { data, error } = await sb.from("recoveries").select("*")
         .eq("shop_id", shopId)

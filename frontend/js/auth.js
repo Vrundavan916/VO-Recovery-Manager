@@ -72,7 +72,41 @@ async function sbLogin(username, password) {
     const uname = String(username || "").trim();
     if (!uname || !plain) return null;
 
-    // Fetch by username only (never filter by plain password in query)
+    // Preferred: secure RPC login (RLS session token)
+    try {
+        const { data: rpcData, error: rpcErr } = await sb.rpc("app_login", {
+            p_username: uname,
+            p_password: plain
+        });
+        if (!rpcErr && rpcData && rpcData.token) {
+            const u = rpcData.user || {};
+            let shop = null;
+            if (u.shop_id) {
+                try {
+                    const { data: shops } = await sb.rpc("app_get_shops", { p_token: rpcData.token });
+                    shop = (shops || []).find(s => String(s.id) === String(u.shop_id)) || (shops && shops[0]) || null;
+                } catch (e) {
+                    const { data: s } = await sb.from("shops").select("*").eq("id", u.shop_id).maybeSingle();
+                    shop = s;
+                }
+            }
+            return {
+                user: {
+                    id: u.id,
+                    username: u.username,
+                    role: u.role,
+                    shop_id: u.shop_id,
+                    display_name: u.display_name
+                },
+                shop: shop,
+                sessionToken: rpcData.token
+            };
+        }
+    } catch (rpcCatch) {
+        console.warn("app_login RPC not available, fallback", rpcCatch);
+    }
+
+    // Fallback: direct users table (before RLS / if RPC missing)
     const { data, error } = await sb
         .from("users")
         .select("id, username, password, role, shop_id, display_name, is_active")
@@ -161,7 +195,7 @@ async function login() {
             showLoginError(result.message || result.error);
             return;
         }
-        setSession(result.user, result.shop, remember);
+        setSession(result.user, result.shop, remember, result.sessionToken || result.token || "");
         if (result.user.role === "super_admin") {
             window.location.href = "super-dashboard.html";
         } else {

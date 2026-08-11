@@ -38,7 +38,7 @@ function storage() {
     return sessionStorage;
 }
 
-function setSession(user, shop, remember) {
+function setSession(user, shop, remember, sessionToken) {
     const store = remember ? localStorage : sessionStorage;
     if (remember) {
         localStorage.setItem(SESSION_KEYS.remember, "true");
@@ -48,29 +48,40 @@ function setSession(user, shop, remember) {
         Object.values(SESSION_KEYS).forEach(k => {
             try { localStorage.removeItem(k); } catch (e) {}
         });
+        try { localStorage.removeItem("bk_session_token"); } catch (e) {}
     }
     const s = store;
     s.setItem(SESSION_KEYS.loggedIn, "true");
-    s.setItem(SESSION_KEYS.userId, user.id || "");
-    s.setItem(SESSION_KEYS.username, user.username || "");
-    s.setItem(SESSION_KEYS.role, user.role || "user");
-    s.setItem(SESSION_KEYS.shopId, user.shop_id || "");
+    s.setItem(SESSION_KEYS.userId, (user && user.id) ? String(user.id) : "");
+    s.setItem(SESSION_KEYS.username, (user && user.username) || "");
+    s.setItem(SESSION_KEYS.role, (user && user.role) || "user");
+    s.setItem(SESSION_KEYS.shopId, (user && user.shop_id) ? String(user.shop_id) : "");
     s.setItem(SESSION_KEYS.shopName, (shop && shop.name) || "");
-    s.setItem(SESSION_KEYS.displayName, user.display_name || user.username || "");
+    s.setItem(SESSION_KEYS.displayName, (user && (user.display_name || user.username)) || "");
+    const tok = sessionToken || (user && (user.sessionToken || user.token)) || "";
+    if (tok) s.setItem("bk_session_token", tok);
+    else {
+        try { s.removeItem("bk_session_token"); } catch (e) {}
+    }
 }
 
 function clearSession() {
+    try {
+        localStorage.removeItem("bk_session_token");
+        sessionStorage.removeItem("bk_session_token");
+    } catch (e) {}
     Object.values(SESSION_KEYS).forEach(k => {
-        try { sessionStorage.removeItem(k); } catch (e) {}
-        try { localStorage.removeItem(k); } catch (e) {}
+        try {
+            localStorage.removeItem(k);
+            sessionStorage.removeItem(k);
+        } catch (e) {}
     });
 }
 
 function getSession() {
-    const s = storage();
     const fromLocal = localStorage.getItem(SESSION_KEYS.loggedIn) === "true";
     const fromSession = sessionStorage.getItem(SESSION_KEYS.loggedIn) === "true";
-    const active = fromLocal ? localStorage : (fromSession ? sessionStorage : s);
+    const active = fromLocal ? localStorage : (fromSession ? sessionStorage : sessionStorage);
     return {
         isLoggedIn: active.getItem(SESSION_KEYS.loggedIn) === "true",
         userId: active.getItem(SESSION_KEYS.userId) || "",
@@ -78,7 +89,8 @@ function getSession() {
         role: active.getItem(SESSION_KEYS.role) || "user",
         shopId: active.getItem(SESSION_KEYS.shopId) || "",
         shopName: active.getItem(SESSION_KEYS.shopName) || "",
-        displayName: active.getItem(SESSION_KEYS.displayName) || ""
+        displayName: active.getItem(SESSION_KEYS.displayName) || "",
+        sessionToken: active.getItem("bk_session_token") || ""
     };
 }
 
