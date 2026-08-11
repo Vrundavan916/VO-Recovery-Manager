@@ -121,7 +121,30 @@ async function sbSaveCustomer(customer, shopId) {
 
 async function sbDeleteCustomer(id) {
     const sb = getSupabase();
-    const { error } = await sb.from("customers").delete().eq("id", id);
+    if (!id) throw new Error("Customer id missing");
+
+    // Delete related rows first (FK) — ignore table-missing errors
+    const childTables = [
+        "recoveries",
+        "promises_to_pay",
+        "agent_activity_log",
+        "escalations",
+        "payment_links",
+        "receipts",
+        "legal_notices",
+        "customer_balances",
+        "reminder_queue"
+    ];
+    for (const table of childTables) {
+        try {
+            const { error } = await sb.from(table).delete().eq("customer_id", id);
+            if (error) console.warn("cleanup " + table, error.message || error);
+        } catch (e) {
+            console.warn("cleanup " + table, e);
+        }
+    }
+
+    const { error, count } = await sb.from("customers").delete({ count: "exact" }).eq("id", id);
     if (error) throw error;
     return true;
 }
