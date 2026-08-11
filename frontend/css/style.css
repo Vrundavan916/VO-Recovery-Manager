@@ -1107,3 +1107,84 @@ body.login-body {
 @media (max-width:768px){
   #recoveryOutstanding{font-size:20px!important;width:100%!important}
 }
+
+
+/* =========================================================
+   SIDEBAR DIRECTION FIX (mobile + desktop)
+   - Always LTR
+   - Menu top → bottom only (no reverse / no flip)
+========================================================= */
+html, body {
+  direction: ltr !important;
+  writing-mode: horizontal-tb !important;
+}
+
+.wrapper {
+  flex-direction: row !important;
+  direction: ltr !important;
+}
+
+.sidebar {
+  direction: ltr !important;
+  left: 0 !important;
+  right: auto !important;
+  text-align: left !important;
+  flex-direction: column !important;
+  writing-mode: horizontal-tb !important;
+}
+
+.sidebar .menu,
+.sidebar ul.menu,
+.sidebar nav {
+  display: flex !important;
+  flex-direction: column !important;
+  flex-direction: column !important;
+  direction: ltr !important;
+  writing-mode: horizontal-tb !important;
+  transform: none !important;
+}
+
+.sidebar .menu li {
+  display: block !important;
+  width: 100% !important;
+  float: none !important;
+  direction: ltr !important;
+}
+
+.sidebar .menu a,
+.sidebar a {
+  flex-direction: row !important;
+  direction: ltr !important;
+  text-align: left !important;
+  justify-content: flex-start !important;
+  writing-mode: horizontal-tb !important;
+}
+
+.sidebar .menu a i {
+  order: 0 !important;
+  margin-right: 0 !important;
+}
+
+.sidebar .menu a span {
+  order: 1 !important;
+}
+
+/* Mobile: only slide from LEFT, never from right or vertical flip */
+@media (max-width: 992px) {
+  .sidebar {
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: auto !important;
+    transform: translateX(-105%) !important;
+    transition: transform 0.28s ease !important;
+  }
+  .sidebar.open {
+    transform: translateX(0) !important;
+  }
+  .menu-toggle {
+    left: 14px !important;
+    right: auto !important;
+  }
+}
+
