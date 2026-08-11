@@ -142,9 +142,10 @@ function mapRecoveryFromDb(row) {
 
 async function sbGetRecoveries(shopId) {
     const sb = getSupabase();
-    let q = sb.from("recoveries").select("*").order("recovery_date", { ascending: false });
-    if (shopId) q = q.eq("shop_id", shopId);
-    const { data, error } = await q;
+    if (!shopId) return [];
+    const { data, error } = await sb.from("recoveries").select("*")
+        .eq("shop_id", shopId)
+        .order("recovery_date", { ascending: false });
     if (error) throw error;
     return (data || []).map(mapRecoveryFromDb);
 }
@@ -814,6 +815,7 @@ window.sbRecalcAging = sbRecalcAging;
 /* ---------- PROMISE TO PAY ---------- */
 async function sbGetPtp(shopId, status) {
     const sb = getSupabase();
+    if (!shopId) return [];
     if (!sb) throw new Error("Supabase not ready");
     let q = sb.from("promises_to_pay").select("*").order("promised_date", { ascending: true });
     if (shopId) q = q.eq("shop_id", shopId);
@@ -956,6 +958,7 @@ async function sbSaveReceiptRow(row) {
 
 async function sbGetEscalations(shopId, status) {
     const sb = getSupabase();
+    if (!shopId) return [];
     if (!sb) throw new Error("Supabase not ready");
     let q = sb.from("escalations").select("*").order("created_at", { ascending: false });
     if (shopId) q = q.eq("shop_id", shopId);
@@ -1015,6 +1018,7 @@ async function sbAddActivity(row) {
 
 async function sbGetActivities(shopId, limit) {
     const sb = getSupabase();
+    if (!shopId) return [];
     if (!sb) throw new Error("Supabase not ready");
     let q = sb.from("agent_activity_log").select("*").order("created_at", { ascending: false });
     if (shopId) q = q.eq("shop_id", shopId);
@@ -1056,6 +1060,7 @@ window.sbSaveLegalNotice = sbSaveLegalNotice;
 
 async function sbGetActivitiesByAgent(shopId, agentId, limit) {
     const sb = getSupabase();
+    if (!shopId) return [];
     if (!sb) throw new Error("Supabase not ready");
     let q = sb.from("agent_activity_log").select("*").order("created_at", { ascending: false });
     if (shopId) q = q.eq("shop_id", shopId);

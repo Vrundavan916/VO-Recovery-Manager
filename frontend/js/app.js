@@ -1608,7 +1608,9 @@ window.applyShopBranding = applyShopBranding;
 // ================================
 async function reloadAllData() {
     const session = getSession();
-    const shopFilter = isSuperAdmin() ? null : session.shopId;
+    // Super Admin must NOT see other jewellers' customer/recovery data
+    // Only load when a shop context (session.shopId) exists
+    const shopFilter = session.shopId || null;
 
     try {
         const [c, r] = await Promise.all([
@@ -1622,6 +1624,7 @@ async function reloadAllData() {
             settings = await sbGetSettings(session.shopId);
         }
 
+        if (typeof enforceSuperAdminDataPrivacy === "function") enforceSuperAdminDataPrivacy();
         if (document.getElementById("customerBody")) { applyHashAgingFilter(); loadCustomers(); }
         if (document.getElementById("totalCustomers")) {
             updateDashboard();
@@ -3150,4 +3153,35 @@ async function showEmployeeMovementHistory(agentKey, agentLabel) {
 }
 
 window.showEmployeeMovementHistory = showEmployeeMovementHistory;
+
+function enforceSuperAdminDataPrivacy() {
+    const session = (typeof getSession === "function") ? getSession() : {};
+    if (session.role !== "super_admin") return;
+    // Super admin without impersonated shop: block sensitive lists
+    if (session.shopId) return;
+
+    const sensitive = ["customerBody", "recoveryBody", "reportBody", "ptpTableBody", "escTableBody", "activityBody", "fieldAgentBody"];
+    const onSensitive = sensitive.some(id => document.getElementById(id));
+    if (!onSensitive) return;
+
+    // Ensure arrays empty
+    try {
+        if (typeof customers !== "undefined") customers = [];
+        if (typeof recoveries !== "undefined") recoveries = [];
+    } catch (e) {}
+
+    let banner = document.getElementById("saPrivacyBanner");
+    if (!banner) {
+        banner = document.createElement("div");
+        banner.id = "saPrivacyBanner";
+        banner.style.cssText = "margin:12px 16px;padding:14px 16px;background:#fef3c7;border:1px solid #f59e0b;border-radius:12px;color:#92400e;font-size:14px;line-height:1.45;";
+        banner.innerHTML = "<strong>Privacy:</strong> Super Admin cannot view other jewellers' customer / recovery data. " +
+            "Use <a href='super-dashboard.html'>Super Dashboard</a> for shops only. " +
+            "Shop-level data is only for that shop's Admin / Staff login.";
+        const main = document.querySelector(".main-content") || document.body;
+        main.insertBefore(banner, main.firstChild);
+    }
+}
+
+window.enforceSuperAdminDataPrivacy = enforceSuperAdminDataPrivacy;
 

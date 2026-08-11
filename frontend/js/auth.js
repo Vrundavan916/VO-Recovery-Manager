@@ -161,20 +161,6 @@ async function login() {
             showLoginError(result.message || result.error);
             return;
         }
-
-        if (result.user.role !== "super_admin") {
-            try {
-                const status = await sbGetMaintenanceStatus();
-                if (status.enabled) {
-                    sessionStorage.setItem("bk_maintenance_message", status.message || "");
-                    window.location.href = "maintenance.html";
-                    return;
-                }
-            } catch (mErr) {
-                console.warn("maintenance check failed", mErr);
-            }
-        }
-
         setSession(result.user, result.shop, remember);
         if (result.user.role === "super_admin") {
             window.location.href = "super-dashboard.html";
@@ -192,9 +178,9 @@ async function login() {
     }
 }
 
-async function checkLogin() {
+function checkLogin() {
     const page = window.location.pathname;
-    if (page.includes("login.html") || page.includes("maintenance.html") || page.endsWith("/") || page.endsWith("/frontend")) return;
+    if (page.includes("login.html") || page.endsWith("/") || page.endsWith("/frontend")) return;
 
     const session = getSession();
     if (!session.isLoggedIn) {
@@ -203,19 +189,13 @@ async function checkLogin() {
     }
 
     const role = session.role;
-
-    if (role !== "super_admin") {
-        try {
-            const status = await sbGetMaintenanceStatus();
-            if (status.enabled) {
-                sessionStorage.setItem("bk_maintenance_message", status.message || "");
-                window.location.href = "maintenance.html";
-                return;
-            }
-        } catch (mErr) {
-            console.warn("maintenance check failed", mErr);
-        }
+    // Super Admin: customer/recovery data pages — privacy (no cross-shop customer view)
+    const dataPages = ["customers.html", "recovery.html", "ptp.html", "escalations.html", "activity.html", "field-tracking.html", "reports.html"];
+    if (role === "super_admin" && dataPages.some(p => page.includes(p)) && !session.shopId) {
+        // stay but privacy banner + empty data via enforceSuperAdminDataPrivacy; do not redirect forced
+        try { sessionStorage.setItem("sa-privacy-customers", "1"); } catch (e) {}
     }
+
     if (page.includes("settings.html") && role !== "admin" && role !== "super_admin") {
         alert("Access Denied. Settings is available to Admin only.");
         window.location.href = "dashboard.html";
