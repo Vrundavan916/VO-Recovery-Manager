@@ -77,7 +77,7 @@ function mapCustomerToDb(c, shopId) {
         auto_reminder: c.autoReminder !== false,
         reminder_interval_days: Number(c.reminderInterval || 3),
         next_reminder_date: c.nextReminderDate || c.followup || null,
-        due_date: c.dueDate || c.followup || null
+        due_date: (c.dueDate !== undefined && c.dueDate !== null && String(c.dueDate).trim() !== "") ? String(c.dueDate).slice(0, 10) : (c.followup ? String(c.followup).slice(0, 10) : null)
     };
 }
 
@@ -103,9 +103,16 @@ async function sbSaveCustomer(customer, shopId) {
     const sb = getSupabase();
     const payload = mapCustomerToDb(customer, shopId);
 
+    // Always send due_date explicitly (never drop on update)
+    if (customer.dueDate !== undefined && customer.dueDate !== null && customer.dueDate !== "") {
+        payload.due_date = String(customer.dueDate).slice(0, 10);
+    } else if (customer.followup) {
+        payload.due_date = String(customer.followup).slice(0, 10);
+    }
+
     // RLS: SELECT on customers is denied — do NOT use .select().single()
-    // (that causes: Cannot coerce the result to a single JSON object)
-    if (customer.id && String(customer.id).length > 10) {
+    const hasId = customer.id !== undefined && customer.id !== null && String(customer.id).trim() !== "";
+    if (hasId) {
         const { error } = await sb
             .from("customers")
             .update({ ...payload, updated_at: new Date().toISOString() })

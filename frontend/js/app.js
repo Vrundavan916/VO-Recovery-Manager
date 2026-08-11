@@ -128,6 +128,12 @@ async function saveCustomer() {
     if (!validateCustomerForm()) return;
 
     const customer = getCustomerData();
+    // Ensure update path has id (edit mode)
+    if (typeof editCustomerId !== "undefined" && editCustomerId) {
+        customer.id = editCustomerId;
+    } else if (typeof editIndex !== "undefined" && editIndex >= 0 && customers[editIndex]) {
+        customer.id = customers[editIndex].id;
+    }
     let finalShopId = currentShopId();
 
     if (!finalShopId && !isSuperAdmin()) {
