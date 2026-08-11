@@ -163,19 +163,25 @@ function clearCustomerForm() {
 // ================================
 // Load Customers
 // ================================
-function getCustomerAgingBucket(c) {
-    if (c.agingBucket && c.agingBucket !== "none" && c.agingBucket !== "current") {
-        return c.agingBucket;
-    }
-    // client-side fallback from due date
+function getCustomerDaysOverdue(c) {
+    if (!c || Number(c.outstanding || 0) <= 0) return null;
     const due = (c.dueDate || c.followup || "").toString().slice(0, 10);
-    if (!due || Number(c.outstanding || 0) <= 0) return "none";
+    if (!due) return null;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const d = new Date(due);
-    if (isNaN(d.getTime())) return "none";
+    if (isNaN(d.getTime())) return null;
     d.setHours(0, 0, 0, 0);
-    const diff = Math.floor((today - d) / 86400000);
+    return Math.floor((today - d) / 86400000);
+}
+
+function getCustomerAgingBucket(c) {
+    // Prefer live days from due date (always accurate for display)
+    const diff = getCustomerDaysOverdue(c);
+    if (diff === null) {
+        if (c.agingBucket && c.agingBucket !== "none") return c.agingBucket;
+        return "none";
+    }
     if (diff <= 0) return "current";
     if (diff <= 30) return "0-30";
     if (diff <= 60) return "31-60";
@@ -183,7 +189,7 @@ function getCustomerAgingBucket(c) {
     return "90+";
 }
 
-function agingBadgeHtml(bucket) {
+function agingBadgeHtml(bucket, days) {
     const map = {
         "0-30": { bg: "#e0f2fe", color: "#075985", label: "0–30" },
         "31-60": { bg: "#fef3c7", color: "#92400e", label: "31–60" },
@@ -193,7 +199,59 @@ function agingBadgeHtml(bucket) {
         "none": { bg: "#f1f5f9", color: "#64748b", label: "—" }
     };
     const m = map[bucket] || map.none;
-    return `<span class="badge" style="background:${m.bg};color:${m.color};">${m.label}</span>`;
+    let label = m.label;
+    if (typeof days === "number") {
+        if (days > 0) label = days + "d · " + m.label;
+        else if (days === 0) label = "Due today";
+        else label = Math.abs(days) + "d left";
+    }
+    return `<span class="badge" style="background:${m.bg};color:${m.color};white-space:nowrap;">${label}</span>`;
+}
+
+function buildClientAgingSummary(list) {
+    const s = {
+        total_customers: 0,
+        total_outstanding: 0,
+        bucket_0_30: 0,
+        bucket_31_60: 0,
+        bucket_61_90: 0,
+        bucket_90_plus: 0,
+        total_overdue: 0,
+        open_ptp: 0,
+        open_escalations: 0,
+        count_0_30: 0,
+        count_31_60: 0,
+        count_61_90: 0,
+        count_90: 0,
+        count_current: 0,
+        rows: []
+    };
+    (list || []).forEach(c => {
+        const out = Number(c.outstanding || 0);
+        if (out <= 0) return;
+        s.total_customers++;
+        s.total_outstanding += out;
+        const days = getCustomerDaysOverdue(c);
+        const bucket = getCustomerAgingBucket(c);
+        if (days !== null && days > 0) {
+            s.total_overdue += out;
+            if (bucket === "0-30") { s.bucket_0_30 += out; s.count_0_30++; }
+            else if (bucket === "31-60") { s.bucket_31_60 += out; s.count_31_60++; }
+            else if (bucket === "61-90") { s.bucket_61_90 += out; s.count_61_90++; }
+            else if (bucket === "90+") { s.bucket_90_plus += out; s.count_90++; }
+            s.rows.push({
+                name: c.name,
+                outstanding: out,
+                days: days,
+                bucket: bucket,
+                due: (c.dueDate || c.followup || "").toString().slice(0, 10)
+            });
+        } else if (bucket === "current") {
+            s.count_current++;
+        }
+    });
+    s.rows.sort((a, b) => b.days - a.days);
+    return s;
 }
 
 let customerAgingFilter = "all";
@@ -271,7 +329,7 @@ function loadCustomers() {
             <td>${customer.mobile || "-"}</td>
             <td>${customer.village || ""}</td>
             <td>₹${Number(customer.outstanding || 0).toLocaleString("en-IN")}</td>
-            <td>${agingBadgeHtml(bucket)}</td>
+            <td>${agingBadgeHtml(bucket, getCustomerDaysOverdue(customer))}</td>
             <td>${dueShow}${customer.autoReminder === false ? " 🔕" : ""}</td>
             <td style="white-space:nowrap;">
                 <button onclick="viewCustomer(${index})" title="View">👁</button>
@@ -1889,24 +1947,39 @@ function formatAgingINR(n) {
 
 async function loadAgingDashboard() {
     const el030 = document.getElementById("agingBucket030");
-    if (!el030) return; // not on this page
+    if (!el030) return;
 
     try {
         const session = (typeof getSession === "function") ? getSession() : {};
         const shopId = session.shopId || null;
-        if (!shopId) {
-            // super admin without shop context — show zeros
-            renderAgingSummary({
-                total_customers: 0, total_outstanding: 0,
-                bucket_0_30: 0, bucket_31_60: 0, bucket_61_90: 0, bucket_90_plus: 0,
-                total_overdue: 0, open_ptp: 0, open_escalations: 0
-            });
-            return;
+
+        // Always compute day-wise from loaded customers (works even if RPC blocked by RLS)
+        let client = buildClientAgingSummary(typeof customers !== "undefined" ? customers : []);
+
+        if (shopId && typeof sbGetAgingSummary === "function") {
+            try {
+                const summary = await sbGetAgingSummary(shopId);
+                if (summary && (Number(summary.total_overdue) > 0 || Number(summary.bucket_0_30) > 0)) {
+                    client = Object.assign({}, client, {
+                        bucket_0_30: summary.bucket_0_30,
+                        bucket_31_60: summary.bucket_31_60,
+                        bucket_61_90: summary.bucket_61_90,
+                        bucket_90_plus: summary.bucket_90_plus,
+                        total_overdue: summary.total_overdue,
+                        open_ptp: summary.open_ptp,
+                        open_escalations: summary.open_escalations,
+                        total_customers: summary.total_customers || client.total_customers
+                    });
+                } else {
+                    client.open_ptp = summary && summary.open_ptp;
+                    client.open_escalations = summary && summary.open_escalations;
+                }
+            } catch (e) {
+                console.warn("aging RPC", e);
+            }
         }
-        if (typeof sbGetAgingSummary !== "function") return;
-        const summary = await sbGetAgingSummary(shopId);
-        lastAgingSummary = summary;
-        renderAgingSummary(summary);
+        lastAgingSummary = client;
+        renderAgingSummary(client);
     } catch (e) {
         console.error("loadAgingDashboard", e);
     }
@@ -1926,6 +1999,33 @@ function renderAgingSummary(s) {
     set("agingOpenPtp", s.open_ptp, false);
     set("agingOpenEsc", s.open_escalations, false);
     set("agingTotalCust", s.total_customers, false);
+
+    // Counts under cards
+    const setC = (id, n) => { const el = document.getElementById(id); if (el) el.textContent = (n || 0) + " accounts"; };
+    setC("agingCount030", s.count_0_30);
+    setC("agingCount3160", s.count_31_60);
+    setC("agingCount6190", s.count_61_90);
+    setC("agingCount90", s.count_90);
+
+    // Day-wise detail table
+    const tbody = document.getElementById("agingDaysBody");
+    if (tbody) {
+        const rows = s.rows || [];
+        if (!rows.length) {
+            tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;color:#64748b;'>Due date + outstanding vali entries j aging ma aave. Customer ma Payment Due Date set karo.</td></tr>";
+        } else {
+            tbody.innerHTML = rows.slice(0, 50).map((r, i) => {
+                const badge = agingBadgeHtml(r.bucket, r.days);
+                return `<tr>
+                  <td>${i + 1}</td>
+                  <td>${r.name || "—"}</td>
+                  <td>₹${Number(r.outstanding || 0).toLocaleString("en-IN")}</td>
+                  <td><strong>${r.days}</strong> days</td>
+                  <td>${badge}<br><small style="color:#64748b">Due: ${r.due || "—"}</small></td>
+                </tr>`;
+            }).join("");
+        }
+    }
 }
 
 async function refreshAgingDashboard() {
@@ -3185,3 +3285,6 @@ function enforceSuperAdminDataPrivacy() {
 
 window.enforceSuperAdminDataPrivacy = enforceSuperAdminDataPrivacy;
 
+
+window.getCustomerDaysOverdue = getCustomerDaysOverdue;
+window.buildClientAgingSummary = buildClientAgingSummary;
