@@ -7,38 +7,38 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap");
 
 :root {
-  /* Super Theme — Jewellery Recovery SaaS */
-  --bg: #F0F4FA;
-  --bg-accent: #E8EEF8;
+  /* Jewellery ERP — natural elegant theme (prompt palette) */
+  --bg: #F7F5F0;
+  --bg-accent: #F0EDE6;
   --card: #FFFFFF;
-  --primary: #0F2744;
-  --primary-mid: #1A3D63;
-  --primary-hover: #2B6CB0;
-  --primary-soft: #E8F1FB;
-  --accent: #C9A227;
-  --accent-soft: #FBF6E6;
-  --sidebar: #0A1628;
-  --sidebar-mid: #12243C;
-  --sidebar-hover: #1A3352;
-  --border: #D0DCEC;
-  --text: #0F172A;
-  --text-secondary: #64748B;
-  --success: #059669;
-  --success-soft: #ECFDF5;
-  --warning: #D97706;
-  --warning-soft: #FFFBEB;
-  --danger: #DC2626;
-  --danger-soft: #FEF2F2;
-  --info: #0284C7;
-  --info-soft: #F0F9FF;
-  --shadow: 0 10px 40px rgba(15, 39, 68, 0.10);
-  --shadow-sm: 0 4px 14px rgba(15, 39, 68, 0.07);
-  --shadow-lg: 0 20px 50px rgba(15, 39, 68, 0.14);
-  --radius: 16px;
+  --primary: #26332B;
+  --primary-mid: #26332B;
+  --primary-hover: #B08D57;
+  --primary-soft: #F3EEE4;
+  --accent: #B08D57;
+  --accent-soft: #F5F0E6;
+  --sidebar: #26332B;
+  --sidebar-mid: #2F3D34;
+  --sidebar-hover: #334239;
+  --border: #E4DFD6;
+  --text: #26302A;
+  --text-secondary: #6B756E;
+  --success: #4F7D5A;
+  --success-soft: #EDF3EF;
+  --warning: #B08D57;
+  --warning-soft: #F5F0E6;
+  --danger: #B85C5C;
+  --danger-soft: #F8EEEE;
+  --info: #6B756E;
+  --info-soft: #F0F2F1;
+  --shadow: 0 8px 28px rgba(38, 51, 43, 0.07);
+  --shadow-sm: 0 3px 12px rgba(38, 51, 43, 0.05);
+  --shadow-lg: 0 16px 40px rgba(38, 51, 43, 0.10);
+  --radius: 14px;
   --radius-sm: 10px;
-  --radius-lg: 22px;
+  --radius-lg: 18px;
   --sidebar-w: 280px;
-  --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition: 0.22s ease;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1258,222 +1258,281 @@ html, body {
 
 
 /* =========================================================
-   SUPER FULL COLOR THEME
-   Navy + Gold accent · Premium jewellery SaaS look
+   JEWELLERY ERP THEME — exact palette (visual only)
+   BG #F7F5F0 · Sidebar #26332B · Accent #B08D57
+   Cards #FFF · Text #26302A · Secondary #6B756E
+   Success #4F7D5A · Danger #B85C5C
 ========================================================= */
+
+html, body {
+  background: #F7F5F0 !important;
+  color: #26302A !important;
+}
 
 body {
   background:
-    radial-gradient(1200px 600px at 10% -10%, #dbe7f8 0%, transparent 55%),
-    radial-gradient(900px 500px at 100% 0%, #f5efd8 0%, transparent 45%),
-    var(--bg) !important;
-  color: var(--text) !important;
+    radial-gradient(900px 480px at 0% 0%, rgba(176, 141, 87, 0.06) 0%, transparent 55%),
+    radial-gradient(800px 400px at 100% 0%, rgba(38, 51, 43, 0.04) 0%, transparent 50%),
+    #F7F5F0 !important;
 }
 
-/* Sidebar — deep navy glass */
+.wrapper {
+  background: transparent !important;
+}
+
+/* ----- Sidebar ----- */
 .sidebar {
-  background: linear-gradient(175deg, #0A1628 0%, #12243C 42%, #0D1B2E 100%) !important;
-  border-right: 1px solid rgba(201, 162, 39, 0.12) !important;
-  box-shadow: 8px 0 32px rgba(10, 22, 40, 0.35) !important;
+  background: #26332B !important;
+  background-image: linear-gradient(180deg, #26332B 0%, #2A3830 100%) !important;
+  border-right: 1px solid rgba(176, 141, 87, 0.18) !important;
+  box-shadow: 4px 0 24px rgba(38, 51, 43, 0.18) !important;
+  color: #F7F5F0 !important;
 }
 
 .sidebar .logo h2 {
-  color: #fff !important;
-  letter-spacing: 0.02em;
+  color: #F7F5F0 !important;
+  font-weight: 700 !important;
 }
 
 .sidebar .logo p {
-  color: rgba(201, 162, 39, 0.85) !important;
-  font-weight: 500 !important;
+  color: #B08D57 !important;
+  opacity: 0.95 !important;
 }
 
-.sidebar .menu a {
-  color: rgba(226, 232, 240, 0.82) !important;
+.sidebar .menu a,
+.sidebar a {
+  color: rgba(247, 245, 240, 0.78) !important;
+  border-radius: 12px !important;
   border: 1px solid transparent !important;
 }
 
-.sidebar .menu a:hover {
-  background: rgba(26, 51, 82, 0.9) !important;
-  color: #fff !important;
-  border-color: rgba(201, 162, 39, 0.15) !important;
+.sidebar .menu a:hover,
+.sidebar a:hover {
+  background: #334239 !important;
+  color: #F7F5F0 !important;
+  border-color: rgba(176, 141, 87, 0.2) !important;
+  transform: none !important;
 }
 
-.sidebar .menu a.active {
-  background: linear-gradient(90deg, rgba(201, 162, 39, 0.22), rgba(26, 61, 99, 0.55)) !important;
-  color: #fff !important;
-  border-color: rgba(201, 162, 39, 0.35) !important;
-  box-shadow: inset 3px 0 0 #C9A227 !important;
+.sidebar .menu a.active,
+.sidebar a.active {
+  background: rgba(176, 141, 87, 0.18) !important;
+  color: #F7F5F0 !important;
+  border-color: rgba(176, 141, 87, 0.35) !important;
+  box-shadow: inset 3px 0 0 #B08D57 !important;
 }
 
-.sidebar .menu a.active i {
-  color: #E8C547 !important;
+.sidebar .menu a.active i,
+.sidebar a.active i {
+  color: #B08D57 !important;
 }
 
-/* Top bar / titles */
-.page-title, .topbar h1, .main-content h1 {
-  color: var(--primary) !important;
-  font-weight: 700 !important;
+.sidebar .menu a i {
+  color: rgba(176, 141, 87, 0.85) !important;
 }
 
-.page-subtitle, .topbar span, .summary-bar span {
-  color: var(--text-secondary) !important;
+/* ----- Main area ----- */
+.main-content,
+.main,
+.content,
+.page-content,
+.wrapper > main {
+  background: transparent !important;
+  color: #26302A !important;
 }
 
-/* Cards */
-.card, .content-box, .table-section {
-  background: var(--card) !important;
-  border: 1px solid var(--border) !important;
-  box-shadow: var(--shadow-sm) !important;
-  border-radius: var(--radius) !important;
+.page-title,
+.topbar h1,
+.main-content h1,
+.summary-bar h2 {
+  color: #26302A !important;
 }
 
-.card {
-  position: relative;
-  overflow: hidden;
+.page-subtitle,
+.summary-bar span,
+small {
+  color: #6B756E !important;
+}
+
+/* ----- Cards / boxes ----- */
+.card,
+.content-box,
+.table-section {
+  background: #FFFFFF !important;
+  border: 1px solid #E4DFD6 !important;
+  box-shadow: 0 6px 22px rgba(38, 51, 43, 0.06) !important;
+  border-radius: 14px !important;
+  color: #26302A !important;
 }
 
 .card::before {
-  content: "";
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--primary-mid), var(--accent), var(--info));
-  opacity: 0.9;
+  background: linear-gradient(90deg, #26332B, #B08D57) !important;
+  height: 2px !important;
+  opacity: 0.85 !important;
 }
 
-.card h3, .card small {
-  color: var(--text-secondary) !important;
+.card h3,
+.card small {
+  color: #6B756E !important;
 }
 
-.card h1, .card .value {
-  color: var(--primary) !important;
-  font-weight: 700 !important;
+.card h1,
+.card .value {
+  color: #26302A !important;
 }
-
-.card.green h1, .card.green .value { color: var(--success) !important; }
-.card.orange h1, .card.orange .value { color: var(--warning) !important; }
-.card.red h1, .card.red .value { color: var(--danger) !important; }
-
-.card.green { background: linear-gradient(180deg, #fff 60%, var(--success-soft)) !important; }
-.card.orange { background: linear-gradient(180deg, #fff 60%, var(--warning-soft)) !important; }
-.card.red { background: linear-gradient(180deg, #fff 60%, var(--danger-soft)) !important; }
 
 .card i {
-  color: var(--primary-mid) !important;
-  opacity: 0.9;
+  color: #B08D57 !important;
 }
 
-.card.green i { color: var(--success) !important; }
-.card.orange i { color: var(--warning) !important; }
+.card.green {
+  background: linear-gradient(180deg, #FFFFFF 70%, #EDF3EF) !important;
+}
+.card.green h1,
+.card.green .value { color: #4F7D5A !important; }
+.card.green i { color: #4F7D5A !important; }
 
-/* Buttons */
-.add-btn, button.add-btn, .btn-primary,
-button[type="submit"],
-.login-box button.login-btn {
-  background: linear-gradient(135deg, #0F2744 0%, #1A3D63 50%, #2B6CB0 100%) !important;
-  color: #fff !important;
-  border: none !important;
-  box-shadow: 0 6px 18px rgba(15, 39, 68, 0.28) !important;
+.card.orange {
+  background: linear-gradient(180deg, #FFFFFF 70%, #F5F0E6) !important;
+}
+.card.orange h1,
+.card.orange .value { color: #B08D57 !important; }
+.card.orange i { color: #B08D57 !important; }
+
+.card.red {
+  background: linear-gradient(180deg, #FFFFFF 70%, #F8EEEE) !important;
+}
+.card.red h1,
+.card.red .value { color: #B85C5C !important; }
+.card.red i { color: #B85C5C !important; }
+
+/* ----- Buttons ----- */
+.add-btn,
+button.add-btn,
+.btn-primary,
+.login-box button,
+.login-box button.login-btn,
+button[type="submit"] {
+  background: #26332B !important;
+  color: #F7F5F0 !important;
+  border: 1px solid #26332B !important;
+  box-shadow: 0 4px 14px rgba(38, 51, 43, 0.18) !important;
   border-radius: 12px !important;
   font-weight: 600 !important;
 }
 
-.add-btn:hover, button.add-btn:hover, .btn-primary:hover {
-  filter: brightness(1.08);
-  box-shadow: 0 8px 24px rgba(15, 39, 68, 0.35) !important;
-  transform: translateY(-1px);
+.add-btn:hover,
+button.add-btn:hover,
+.btn-primary:hover {
+  background: #334239 !important;
+  border-color: #B08D57 !important;
+  box-shadow: 0 6px 18px rgba(176, 141, 87, 0.22) !important;
+  filter: none !important;
 }
 
-/* Gold accent button variant */
-.btn-gold, .add-btn.gold {
-  background: linear-gradient(135deg, #A8841A, #C9A227, #E8C547) !important;
-  color: #1A1200 !important;
-  box-shadow: 0 6px 18px rgba(201, 162, 39, 0.35) !important;
+/* Accent / gold soft actions */
+.btn-gold,
+.add-btn.gold {
+  background: #B08D57 !important;
+  color: #26302A !important;
+  border-color: #B08D57 !important;
 }
 
-/* Tables */
+/* ----- Tables ----- */
 table thead th {
-  background: linear-gradient(135deg, #0F2744, #1A3D63 60%, #244a72) !important;
-  color: #fff !important;
+  background: #26332B !important;
+  color: #F7F5F0 !important;
   border: none !important;
   font-weight: 600 !important;
-  letter-spacing: 0.02em;
 }
 
 table tbody tr:nth-child(even) {
-  background: #F7FAFD !important;
+  background: #FAF8F4 !important;
 }
 
 table tbody tr:hover {
-  background: #EAF2FB !important;
+  background: #F3EEE4 !important;
 }
 
 table td {
-  border-color: var(--border) !important;
-  color: var(--text) !important;
+  color: #26302A !important;
+  border-color: #E4DFD6 !important;
 }
 
-/* Forms */
-input, select, textarea {
-  border: 1.5px solid var(--border) !important;
-  border-radius: var(--radius-sm) !important;
-  background: #fff !important;
-  color: var(--text) !important;
-  transition: border-color 0.2s, box-shadow 0.2s !important;
+/* ----- Forms ----- */
+input,
+select,
+textarea {
+  border: 1.5px solid #E4DFD6 !important;
+  border-radius: 10px !important;
+  background: #FFFFFF !important;
+  color: #26302A !important;
 }
 
-input:focus, select:focus, textarea:focus {
-  border-color: var(--primary-hover) !important;
-  box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.18) !important;
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #B08D57 !important;
+  box-shadow: 0 0 0 3px rgba(176, 141, 87, 0.18) !important;
   outline: none !important;
 }
 
 label {
-  color: var(--text-secondary) !important;
+  color: #6B756E !important;
   font-weight: 600 !important;
 }
 
-/* Badges / aging */
-.badge, .aging-badge, span.badge {
+/* ----- Login ----- */
+.login-box,
+.login-card {
+  background: #FFFFFF !important;
+  border: 1px solid #E4DFD6 !important;
+  box-shadow: 0 16px 40px rgba(38, 51, 43, 0.10) !important;
+  border-radius: 18px !important;
+}
+
+.login-box h1,
+.login-box h2 {
+  color: #26302A !important;
+}
+
+/* ----- Menu toggle ----- */
+.menu-toggle {
+  background: #26332B !important;
+  color: #F7F5F0 !important;
+  box-shadow: 0 4px 16px rgba(38, 51, 43, 0.28) !important;
+  border: 1px solid rgba(176, 141, 87, 0.35) !important;
+}
+
+/* ----- Badges ----- */
+.badge {
   border-radius: 999px !important;
   font-weight: 600 !important;
-  padding: 4px 10px !important;
-  font-size: 11px !important;
 }
 
-/* Summary bars */
-.summary-bar h2 {
-  color: var(--primary) !important;
-}
-
-/* Login page polish */
-.login-box, .login-card {
-  background: rgba(255,255,255,0.96) !important;
-  border: 1px solid var(--border) !important;
-  box-shadow: var(--shadow-lg) !important;
-  border-radius: var(--radius-lg) !important;
-}
-
-.login-box h1, .login-box h2 {
-  color: var(--primary) !important;
-}
-
-/* Menu toggle */
-.menu-toggle {
-  background: linear-gradient(135deg, #0F2744, #1A3D63, #C9A227) !important;
-  box-shadow: 0 6px 20px rgba(15, 39, 68, 0.4) !important;
-}
-
-/* Scrollbar */
+/* ----- Scrollbar ----- */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #1A3D63, #C9A227);
+  background: #B08D57;
   border-radius: 8px;
 }
-::-webkit-scrollbar-track { background: #E8EEF5; }
+::-webkit-scrollbar-track {
+  background: #EDE9E1;
+}
 
-/* Links gold accent on hover in content */
+/* ----- Links ----- */
+a { color: #B08D57; }
+a:hover { color: #26332B; }
+
 .main-content a:hover {
-  color: var(--primary-hover) !important;
+  color: #B08D57 !important;
+}
+
+/* Soften previous flashy gradients from older themes */
+.sidebar .menu a:hover {
+  transform: none !important;
+}
+.sidebar .menu a.active {
+  transform: none !important;
 }
 
