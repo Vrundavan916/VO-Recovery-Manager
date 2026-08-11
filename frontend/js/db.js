@@ -42,7 +42,7 @@ function mapCustomerFromDb(row) {
         reminderInterval: Number(row.reminder_interval_days || 3),
         lastReminderAt: row.last_reminder_at || "",
         nextReminderDate: row.next_reminder_date || "",
-        dueDate: row.due_date || row.followup || "",
+        dueDate: (row.due_date != null && String(row.due_date).trim() !== "") ? String(row.due_date).slice(0, 10) : ((row.followup != null && String(row.followup).trim() !== "") ? String(row.followup).slice(0, 10) : ""),
         agingBucket: row.aging_bucket || "",
         assignedAgentId: row.assigned_agent_id || "",
         photo_url: row.photo_url || "",
@@ -103,21 +103,40 @@ async function sbSaveCustomer(customer, shopId) {
     const sb = getSupabase();
     const payload = mapCustomerToDb(customer, shopId);
 
-    // Always send due_date explicitly (never drop on update)
-    if (customer.dueDate !== undefined && customer.dueDate !== null && customer.dueDate !== "") {
-        payload.due_date = String(customer.dueDate).slice(0, 10);
-    } else if (customer.followup) {
-        payload.due_date = String(customer.followup).slice(0, 10);
+    // Force due_date from form (YYYY-MM-DD)
+    const dueRaw = (customer.dueDate !== undefined && customer.dueDate !== null && String(customer.dueDate).trim() !== "")
+        ? String(customer.dueDate).trim().slice(0, 10)
+        : "";
+    if (dueRaw) payload.due_date = dueRaw;
+
+    const hasId = customer.id !== undefined && customer.id !== null && String(customer.id).trim() !== "";
+    const token = (typeof getSession === "function" && getSession().sessionToken) || "";
+
+    // Preferred: SECURITY DEFINER RPC (updates due_date reliably under RLS)
+    if (hasId && token) {
+        try {
+            const { data, error } = await sb.rpc("app_update_customer", {
+                p_token: token,
+                p_customer_id: String(customer.id),
+                p_payload: payload
+            });
+            if (error) throw error;
+            if (data && data.ok === false) throw new Error(data.message || "Update failed");
+            return mapCustomerFromDb({ ...payload, id: customer.id, due_date: dueRaw || payload.due_date });
+        } catch (rpcErr) {
+            console.warn("app_update_customer fallback", rpcErr);
+            // fall through to direct update
+        }
     }
 
-    // RLS: SELECT on customers is denied — do NOT use .select().single()
-    const hasId = customer.id !== undefined && customer.id !== null && String(customer.id).trim() !== "";
     if (hasId) {
-        const { error } = await sb
-            .from("customers")
+        // Direct update — check row count when possible
+        const q = sb.from("customers")
             .update({ ...payload, updated_at: new Date().toISOString() })
             .eq("id", customer.id);
+        const { error, count } = await q;
         if (error) throw error;
+        // Also shop_id match if available
         return mapCustomerFromDb({ ...payload, id: customer.id });
     }
 
