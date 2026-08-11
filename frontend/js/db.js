@@ -103,26 +103,20 @@ async function sbSaveCustomer(customer, shopId) {
     const sb = getSupabase();
     const payload = mapCustomerToDb(customer, shopId);
 
+    // RLS: SELECT on customers is denied — do NOT use .select().single()
+    // (that causes: Cannot coerce the result to a single JSON object)
     if (customer.id && String(customer.id).length > 10) {
-        // update
-        const { data, error } = await sb
+        const { error } = await sb
             .from("customers")
             .update({ ...payload, updated_at: new Date().toISOString() })
-            .eq("id", customer.id)
-            .select()
-            .single();
+            .eq("id", customer.id);
         if (error) throw error;
-        return mapCustomerFromDb(data);
-    } else {
-        // insert
-        const { data, error } = await sb
-            .from("customers")
-            .insert(payload)
-            .select()
-            .single();
-        if (error) throw error;
-        return mapCustomerFromDb(data);
+        return mapCustomerFromDb({ ...payload, id: customer.id });
     }
+
+    const { error } = await sb.from("customers").insert(payload);
+    if (error) throw error;
+    return mapCustomerFromDb(payload);
 }
 
 async function sbDeleteCustomer(id) {
@@ -181,9 +175,10 @@ async function sbSaveRecovery(recovery, shopId) {
         remarks: recovery.remarks || ""
     };
 
-    const { data, error } = await sb.from("recoveries").insert(payload).select().single();
+    // RLS blocks SELECT on recoveries — skip .select().single()
+    const { error } = await sb.from("recoveries").insert(payload);
     if (error) throw error;
-    return mapRecoveryFromDb(data);
+    return mapRecoveryFromDb(payload);
 }
 
 async function sbDeleteRecovery(id) {
