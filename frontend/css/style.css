@@ -1188,3 +1188,59 @@ html, body {
   }
 }
 
+
+/* =========================================================
+   SIDEBAR FULL HEIGHT — all menu items visible (scroll)
+   Fix: starting ma ochha options / click pachi badha aave
+========================================================= */
+.sidebar {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  bottom: 0 !important;
+  height: 100% !important;
+  height: 100dvh !important;
+  min-height: 100vh !important;
+  max-height: none !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  overscroll-behavior: contain !important;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px)) !important;
+  box-sizing: border-box !important;
+}
+
+.sidebar .logo {
+  flex-shrink: 0 !important;
+}
+
+.sidebar .menu,
+.sidebar ul.menu {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow: visible !important;
+  padding-bottom: 32px !important;
+}
+
+.sidebar .menu li,
+.sidebar .menu a {
+  flex-shrink: 0 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  height: auto !important;
+  max-height: none !important;
+}
+
+/* Mobile open drawer: always full viewport height */
+@media (max-width: 992px) {
+  .sidebar,
+  .sidebar.open {
+    top: 0 !important;
+    bottom: 0 !important;
+    height: 100% !important;
+    height: 100dvh !important;
+    min-height: 100vh !important;
+    overflow-y: auto !important;
+  }
+}
+
