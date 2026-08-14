@@ -213,18 +213,24 @@ async function sbGetRecoveries(shopId) {
 
 async function sbSaveRecovery(recovery, shopId) {
     const sb = getSupabase();
+    const sid = shopId || recovery.shop_id || null;
+    if (!sid) throw new Error("shop_id required for recovery");
+    if (!recovery.customerId && recovery.customerId !== 0) {
+        throw new Error("customer_id required");
+    }
+
     const payload = {
-        shop_id: shopId || recovery.shop_id,
+        shop_id: sid,
         customer_id: recovery.customerId,
         amount: Number(recovery.amount || 0),
-        recovery_date: recovery.date || new Date().toISOString().split("T")[0],
+        recovery_date: (recovery.date || new Date().toISOString().split("T")[0]).toString().slice(0, 10),
         payment_mode: recovery.paymentMode || "Cash",
         receipt_no: recovery.receiptNo || "",
         collected_by: recovery.collectedBy || "",
         remarks: recovery.remarks || ""
     };
 
-    // RLS blocks SELECT on recoveries — skip .select().single()
+    // RLS: no SELECT on recoveries — insert only (no .select().single())
     const { error } = await sb.from("recoveries").insert(payload);
     if (error) throw error;
     return mapRecoveryFromDb(payload);
@@ -239,9 +245,34 @@ async function sbDeleteRecovery(id) {
 
 async function sbUpdateCustomerOutstanding(customerId, newOutstanding) {
     const sb = getSupabase();
+    if (customerId === undefined || customerId === null || String(customerId).trim() === "") {
+        throw new Error("customer id missing for outstanding update");
+    }
+    const val = Math.max(0, Number(newOutstanding) || 0);
+    const payload = {
+        outstanding: val,
+        updated_at: new Date().toISOString()
+    };
+
+    // Prefer RPC if available (same as customer save under RLS)
+    const token = (typeof getSession === "function" && getSession().sessionToken) || "";
+    if (token) {
+        try {
+            const { data, error } = await sb.rpc("app_update_customer", {
+                p_token: token,
+                p_customer_id: String(customerId),
+                p_payload: payload
+            });
+            if (!error && data) return true;
+            if (error) console.warn("app_update_customer outstanding", error);
+        } catch (e) {
+            console.warn("outstanding RPC fallback", e);
+        }
+    }
+
     const { error } = await sb
         .from("customers")
-        .update({ outstanding: Math.max(0, Number(newOutstanding)), updated_at: new Date().toISOString() })
+        .update(payload)
         .eq("id", customerId);
     if (error) throw error;
     return true;

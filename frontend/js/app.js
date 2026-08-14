@@ -661,7 +661,7 @@ function loadDashboardRecentRecovery() {
     if (!tbody) return;
     tbody.innerHTML = "";
     recoveries.slice(0, 5).forEach((item, index) => {
-        const customer = customers.find(c => c.id == item.customerId);
+        const customer = (customers || []).find(c => String(c.id) === String(item.customerId));
         tbody.innerHTML += `
         <tr>
             <td>${index + 1}</td>
@@ -711,7 +711,7 @@ async function saveRecovery() {
 
 
     let finalShopId = currentShopId();
-    const cust = customers.find(c => c.id == customerId.value);
+    const cust = (customers || []).find(c => String(c.id) === String(customerId.value));
     if (isSuperAdmin() && cust) finalShopId = cust.shop_id;
 
     if (!finalShopId) {
@@ -788,7 +788,7 @@ function loadRecoveryTable() {
     tbody.innerHTML = "";
 
     recoveries.forEach((item, index) => {
-        const customer = customers.find(c => c.id == item.customerId);
+        const customer = (customers || []).find(c => String(c.id) === String(item.customerId));
         const deleteBtn = (role === "admin" || role === "super_admin")
             ? `<button class="action-btn delete-btn" onclick="deleteRecovery(${index})" title="Delete">🗑️</button>`
             : "";
@@ -819,7 +819,7 @@ async function deleteRecovery(index) {
     const item = recoveries[index];
     try {
         if (item) {
-            const customer = customers.find(c => c.id == item.customerId);
+            const customer = (customers || []).find(c => String(c.id) === String(item.customerId));
             if (customer) {
                 const newOut = Number(customer.outstanding || 0) + Number(item.amount || 0);
                 await sbUpdateCustomerOutstanding(customer.id, newOut);
@@ -960,7 +960,7 @@ function renderReportRows(list) {
     tbody.innerHTML = "";
 
     list.forEach((item, index) => {
-        const customer = customers.find(c => c.id == item.customerId);
+        const customer = (customers || []).find(c => String(c.id) === String(item.customerId));
         const status = customer && Number(customer.outstanding) > 0
             ? `<span class="badge badge-warning">Pending</span>`
             : `<span class="badge badge-success">Paid</span>`;
@@ -1045,7 +1045,7 @@ function exportReport() {
     }
     let csv = "No,Customer,Mobile,Village,Amount,Payment Mode,Date,Collected By,Remarks\n";
     list.forEach((item, index) => {
-        const customer = customers.find(c => c.id == item.customerId);
+        const customer = (customers || []).find(c => String(c.id) === String(item.customerId));
         const name = customer ? (customer.name || "-") : "-";
         const mobile = customer ? (customer.mobile || "-") : "-";
         const village = customer ? (customer.village || "-") : "-";
