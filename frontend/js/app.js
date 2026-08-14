@@ -116,7 +116,7 @@ function getCustomerData() {
         remarks: document.getElementById("remarks")?.value || "",
         autoReminder: document.getElementById("autoReminder") ? document.getElementById("autoReminder").checked : true,
         reminderInterval: Number(document.getElementById("reminderInterval")?.value || 3),
-        dueDate: document.getElementById("dueDate")?.value || document.getElementById("followup")?.value || "",
+        dueDate: (document.getElementById("dueDate")?.value || "").trim(),
         nextReminderDate: document.getElementById("followup")?.value || ""
     };
 }
@@ -135,6 +135,7 @@ async function saveCustomer() {
         customer.id = customers[editIndex].id;
     }
     let finalShopId = currentShopId();
+    if (finalShopId) customer.shop_id = finalShopId;
 
     if (!finalShopId && !isSuperAdmin()) {
         alert("No shop assigned. Contact Super Admin.");
