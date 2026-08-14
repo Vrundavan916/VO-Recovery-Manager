@@ -1,5 +1,5 @@
 // Bump this on every deploy so old caches get wiped automatically.
-const CACHE = 'bk-rm-v6';
+const CACHE = 'bk-rm-v9-part1-sidebar';
 
 // Only truly static assets that rarely change go here.
 const ASSETS = ['./css/style.css', './assets/logo.png'];
