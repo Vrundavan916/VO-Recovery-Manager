@@ -7,38 +7,46 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap");
 
 :root {
-  /* Jewellery ERP — natural elegant theme (prompt palette) */
-  --bg: #F7F5F0;
-  --bg-accent: #F0EDE6;
+  /* PART 2 — Final Jewellery ERP Theme */
+  --bg: #F7F4EE;
+  --bg-accent: #EFEBE3;
   --card: #FFFFFF;
-  --primary: #26332B;
-  --primary-mid: #26332B;
-  --primary-hover: #B08D57;
+  --primary: #1A2420;
+  --primary-mid: #222E28;
+  --primary-hover: #B89A62;
   --primary-soft: #F3EEE4;
-  --accent: #B08D57;
-  --accent-soft: #F5F0E6;
-  --sidebar: #26332B;
-  --sidebar-mid: #2F3D34;
-  --sidebar-hover: #334239;
-  --border: #E4DFD6;
-  --text: #26302A;
-  --text-secondary: #6B756E;
+  --accent: #B89A62;
+  --accent-soft: #F6F1E6;
+  --sidebar: #1A2420;
+  --sidebar-mid: #222E28;
+  --sidebar-hover: #2C3A32;
+  --border: #E6E0D4;
+  --text: #2C322C;
+  --text-secondary: #6F776F;
   --success: #4F7D5A;
-  --success-soft: #EDF3EF;
-  --warning: #B08D57;
-  --warning-soft: #F5F0E6;
+  --success-soft: #EEF5F0;
+  --warning: #B89A62;
+  --warning-soft: #F6F1E6;
   --danger: #B85C5C;
   --danger-soft: #F8EEEE;
-  --info: #6B756E;
+  --info: #6F776F;
   --info-soft: #F0F2F1;
-  --shadow: 0 8px 28px rgba(38, 51, 43, 0.07);
-  --shadow-sm: 0 3px 12px rgba(38, 51, 43, 0.05);
-  --shadow-lg: 0 16px 40px rgba(38, 51, 43, 0.10);
+  --shadow: 0 8px 28px rgba(26, 36, 32, 0.07);
+  --shadow-sm: 0 3px 12px rgba(26, 36, 32, 0.05);
+  --shadow-lg: 0 18px 44px rgba(26, 36, 32, 0.11);
   --radius: 14px;
   --radius-sm: 10px;
   --radius-lg: 18px;
-  --sidebar-w: 280px;
-  --transition: 0.22s ease;
+  --sidebar-w: 278px;
+  --transition: 0.2s ease;
+  --sb-bg: #1A2420;
+  --sb-bg-2: #222E28;
+  --sb-hover: #2C3A32;
+  --sb-active: rgba(184, 154, 98, 0.18);
+  --sb-gold: #B89A62;
+  --sb-gold-light: #D4B87A;
+  --sb-text: rgba(248, 246, 241, 0.88);
+  --sb-w: 278px;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -2148,5 +2156,235 @@ html, body {
 }
 .sidebar .menu a {
   flex-direction: row !important;
+}
+
+
+/* =========================================================
+   PART 2 — FINAL JEWELLERY ERP THEME
+   Ivory · Forest · Antique gold · Professional · Calm
+   Does NOT change HTML/JS — visual only
+========================================================= */
+
+html, body {
+  background: #F7F4EE !important;
+  color: #2C322C !important;
+}
+
+body {
+  background:
+    radial-gradient(1000px 520px at 0% -5%, rgba(184, 154, 98, 0.08) 0%, transparent 55%),
+    radial-gradient(800px 400px at 100% 0%, rgba(26, 36, 32, 0.04) 0%, transparent 50%),
+    #F7F4EE !important;
+  font-family: "Poppins", system-ui, -apple-system, sans-serif !important;
+  -webkit-font-smoothing: antialiased !important;
+}
+
+.wrapper {
+  background: transparent !important;
+  min-height: 100vh !important;
+}
+
+/* Main content area */
+.main,
+.main-content,
+.content,
+.page-content,
+.wrapper > main {
+  background: transparent !important;
+  color: #2C322C !important;
+}
+
+.page-title,
+.topbar h1,
+.main-content h1,
+.summary-bar h2,
+.content-box h1,
+.content-box h2 {
+  color: #1A2420 !important;
+  font-weight: 700 !important;
+}
+
+.page-subtitle,
+.summary-bar span,
+.content-box span,
+small {
+  color: #6F776F !important;
+}
+
+/* Cards & panels */
+.card,
+.content-box,
+.table-section,
+.modal-content {
+  background: #FFFFFF !important;
+  border: 1px solid #E6E0D4 !important;
+  border-radius: 14px !important;
+  box-shadow: 0 6px 22px rgba(26, 36, 32, 0.06) !important;
+  color: #2C322C !important;
+}
+
+.card {
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #1A2420 0%, #B89A62 100%) !important;
+  opacity: 0.9;
+}
+
+.card h3 { color: #6F776F !important; font-weight: 600 !important; }
+.card h1, .card .value { color: #1A2420 !important; font-weight: 700 !important; }
+.card small { color: #6F776F !important; }
+.card i { color: #B89A62 !important; }
+
+.card.green {
+  background: linear-gradient(180deg, #FFFFFF 70%, #EEF5F0) !important;
+}
+.card.green h1, .card.green .value, .card.green i { color: #4F7D5A !important; }
+
+.card.orange {
+  background: linear-gradient(180deg, #FFFFFF 70%, #F6F1E6) !important;
+}
+.card.orange h1, .card.orange .value, .card.orange i { color: #B89A62 !important; }
+
+.card.red {
+  background: linear-gradient(180deg, #FFFFFF 70%, #F8EEEE) !important;
+}
+.card.red h1, .card.red .value, .card.red i { color: #B85C5C !important; }
+
+/* Buttons */
+.add-btn,
+button.add-btn,
+.btn-primary,
+button[type="submit"],
+.login-box button.login-btn,
+.btn-login {
+  background: #1A2420 !important;
+  color: #F7F4EE !important;
+  border: 1px solid #1A2420 !important;
+  border-radius: 11px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 14px rgba(26, 36, 32, 0.16) !important;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.add-btn:hover,
+button.add-btn:hover,
+.btn-primary:hover,
+.btn-login:hover {
+  background: #2C3A32 !important;
+  border-color: #B89A62 !important;
+  box-shadow: 0 6px 18px rgba(184, 154, 98, 0.2) !important;
+  filter: none !important;
+}
+
+.btn-gold,
+.add-btn.gold {
+  background: #B89A62 !important;
+  color: #1A2420 !important;
+  border-color: #B89A62 !important;
+}
+
+button.btn-secondary,
+.btn-secondary {
+  background: #F7F4EE !important;
+  color: #6F776F !important;
+  border: 1px solid #E6E0D4 !important;
+}
+
+/* Tables */
+table {
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  width: 100% !important;
+}
+
+table thead th {
+  background: #1A2420 !important;
+  color: #F7F4EE !important;
+  border: none !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.02em !important;
+  padding: 12px 14px !important;
+}
+
+table thead th:first-child { border-radius: 10px 0 0 0 !important; }
+table thead th:last-child { border-radius: 0 10px 0 0 !important; }
+
+table tbody td {
+  color: #2C322C !important;
+  border-color: #E6E0D4 !important;
+  padding: 11px 14px !important;
+}
+
+table tbody tr:nth-child(even) { background: #FAF8F4 !important; }
+table tbody tr:hover { background: #F3EEE4 !important; }
+
+/* Forms */
+input, select, textarea {
+  border: 1.5px solid #E6E0D4 !important;
+  border-radius: 10px !important;
+  background: #FFFFFF !important;
+  color: #2C322C !important;
+  transition: border-color 0.2s, box-shadow 0.2s !important;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: #B89A62 !important;
+  box-shadow: 0 0 0 3px rgba(184, 154, 98, 0.18) !important;
+  outline: none !important;
+}
+
+label {
+  color: #6F776F !important;
+  font-weight: 600 !important;
+}
+
+/* Badges */
+.badge {
+  border-radius: 999px !important;
+  font-weight: 600 !important;
+  font-size: 11px !important;
+  padding: 4px 10px !important;
+}
+
+/* Modal */
+.modal, .modal-overlay {
+  background: rgba(26, 36, 32, 0.45) !important;
+}
+
+.modal-content {
+  box-shadow: 0 20px 50px rgba(26, 36, 32, 0.18) !important;
+}
+
+/* Links */
+a { color: #B89A62; }
+a:hover { color: #1A2420; }
+.main-content a:hover { color: #B89A62 !important; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb {
+  background: #B89A62;
+  border-radius: 8px;
+}
+::-webkit-scrollbar-track { background: #EDE9E1; }
+
+/* Top / user chips if present */
+.user-info, .topbar {
+  color: #2C322C !important;
+}
+
+/* Soften old navy leftovers on dashboard-grid cards */
+.dashboard-grid .card h1 { color: #1A2420 !important; }
+.dashboard-grid .card h3 { color: #6F776F !important; }
+.dashboard-grid .card.blue::before,
+.dashboard-grid .card::before {
+  background: linear-gradient(90deg, #1A2420, #B89A62) !important;
 }
 
