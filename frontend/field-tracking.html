@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1A3D63">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Field Tracking | BK Recovery Manager</title>
+<link rel="stylesheet" href="css/style.css?v=enterprise3">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+</head>
+<body>
+<button type="button" class="menu-toggle" id="menuToggle" aria-label="Menu">☰</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<script>
+(function(){
+  function ready(fn){ if(document.readyState!=='loading') fn(); else document.addEventListener('DOMContentLoaded',fn); }
+  ready(function(){
+    var btn=document.getElementById('menuToggle'), sb=document.querySelector('.sidebar'), ov=document.getElementById('sidebarOverlay');
+    if(!btn||!sb) return;
+    function close(){ sb.classList.remove('open'); if(ov) ov.classList.remove('show'); }
+    btn.addEventListener('click', function(e){ e.stopPropagation(); sb.classList.toggle('open'); if(ov) ov.classList.toggle('show'); });
+    if(ov) ov.addEventListener('click', close);
+    sb.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', close); });
+  });
+})();
+</script>
+<div class="wrapper">
+<aside class="sidebar">
+  <div class="logo"><h2>BK Recovery</h2><p>Recovery Manager</p></div>
+  <ul class="menu">
+<li><a href="dashboard.html"><i class="fa-solid fa-house"></i><span>Dashboard</span></a></li>
+<li><a href="customers.html"><i class="fa-solid fa-users"></i><span>Customers</span></a></li>
+<li><a href="recovery.html"><i class="fa-solid fa-money-bill-wave"></i><span>Recovery</span></a></li>
+<li><a href="ptp.html"><i class="fa-solid fa-handshake"></i><span>Promise to Pay</span></a></li>
+<li><a href="escalations.html"><i class="fa-solid fa-arrow-up-right-dots"></i><span>Escalations</span></a></li>
+<li><a href="activity.html"><i class="fa-solid fa-phone-volume"></i><span>Activity Log</span></a></li>
+<li><a href="field-tracking.html" class="active"><i class="fa-solid fa-location-dot"></i><span>Field Tracking</span></a></li>
+<li><a href="reports.html"><i class="fa-solid fa-chart-column"></i><span>Reports</span></a></li>
+<li><a href="settings.html"><i class="fa-solid fa-gear"></i><span>Settings</span></a></li>
+<li><a href="#" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></a></li>
+</ul>
+</aside>
+<main class="main-content">
+  <header class="topbar">
+    <div>
+      <h1 class="page-title">Employee Field Tracking</h1>
+      <span class="page-subtitle">Field staff · check-in · GPS · assigned customers</span>
+    </div>
+  </header>
+
+  
+  <section class="content-box fade" style="margin-bottom:16px;border-left:4px solid #16a34a;">
+    <div class="summary-bar">
+      <div>
+        <h2><i class="fa-solid fa-link"></i> Employee link (login vagar)</h2>
+        <span>Staff ne full site login ni jarur nathi — only check-in page</span>
+      </div>
+    </div>
+    <p style="font-size:14px;color:#475569;margin:8px 0;">
+      Share: <code id="publicCheckinUrl">checkin.html</code>
+      <button type="button" class="add-btn" style="padding:6px 12px;margin-left:8px;" onclick="copyCheckinLink()">Copy link</button>
+    </p>
+    <p style="font-size:13px;color:#64748b;">Setup: Supabase ma user par <b>agent_code</b> + <b>field_pin</b> set karo (SQL). Employee code + PIN thi check-in kare.</p>
+  </section>
+  <script>
+  (function(){
+    var el = document.getElementById("publicCheckinUrl");
+    if (el) {
+      try {
+        var u = new URL("checkin.html", window.location.href);
+        el.textContent = u.href;
+      } catch(e) {}
+    }
+    window.copyCheckinLink = function(){
+      var t = document.getElementById("publicCheckinUrl");
+      if (!t) return;
+      var text = t.textContent;
+      if (navigator.clipboard) navigator.clipboard.writeText(text);
+      else prompt("Copy", text);
+      alert("Link copied — WhatsApp thi employee ne moklo");
+    };
+  })();
+  </script>
+<div class="dashboard-cards" style="margin-bottom:16px;">
+    <div class="card"><i class="fa-solid fa-user-tie"></i><h3>Field staff</h3><h1 id="fieldCountAgents">0</h1><small>Tracked employees</small></div>
+    <div class="card green"><i class="fa-solid fa-clipboard-check"></i><h3>Today activity</h3><h1 id="fieldCountToday">0</h1><small>Check-ins / calls</small></div>
+    <div class="card orange"><i class="fa-solid fa-users"></i><h3>Assigned A/cs</h3><h1 id="fieldCountAssigned">0</h1><small>With executive</small></div>
+    <div class="card"><i class="fa-solid fa-map-location-dot"></i><h3>GPS today</h3><h1 id="fieldCountGps">0</h1><small>Location captured</small></div>
+  </div>
+
+  
+  <section class="content-box fade" style="margin-bottom:16px;">
+    <div class="summary-bar">
+      <div>
+        <h2><i class="fa-solid fa-link"></i> Generate employee tracking links</h2>
+        <span>Code + PIN save → Copy link / WhatsApp — employee ne full login ni jarur nathi</span>
+      </div>
+      <button type="button" class="add-btn" onclick="loadEmployeeLinkGenerator()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+    </div>
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Employee</th>
+            <th>Agent code</th>
+            <th>PIN</th>
+            <th>Link</th>
+          </tr>
+        </thead>
+        <tbody id="empLinkBody"><tr><td colspan="5">Loading…</td></tr></tbody>
+      </table>
+    </div>
+    <p style="font-size:12px;color:#64748b;margin-top:10px;">
+      Link example: <code>…/checkin.html?code=MUKESH01</code> — employee PIN enter kari check-in kare.
+      Columns <code>agent_code</code> / <code>field_pin</code> Supabase users table ma joi e.
+    </p>
+  </section>
+<section class="content-box fade">
+    <div class="summary-bar">
+      <div><h2><i class="fa-solid fa-location-crosshairs"></i> Field check-in</h2>
+      <span>Employee location + customer visit log</span></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;">
+      <div>
+        <label>Customer *</label>
+        <select id="fieldCheckinCustomer"><option value="">Select</option></select>
+      </div>
+      <div>
+        <label>Type</label>
+        <select id="fieldCheckinType">
+          <option value="visit">Visit</option>
+          <option value="call">Call</option>
+          <option value="whatsapp">WhatsApp</option>
+        </select>
+      </div>
+      <div style="grid-column:1/-1;">
+        <label>Notes</label>
+        <input type="text" id="fieldCheckinNotes" placeholder="e.g. Met customer, promised Friday">
+      </div>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
+      <button type="button" class="add-btn" onclick="fieldCheckIn()">
+        <i class="fa-solid fa-location-dot"></i> Check-in (GPS)
+      </button>
+      <button type="button" class="add-btn" onclick="loadFieldTracking()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+      <a class="add-btn" href="activity.html" style="text-decoration:none;"><i class="fa-solid fa-list"></i> Full activity log</a>
+    </div>
+  </section>
+
+  <section class="table-section fade" style="margin-top:16px;">
+    <div class="summary-bar"><div><h2>Employees overview</h2><span>Assigned · today · movement path (all GPS stops)</span></div></div>
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Employee</th>
+            <th>Assigned</th>
+            <th>Today acts</th>
+            <th>Last activity</th>
+            <th>Route / stops</th>
+          </tr>
+        </thead>
+        <tbody id="fieldAgentBody"><tr><td colspan="6">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="table-section fade" style="margin-top:16px;">
+    <div class="summary-bar"><div><h2>Today’s field activity</h2></div></div>
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Time</th><th>Agent</th><th>Customer</th><th>Detail</th><th>GPS</th></tr>
+        </thead>
+        <tbody id="fieldTodayBody"><tr><td colspan="6">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="table-section fade" id="employeePathPanel" style="display:none;margin-top:16px;border:2px solid #1A3D63;border-radius:12px;padding:8px;">
+    <div class="summary-bar">
+      <div>
+        <h2 id="employeePathTitle">Employee movement</h2>
+        <span>Time order ma jya-jya check-in / GPS thayu</span>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button type="button" class="add-btn" id="employeePathMapBtn" style="display:none;">
+          <i class="fa-solid fa-route"></i> Open full route (Maps)
+        </button>
+        <button type="button" class="btn-cancel" onclick="document.getElementById('employeePathPanel').style.display='none'">Close</button>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Time</th>
+            <th>Customer / place</th>
+            <th>Type / notes</th>
+            <th>GPS</th>
+          </tr>
+        </thead>
+        <tbody id="employeePathBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+
+  <section class="table-section fade" id="movementHistoryPanel" style="margin-top:16px;display:none;">
+    <div class="summary-bar">
+      <div>
+        <h2 id="movementHistoryTitle">Movement history</h2>
+        <span>Employee kahan-kahan gaya — check-in places + route</span>
+      </div>
+      <button type="button" class="add-btn" onclick="document.getElementById('movementHistoryPanel').style.display='none'">Close</button>
+    </div>
+    <div id="movementMapLinks" style="padding:8px 0 12px;font-size:13px;line-height:1.6;"></div>
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr><th>#</th><th>When</th><th>Customer</th><th>Detail</th><th>Location</th></tr>
+        </thead>
+        <tbody id="movementHistoryBody"><tr><td colspan="5">—</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/db.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/app.js"></script>
+<script>
+window.addEventListener("load", async function(){
+  if (typeof checkLogin === "function") checkLogin();
+  if (typeof supabaseBoot === "function") await supabaseBoot();
+  if (typeof reloadAllData === "function") await reloadAllData();
+  if (typeof initFieldTrackingPage === "function") await initFieldTrackingPage();
+});
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function(){});
+</script>
+</body>
+</html>
