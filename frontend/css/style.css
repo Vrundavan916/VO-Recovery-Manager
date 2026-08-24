@@ -2388,3 +2388,38 @@ a:hover { color: #1A2420; }
   background: linear-gradient(90deg, #1A2420, #B89A62) !important;
 }
 
+
+/* =========================================================
+   SIDEBAR ORDER LOCK — no overlap / no duplicate stack
+========================================================= */
+.sidebar {
+  isolation: isolate !important;
+  contain: layout style !important;
+}
+.sidebar .menu {
+  position: relative !important;
+  z-index: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  flex-wrap: nowrap !important;
+  gap: 2px !important;
+}
+.sidebar .menu li {
+  position: relative !important;
+  z-index: auto !important;
+  transform: none !important;
+  margin: 0 !important;
+  min-height: 44px !important;
+}
+.sidebar .menu a {
+  position: relative !important;
+  z-index: auto !important;
+  transform: none !important;
+  margin: 0 !important;
+}
+/* Only one sidebar in layout */
+body > .sidebar ~ .sidebar,
+.wrapper > .sidebar ~ .sidebar {
+  display: none !important;
+}
+
