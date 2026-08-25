@@ -388,3 +388,12 @@ table tbody tr:hover td{background:#f6f0e4!important}
   border-color:rgba(34,211,238,.55)!important;
   transform:translateY(-1px)!important;
 }
+
+/* ============================================================
+   PREMIUM V1 — COMMAND CENTER
+   ============================================================ */
+.vo-command-strip{display:grid;grid-template-columns:1fr 3fr;gap:16px;margin:0 0 18px;padding:16px;border:1px solid #e5e8ef;border-radius:20px;background:linear-gradient(135deg,#fff,#faf9fd);box-shadow:0 12px 34px rgba(31,39,64,.07);position:relative;overflow:hidden}
+.vo-command-strip:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,#7c5ce0,#21b7c7)}
+.vo-command-title{display:flex;flex-direction:column;justify-content:center;padding:4px 10px}.vo-command-title span{font-size:10px;letter-spacing:.14em;font-weight:800;color:#6d52bb}.vo-command-title strong{font-size:18px;margin-top:5px;color:#182033}.vo-command-title small{color:#71798b;margin-top:4px}
+.vo-command-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.vo-command-btn{min-height:78px;display:flex;align-items:center;gap:9px;padding:10px;border:1px solid #e5e8ef;border-radius:14px;background:#fff;text-decoration:none!important;color:#182033!important}.vo-command-btn:hover{transform:translateY(-3px);box-shadow:0 12px 25px rgba(31,39,64,.10)}.vo-command-btn i{width:38px;height:38px;display:grid;place-items:center;border-radius:12px}.vo-command-btn b{display:block;font-size:11px}.vo-command-btn small{display:block;color:#71798b;font-size:9px;margin-top:3px}.vo-command-btn:nth-child(1) i{background:#f0eaff;color:#7c3aed}.vo-command-btn:nth-child(2) i{background:#e5f8fb;color:#0891b2}.vo-command-btn:nth-child(3) i{background:#eaf2fa;color:#2563eb}.vo-command-btn:nth-child(4) i{background:#fff4dd;color:#b7791f}.vo-command-btn:nth-child(5) i{background:#fcebed;color:#be5361}
+@media(max-width:900px){.vo-command-strip{grid-template-columns:1fr}.vo-command-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:520px){.vo-command-grid{grid-template-columns:1fr}}
