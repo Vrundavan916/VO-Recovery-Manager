@@ -397,3 +397,22 @@ table tbody tr:hover td{background:#f6f0e4!important}
 .vo-command-title{display:flex;flex-direction:column;justify-content:center;padding:4px 10px}.vo-command-title span{font-size:10px;letter-spacing:.14em;font-weight:800;color:#6d52bb}.vo-command-title strong{font-size:18px;margin-top:5px;color:#182033}.vo-command-title small{color:#71798b;margin-top:4px}
 .vo-command-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.vo-command-btn{min-height:78px;display:flex;align-items:center;gap:9px;padding:10px;border:1px solid #e5e8ef;border-radius:14px;background:#fff;text-decoration:none!important;color:#182033!important}.vo-command-btn:hover{transform:translateY(-3px);box-shadow:0 12px 25px rgba(31,39,64,.10)}.vo-command-btn i{width:38px;height:38px;display:grid;place-items:center;border-radius:12px}.vo-command-btn b{display:block;font-size:11px}.vo-command-btn small{display:block;color:#71798b;font-size:9px;margin-top:3px}.vo-command-btn:nth-child(1) i{background:#f0eaff;color:#7c3aed}.vo-command-btn:nth-child(2) i{background:#e5f8fb;color:#0891b2}.vo-command-btn:nth-child(3) i{background:#eaf2fa;color:#2563eb}.vo-command-btn:nth-child(4) i{background:#fff4dd;color:#b7791f}.vo-command-btn:nth-child(5) i{background:#fcebed;color:#be5361}
 @media(max-width:900px){.vo-command-strip{grid-template-columns:1fr}.vo-command-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:520px){.vo-command-grid{grid-template-columns:1fr}}
+
+/* ============================================================
+   FINAL MULTI-COLOUR PROFESSIONAL PASS
+   ============================================================ */
+:root{
+ --vo-final-navy:#10172b;--vo-final-violet:#7655c9;--vo-final-cyan:#20b8c7;
+ --vo-final-blue:#4f7bd9;--vo-final-green:#2f9b6c;--vo-final-amber:#d39635;
+}
+body{background:radial-gradient(900px 520px at -5% -5%,rgba(118,85,201,.10),transparent 65%),radial-gradient(760px 460px at 105% 0,rgba(32,184,199,.07),transparent 65%),#f5f7fb!important}
+.sidebar{background:radial-gradient(250px 200px at 90% 5%,rgba(118,85,201,.25),transparent 70%),radial-gradient(300px 230px at -5% 85%,rgba(32,184,199,.12),transparent 70%),linear-gradient(180deg,#10172b,#1b2341 56%,#251d3e)!important}
+.sidebar .menu a i{color:#b8a1ff!important}.sidebar .menu a.active{background:linear-gradient(100deg,rgba(118,85,201,.34),rgba(32,184,199,.08))!important;border-color:rgba(146,117,230,.32)!important;box-shadow:inset 4px 0 #20d4df,0 8px 24px rgba(0,0,0,.14)!important}
+.card,.content-box,.table-section,.stat-card,.summary-card,.panel,.form-card,.report-card{background:linear-gradient(145deg,#fff,#fbfcff)!important;border-color:#e3e7ef!important;box-shadow:0 10px 30px rgba(24,32,51,.065)!important}
+.card:hover,.content-box:hover,.table-section:hover,.stat-card:hover,.summary-card:hover,.panel:hover,.form-card:hover,.report-card:hover{box-shadow:0 20px 50px rgba(24,32,51,.12)!important}
+h1,h2,h3,h4{color:#182033!important}.btn-primary,.add-btn,button[type=submit]{background:linear-gradient(135deg,#252b4a,#694ab0)!important;box-shadow:0 9px 22px rgba(69,52,130,.20)!important}
+table thead th{background:linear-gradient(135deg,#202746,#4b3d83)!important}table tbody tr:hover td{background:#f3effc!important}
+input:focus,select:focus,textarea:focus,.form-control:focus{border-color:#7655c9!important;box-shadow:0 0 0 4px rgba(118,85,201,.12)!important}
+.vo-final-strip{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 0 18px;padding:18px 22px;border-radius:20px;color:#fff;background:radial-gradient(320px 160px at 90% 0,rgba(32,184,199,.22),transparent 70%),linear-gradient(115deg,#151b31,#34275e);box-shadow:0 18px 40px rgba(25,31,58,.12)}
+.vo-final-strip strong{font-size:20px}.vo-final-strip span{color:rgba(255,255,255,.68);font-size:11px}.vo-final-chip{padding:7px 11px;border:1px solid rgba(255,255,255,.14);border-radius:999px;background:rgba(255,255,255,.08);font-size:10px}
+@media(max-width:700px){.vo-final-strip{padding:15px 16px}.vo-final-strip strong{font-size:17px}.vo-final-chip{display:none}}

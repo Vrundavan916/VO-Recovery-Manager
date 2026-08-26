@@ -1,0 +1,125 @@
+
+/* =========================================================
+   VO RECOVERY MANAGER — PART 3
+   LOGIN + AUTHENTICATION VISUAL REDESIGN
+   Visual-only layer; authentication logic is preserved.
+   ========================================================= */
+
+:root{
+ --p3-navy:#0b1228;--p3-navy2:#17203c;--p3-violet:#8064dc;
+ --p3-cyan:#25c2d2;--p3-ink:#182033;--p3-muted:#758198;
+ --p3-line:#e3e7ef;--p3-card:#fff
+}
+
+/* Auth page background */
+body.auth-page,body.login-page,.auth-container,.login-page{
+ background:
+ radial-gradient(700px 500px at 8% 8%,rgba(128,100,220,.18),transparent 65%),
+ radial-gradient(600px 450px at 95% 90%,rgba(37,194,210,.12),transparent 65%),
+ linear-gradient(135deg,#f6f7fb,#eef1f8)!important;
+}
+
+/* Common auth card */
+.login-card,.auth-card,.login-container,.auth-box,.login-box{
+ background:rgba(255,255,255,.94)!important;
+ border:1px solid rgba(225,229,238,.95)!important;
+ border-radius:24px!important;
+ box-shadow:0 24px 70px rgba(22,29,52,.14)!important;
+ backdrop-filter:blur(18px)!important;
+}
+
+/* Logo / brand block */
+.login-logo,.auth-logo,.login-header,.auth-header{
+ text-align:center!important;
+}
+.login-logo img,.auth-logo img{
+ max-width:150px!important;
+ max-height:72px!important;
+ object-fit:contain!important;
+}
+
+/* Form fields */
+.login-card input,.auth-card input,.login-container input,.auth-box input,
+.login-card select,.auth-card select{
+ width:100%!important;
+ min-height:48px!important;
+ border:1.5px solid var(--p3-line)!important;
+ border-radius:13px!important;
+ background:#fbfcff!important;
+ color:var(--p3-ink)!important;
+ padding:11px 14px!important;
+ transition:border-color .18s ease,box-shadow .18s ease,background .18s ease!important;
+}
+.login-card input:focus,.auth-card input:focus,.login-container input:focus,
+.auth-box input:focus{
+ background:#fff!important;
+ border-color:var(--p3-violet)!important;
+ box-shadow:0 0 0 4px rgba(128,100,220,.11)!important;
+ outline:none!important;
+}
+
+/* Login CTA */
+.login-card button[type=submit],.auth-card button[type=submit],
+.login-container button[type=submit],.auth-box button[type=submit],
+.login-btn,.auth-btn{
+ width:100%!important;
+ min-height:48px!important;
+ border:0!important;
+ border-radius:13px!important;
+ color:#fff!important;
+ font-weight:750!important;
+ letter-spacing:.1px!important;
+ background:linear-gradient(110deg,var(--p3-navy),var(--p3-violet) 70%,var(--p3-cyan))!important;
+ box-shadow:0 12px 28px rgba(70,56,143,.22)!important;
+}
+.login-card button[type=submit]:hover,.auth-card button[type=submit]:hover,
+.login-btn:hover,.auth-btn:hover{
+ transform:translateY(-1px)!important;
+ box-shadow:0 16px 34px rgba(70,56,143,.28)!important;
+}
+
+/* Links */
+.login-card a,.auth-card a,.login-container a{
+ color:var(--p3-violet)!important;
+ font-weight:650!important;
+}
+.login-card a:hover,.auth-card a:hover{color:#1b9baa!important}
+
+/* Error/success feedback */
+.error,.error-message,.alert-danger,.auth-error{
+ border-radius:11px!important;
+ border:1px solid rgba(204,96,110,.20)!important;
+ background:#fff3f5!important;
+ color:#a34352!important;
+}
+.success,.success-message,.alert-success,.auth-success{
+ border-radius:11px!important;
+ border:1px solid rgba(54,164,119,.20)!important;
+ background:#effaf5!important;
+ color:#287c5b!important;
+}
+
+/* Password visibility controls */
+.password-wrapper,.password-field{position:relative!important}
+.password-toggle,.toggle-password{
+ border:0!important;background:transparent!important;
+ color:#778198!important;box-shadow:none!important;
+}
+.password-toggle:hover,.toggle-password:hover{
+ color:var(--p3-violet)!important;transform:none!important;
+}
+
+/* Small-screen polish */
+@media(max-width:600px){
+ .login-card,.auth-card,.login-container,.auth-box,.login-box{
+  width:calc(100% - 28px)!important;
+  border-radius:20px!important;
+  padding:22px!important;
+ }
+}
+
+/* Auth loading state */
+.auth-loading,.login-loading{
+ opacity:.72!important;
+ pointer-events:none!important;
+}
