@@ -279,6 +279,42 @@ function injectSuperAdminNav() {
 
 function applyRoleRestrictions() {
     const session = getSession();
+
+    // Final UI identity: show the logged-in user's name on the left sidebar and topbar brand.
+    try {
+        const sidebar = document.querySelector(".sidebar");
+        if (sidebar && !sidebar.querySelector(".vo-logged-user")) {
+            const logo = sidebar.querySelector(".logo");
+            const box = document.createElement("div");
+            box.className = "vo-logged-user";
+            box.innerHTML = '<i class="fa-solid fa-user-check"></i><span><b id="loggedInUserName"></b><small>Logged in</small></span>';
+            if (logo) logo.insertAdjacentElement("afterend", box);
+            else sidebar.prepend(box);
+        }
+        const name = session.displayName || session.username || "User";
+        const leftName = document.getElementById("loggedInUserName");
+        if (leftName) leftName.textContent = name;
+
+        document.querySelectorAll(".topbar,.header-bar,.page-header").forEach(function(header){
+            if (!header.querySelector(".vo-topbar-brand")) {
+                const brand = document.createElement("div");
+                brand.className = "vo-topbar-brand";
+                brand.innerHTML = '<img src="assets/logo.png" alt="BK Recovery"><div class="vo-topbar-brand-name">BK RECOVERY<small>RECOVERY MANAGER</small></div>';
+                header.insertBefore(brand, header.firstChild);
+            }
+            if (!header.querySelector(".vo-topbar-user")) {
+                const user = document.createElement("div");
+                user.className = "vo-topbar-user";
+                user.innerHTML = '<i class="fa-solid fa-user-circle"></i><span><b class="name"></b><small class="role"></small></span>';
+                header.appendChild(user);
+            }
+            const chip = header.querySelector(".vo-topbar-user");
+            if (chip) {
+                chip.querySelector(".name").textContent = name;
+                chip.querySelector(".role").textContent = session.role === "super_admin" ? "Super Admin" : (session.role === "admin" ? "Administrator" : "User");
+            }
+        });
+    } catch (e) { console.warn("Final identity UI failed", e); }
     const role = session.role || "user";
 
     const badge = document.getElementById("userRoleBadge");

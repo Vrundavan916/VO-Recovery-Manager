@@ -32,12 +32,18 @@ let editCustomerId = null;
 // ================================
 function openModal() {
     const modal = document.getElementById("customerModal");
-    if (modal) modal.style.display = "block";
+    if (modal) {
+        modal.classList.add("vo-modal-open");
+        modal.style.display = "flex";
+    }
 }
 
 function closeModal() {
     const modal = document.getElementById("customerModal");
-    if (modal) modal.style.display = "none";
+    if (modal) {
+        modal.classList.remove("vo-modal-open");
+        modal.style.display = "none";
+    }
     const form = document.getElementById("customerForm");
     if (form) form.reset();
     const outstanding = document.getElementById("outstanding");
