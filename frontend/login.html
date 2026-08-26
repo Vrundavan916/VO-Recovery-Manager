@@ -73,10 +73,12 @@ body.login-body{
 <link rel="stylesheet" href="css/part4-dashboard.css">
 <link rel="stylesheet" href="css/part5-pages.css">
 <link rel="stylesheet" href="css/part6-final-polish.css">
+<link rel="stylesheet" href="css/part7-green-final.css">
 </head>
 <body class="login-body">
 
 <div class="login-card">
+    <form id="loginForm" autocomplete="on" onsubmit="event.preventDefault();login();">
     <img id="companyLogo" class="login-logo" src="assets/logo.png" alt="Logo"
          onerror="this.src='../assets/logo.png';this.onerror=function(){this.style.display='none'};">
     <p class="login-company">BK Recovery Manager</p>
@@ -85,11 +87,10 @@ body.login-body{
     <label for="username">Username</label>
     <input type="text" id="username" placeholder="Enter username" autocomplete="username">
     <label for="password">Password</label>
-    <input type="password" id="password" placeholder="Enter password" autocomplete="current-password"
-onkeypress="if(event.key==='Enter'){login();}">
+    <input type="password" id="password" placeholder="Enter password" autocomplete="current-password">
     <div class="remember-row">
         <input type="checkbox" id="rememberMe">
-        <label for="rememberMe">Remember me on this device</label>
+        <label for="rememberMe">Save login on this device</label>
     </div>
     <button class="btn-login" id="loginBtn" type="button" onclick="login()">
         <i class="fa-solid fa-right-to-bracket"></i> Login
@@ -98,6 +99,7 @@ onkeypress="if(event.key==='Enter'){login();}">
         <i class="fa-solid fa-key"></i> Forgot Password?
     </button>
     <p class="login-footer">Powered by <span>BK Design Hub</span> · Commercial Edition</p>
+    </form>
 </div>
 
 <div class="forgot-modal" id="forgotModal">
