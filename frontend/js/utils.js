@@ -80,3 +80,42 @@ window.computeSubStatus = computeSubStatus;
 window.statusBadge = statusBadge;
 window.escapeHtml = escapeHtml;
 window.showToast = showToast;
+
+/* Mobile sidebar toggle — safe global binder */
+(function bindSidebarToggle() {
+  function init() {
+    var btn = document.getElementById("menuToggle");
+    var sb = document.querySelector(".sidebar");
+    var ov = document.getElementById("sidebarOverlay");
+    if (!btn || !sb || btn.dataset.bound === "1") return;
+    btn.dataset.bound = "1";
+    function close() {
+      sb.classList.remove("open");
+      if (ov) ov.classList.remove("show");
+      document.body.style.overflow = "";
+    }
+    function open() {
+      sb.classList.add("open");
+      if (ov) ov.classList.add("show");
+      document.body.style.overflow = "hidden";
+    }
+    btn.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (sb.classList.contains("open")) close();
+      else open();
+    });
+    if (ov) ov.addEventListener("click", close);
+    sb.querySelectorAll("a").forEach(function (a) {
+      a.addEventListener("click", close);
+    });
+    window.addEventListener("resize", function () {
+      if (window.innerWidth > 900) close();
+    });
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
