@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1A2420">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login | VO Recovery Manager</title>
+<link rel="stylesheet" href="css/style.css?v=part2-theme">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<style>
+/* PART 2 — Login matches Jewellery ERP theme */
+body.login-body{
+  margin:0;min-height:100vh;display:flex;justify-content:center;align-items:center;
+  background:
+    radial-gradient(ellipse at 15% 10%,rgba(184,154,98,0.12) 0%,transparent 50%),
+    radial-gradient(ellipse at 90% 90%,rgba(26,36,32,0.05) 0%,transparent 45%),
+    #F7F4EE;
+  font-family:Poppins,system-ui,-apple-system,sans-serif;padding:20px;color:#2C322C;
+}
+.login-card{
+  width:100%;max-width:420px;background:#FFFFFF;border-radius:18px;padding:40px 36px 32px;
+  border:1px solid #E6E0D4;box-shadow:0 18px 44px rgba(26,36,32,0.11);text-align:center;
+  animation:fadeUp .45s ease;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.login-logo{
+  width:88px;height:88px;object-fit:contain;margin:0 auto 14px;border-radius:16px;
+  background:#fff;padding:10px;border:1px solid rgba(184,154,98,0.35);
+  box-shadow:0 6px 18px rgba(26,36,32,0.08);
+}
+.login-company{font-size:17px;font-weight:700;color:#1A2420;margin:0 0 4px}
+.login-software{font-size:13px;color:#6F776F;margin:0 0 24px}
+.login-card h2{margin:0 0 20px;color:#1A2420;font-size:22px;font-weight:700}
+.login-card h2 i{color:#B89A62;margin-right:6px}
+.login-card label{display:block;text-align:left;font-weight:600;color:#6F776F;margin:14px 0 6px;font-size:13px}
+.login-card input[type="text"],.login-card input[type="password"]{
+  width:100%;padding:13px 16px;border:1.5px solid #E6E0D4;border-radius:12px;font-size:15px;
+  box-sizing:border-box;outline:none;transition:.2s;background:#FFFFFF;color:#2C322C;
+}
+.login-card input:focus{border-color:#B89A62;box-shadow:0 0 0 3px rgba(184,154,98,0.18)}
+.remember-row{display:flex;align-items:center;gap:8px;margin-top:14px;text-align:left}
+.remember-row input{width:auto;accent-color:#B89A62}
+.remember-row label{margin:0;font-weight:500;color:#6F776F;font-size:13px;cursor:pointer}
+.btn-login{
+  width:100%;margin-top:22px;padding:15px;border:none;border-radius:12px;
+  background:#1A2420;color:#F7F4EE;font-size:16px;font-weight:700;cursor:pointer;
+  box-shadow:0 4px 14px rgba(26,36,32,0.16);transition:.2s;
+}
+.btn-login:hover{background:#2C3A32;box-shadow:0 6px 18px rgba(184,154,98,0.2)}
+.btn-login:disabled{opacity:.7;cursor:wait}
+.btn-forgot{margin-top:16px;background:none;border:none;color:#B89A62;font-size:13px;cursor:pointer;font-weight:500}
+.btn-forgot:hover{color:#1A2420}
+.login-footer{margin-top:22px;font-size:12px;color:#6F776F}
+.login-footer span{color:#B89A62;font-weight:600}
+.forgot-modal{display:none;position:fixed;inset:0;background:rgba(26,36,32,.45);z-index:9999;
+  justify-content:center;align-items:center;padding:20px}
+.forgot-modal.show{display:flex}
+.forgot-box{background:#FFFFFF;border:1px solid #E6E0D4;border-radius:18px;padding:28px;max-width:400px;width:100%;
+  box-shadow:0 18px 44px rgba(26,36,32,0.12)}
+.forgot-box h3{margin:0 0 8px;color:#1A2420}
+.forgot-box p{color:#6F776F;font-size:13px;margin:0 0 16px}
+.forgot-box input{width:100%;padding:12px 14px;border:1.5px solid #E6E0D4;border-radius:10px;margin-bottom:12px;
+  box-sizing:border-box;background:#fff;color:#2C322C}
+.forgot-box input:focus{border-color:#B89A62;outline:none;box-shadow:0 0 0 3px rgba(184,154,98,0.18)}
+.forgot-actions .btn-primary{background:#1A2420;color:#F7F4EE;border:none;border-radius:10px;padding:12px 18px;font-weight:600;cursor:pointer}
+.forgot-actions .btn-secondary{background:#F7F4EE;color:#6F776F;border:1px solid #E6E0D4;border-radius:10px;padding:12px 18px;font-weight:600;cursor:pointer}
+</style>
+    <link rel="stylesheet" href="css/professional-redesign.css">
+<link rel="stylesheet" href="css/part1-final-theme.css">
+<link rel="stylesheet" href="css/part2-header-sidebar.css">
+<link rel="stylesheet" href="css/part3-login-auth.css">
+<link rel="stylesheet" href="css/part4-dashboard.css">
+<link rel="stylesheet" href="css/part5-pages.css">
+<link rel="stylesheet" href="css/part6-final-polish.css">
+<link rel="stylesheet" href="css/part7-green-final.css">
+<link rel="stylesheet" href="css/vo-v2-redesign.css?v=2">
+</head>
+<body class="login-body">
+
+<div class="login-card">
+    <form id="loginForm" autocomplete="on" onsubmit="event.preventDefault();login();">
+    <img id="companyLogo" class="login-logo" src="assets/logo.png" alt="Logo"
+         onerror="this.src='../assets/logo.png';this.onerror=function(){this.style.display='none'};">
+    <p class="login-company">VO Recovery Manager</p>
+    <p class="login-software">VO Recovery Manager · Multi-Tenant SaaS</p>
+    <h2><i class="fa-solid fa-gem"></i> Sign In</h2>
+    <label for="username">Username</label>
+    <input type="text" id="username" placeholder="Enter username" autocomplete="username">
+    <label for="password">Password</label>
+    <input type="password" id="password" placeholder="Enter password" autocomplete="current-password">
+    <div class="remember-row">
+        <input type="checkbox" id="rememberMe">
+        <label for="rememberMe">Save login on this device</label>
+    </div>
+    <button class="btn-login" id="loginBtn" type="button" onclick="login()">
+        <i class="fa-solid fa-right-to-bracket"></i> Login
+    </button>
+    <button class="btn-forgot" type="button" onclick="openForgotPassword()">
+        <i class="fa-solid fa-key"></i> Forgot Password?
+    </button>
+    <p class="login-footer">Powered by <span>BK Design Hub</span> · Commercial Edition</p>
+    </form>
+</div>
+
+<div class="forgot-modal" id="forgotModal">
+    <div class="forgot-box">
+        <h3><i class="fa-solid fa-key"></i> Forgot Password</h3>
+        <p>Verify username + recovery email, then set a new password.</p>
+        <label style="display:block;text-align:left;margin-top:8px;">Username *</label>
+        <input type="text" id="forgotUsername" placeholder="e.g. superadmin" autocomplete="username">
+        <label style="display:block;text-align:left;margin-top:8px;">Recovery Email *</label>
+        <input type="email" id="forgotEmail" placeholder="Registered recovery email">
+        <label style="display:block;text-align:left;margin-top:8px;">New Password *</label>
+        <input type="password" id="forgotNewPass" placeholder="Min 4 characters" autocomplete="new-password">
+        <label style="display:block;text-align:left;margin-top:8px;">Confirm Password *</label>
+        <input type="password" id="forgotConfirmPass" placeholder="Re-enter password" autocomplete="new-password">
+        <div class="forgot-actions" style="margin-top:16px;display:flex;gap:10px;">
+            <button type="button" class="btn-secondary" onclick="closeForgotPassword()">Cancel</button>
+            <button type="button" class="btn-primary" onclick="submitForgotPassword()">Reset Password</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/db.js"></script>
+<script src="js/auth.js"></script>
+<script>
+document.getElementById("forgotModal").addEventListener("click",function(e){
+    if(e.target===this) closeForgotPassword();
+});
+/* open/close/submitForgotPassword → auth.js */
+</script>
+<script>
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){});}
+</script>
+</body>
+</html>
