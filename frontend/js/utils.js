@@ -81,38 +81,103 @@ window.statusBadge = statusBadge;
 window.escapeHtml = escapeHtml;
 window.showToast = showToast;
 
-/* Mobile sidebar toggle — safe global binder */
+
+/* ========== Sidebar mobile drawer (single binder) ========== */
 (function bindSidebarToggle() {
+  function isMobile() {
+    return window.matchMedia("(max-width: 900px)").matches;
+  }
+
   function init() {
     var btn = document.getElementById("menuToggle");
     var sb = document.querySelector(".sidebar");
     var ov = document.getElementById("sidebarOverlay");
-    if (!btn || !sb || btn.dataset.bound === "1") return;
-    btn.dataset.bound = "1";
-    function close() {
+    if (!sb) return;
+
+    function closeMenu() {
       sb.classList.remove("open");
       if (ov) ov.classList.remove("show");
+      document.documentElement.classList.remove("sidebar-open");
+      document.body.classList.remove("sidebar-open");
       document.body.style.overflow = "";
     }
-    function open() {
+
+    function openMenu() {
+      if (!isMobile()) return;
       sb.classList.add("open");
       if (ov) ov.classList.add("show");
+      document.documentElement.classList.add("sidebar-open");
+      document.body.classList.add("sidebar-open");
       document.body.style.overflow = "hidden";
     }
-    btn.addEventListener("click", function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-      if (sb.classList.contains("open")) close();
-      else open();
-    });
-    if (ov) ov.addEventListener("click", close);
-    sb.querySelectorAll("a").forEach(function (a) {
-      a.addEventListener("click", close);
-    });
+
+    function toggleMenu(e) {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      if (!isMobile()) return;
+      if (sb.classList.contains("open")) closeMenu();
+      else openMenu();
+    }
+
+    if (btn && btn.dataset.bound !== "1") {
+      btn.dataset.bound = "1";
+      btn.addEventListener("click", toggleMenu);
+      btn.addEventListener("touchend", function (e) {
+        // avoid double-fire with click on some devices
+        e.preventDefault();
+        toggleMenu(e);
+      }, { passive: false });
+    }
+
+    if (ov && ov.dataset.bound !== "1") {
+      ov.dataset.bound = "1";
+      ov.addEventListener("click", closeMenu);
+      ov.addEventListener("touchend", function (e) {
+        e.preventDefault();
+        closeMenu();
+      }, { passive: false });
+    }
+
+    // Links must navigate — close menu then follow href (mobile-safe)
+    function bindLinks() {
+      sb.querySelectorAll("a[href]").forEach(function (a) {
+        if (a.dataset.navBound === "1") return;
+        a.dataset.navBound = "1";
+        a.addEventListener("click", function (e) {
+          var href = a.getAttribute("href") || "";
+          // ignore pure hash / empty
+          if (!href || href === "#") return;
+          // logout or other JS handlers — still close
+          if (href.indexOf("javascript:") === 0) {
+            closeMenu();
+            return;
+          }
+          if (isMobile()) {
+            // Close first so UI doesn't stick; allow default navigation
+            closeMenu();
+          }
+          // default navigation continues
+        });
+      });
+    }
+    bindLinks();
+
+    // Re-bind when Super Admin injects extra links
+    var obs = new MutationObserver(function () { bindLinks(); });
+    obs.observe(sb, { childList: true, subtree: true });
+
+    // Desktop: never keep drawer state
     window.addEventListener("resize", function () {
-      if (window.innerWidth > 900) close();
+      if (!isMobile()) closeMenu();
     });
+
+    // Start closed on mobile
+    if (isMobile()) closeMenu();
+    else closeMenu();
   }
+
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
   } else {
