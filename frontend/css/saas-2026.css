@@ -4,3 +4,188 @@
 @media(max-width:1180px){.dashboard-grid,.dashboard-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 @media(max-width:900px){.sidebar{transform:translateX(-100%)!important;transition:.25s!important}.sidebar.open{transform:translateX(0)!important}.main-content{margin-left:0!important;padding:0 16px 28px!important}.topbar,.header-bar,.page-header{margin:0 -16px 20px!important;padding:10px 16px 10px 66px!important}.dashboard-grid,.dashboard-cards{grid-template-columns:1fr!important}.content-box,.table-section{padding:16px!important;border-radius:18px!important}.summary-bar{align-items:flex-start!important;flex-direction:column!important}.add-btn{width:auto!important}.menu-toggle{display:block!important}}
 @media(min-width:901px){.menu-toggle,.sidebar-overlay{display:none!important}}
+
+/* =========================================================
+   SIDEBAR FIX — mobile + desktop (overrides all prior rules)
+   ========================================================= */
+
+/* Base: always solid, no blur, clickable */
+.sidebar,
+.sidebar * {
+  filter: none !important;
+  -webkit-filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.sidebar {
+  position: fixed !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: auto !important;
+  width: 260px !important;
+  max-width: 85vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  background: #0B1020 !important;
+  z-index: 1200 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  box-shadow: 4px 0 24px rgba(0,0,0,.18) !important;
+  pointer-events: auto !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+.sidebar .menu,
+.sidebar ul.menu {
+  display: flex !important;
+  flex-direction: column !important;
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 8px 0 24px !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+.sidebar .menu li {
+  display: block !important;
+  width: 100% !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+.sidebar .menu a,
+.sidebar a {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 12px 14px !important;
+  margin: 2px 0 !important;
+  border-radius: 12px !important;
+  color: rgba(255,255,255,.78) !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  -webkit-tap-highlight-color: rgba(99,102,241,.35);
+}
+.sidebar .menu a i,
+.sidebar a i {
+  color: rgba(255,255,255,.55) !important;
+  width: 20px !important;
+  text-align: center !important;
+}
+.sidebar .menu a span {
+  color: inherit !important;
+  display: inline !important;
+}
+.sidebar .menu a:hover,
+.sidebar .menu a:active,
+.sidebar .menu a.active {
+  color: #fff !important;
+  background: linear-gradient(90deg, rgba(99,102,241,.28), rgba(139,92,246,.12)) !important;
+}
+.sidebar .menu a:hover i,
+.sidebar .menu a.active i {
+  color: #A5B4FC !important;
+}
+
+.sidebar-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(9,14,29,.55) !important;
+  z-index: 1150 !important;
+  display: none !important;
+  pointer-events: none !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+}
+.sidebar-overlay.show {
+  display: block !important;
+  pointer-events: auto !important;
+}
+
+.menu-toggle {
+  position: fixed !important;
+  top: 12px !important;
+  left: 12px !important;
+  z-index: 1300 !important;
+  width: 44px !important;
+  height: 44px !important;
+  border: none !important;
+  border-radius: 12px !important;
+  background: #0B1020 !important;
+  color: #fff !important;
+  font-size: 20px !important;
+  display: none !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 8px 20px rgba(15,23,42,.25) !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+
+.main-content {
+  margin-left: 260px !important;
+  min-height: 100vh !important;
+}
+
+/* DESKTOP — sidebar always open, menu always visible */
+@media (min-width: 901px) {
+  .menu-toggle {
+    display: none !important;
+  }
+  .sidebar-overlay,
+  .sidebar-overlay.show {
+    display: none !important;
+    pointer-events: none !important;
+  }
+  .sidebar {
+    transform: none !important;
+    translate: none !important;
+    left: 0 !important;
+    width: 260px !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  .sidebar .menu,
+  .sidebar .menu li,
+  .sidebar .menu a {
+    visibility: visible !important;
+    opacity: 1 !important;
+    display: flex !important;
+  }
+  .sidebar .menu li {
+    display: block !important;
+  }
+  .main-content {
+    margin-left: 260px !important;
+  }
+}
+
+/* MOBILE — slide-in drawer, no blur, works on tap */
+@media (max-width: 900px) {
+  .menu-toggle {
+    display: flex !important;
+  }
+  .sidebar {
+    transform: translateX(-110%) !important;
+    transition: transform .28s ease !important;
+    width: min(280px, 88vw) !important;
+    z-index: 1200 !important;
+  }
+  .sidebar.open {
+    transform: translateX(0) !important;
+  }
+  .main-content {
+    margin-left: 0 !important;
+    padding-top: 60px !important;
+    width: 100% !important;
+  }
+  .sidebar-overlay.show {
+    display: block !important;
+    z-index: 1150 !important;
+  }
+}

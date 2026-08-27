@@ -992,6 +992,30 @@ body.login-body {
 }
 
 
+
+/* Force desktop sidebar visible (pre-toggle block) */
+@media (min-width: 901px) {
+  .sidebar {
+    transform: none !important;
+    translate: none !important;
+    left: 0 !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 260px !important;
+  }
+  .sidebar .menu,
+  .sidebar .menu li,
+  .sidebar .menu a {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  .sidebar .menu li { display: block !important; }
+  .menu-toggle, .sidebar-overlay { display: none !important; }
+  .main-content { margin-left: 260px !important; }
+}
+
 /* ========== Mobile menu toggle ========== */
 .menu-toggle {
   display: none;
