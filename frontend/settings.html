@@ -2,6 +2,21 @@
 <html lang="en">
 
 <head>
+<script>
+/* Auth + role guard: redirect BEFORE the page paints, so an unauthenticated
+   session, or a user without the right role, never sees the sidebar flash
+   before bouncing away. */
+(function(){
+  try {
+    var store = (localStorage.getItem('bk_isLoggedIn') === 'true') ? localStorage : sessionStorage;
+    var loggedIn = store.getItem('bk_isLoggedIn') === 'true';
+    if (!loggedIn) { window.location.replace('login.html'); return; }
+    var role = store.getItem('bk_role') || 'user';
+    if (role !== 'admin' && role !== 'super_admin') { window.location.replace('dashboard.html'); }
+  } catch (e) {}
+})();
+</script>
+
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1A3D63">
 

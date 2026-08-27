@@ -2,6 +2,19 @@
 <html lang="en">
 
 <head>
+<script>
+/* Auth guard: redirect BEFORE the page paints, so an unauthenticated
+   or expired session never sees the sidebar/dashboard flash before
+   bouncing to login.html. */
+(function(){
+  try {
+    var loggedIn = localStorage.getItem('bk_isLoggedIn') === 'true' ||
+                    sessionStorage.getItem('bk_isLoggedIn') === 'true';
+    if (!loggedIn) { window.location.replace('login.html'); }
+  } catch (e) {}
+})();
+</script>
+
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1A3D63">
 
