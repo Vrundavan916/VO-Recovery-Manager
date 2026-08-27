@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1A3D63">
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Customers | VO Recovery Manager</title>
+
+<link rel="stylesheet" href="css/style.css?v=enterprise3">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+<link rel="stylesheet" href="css/vo-customers-v1.css">
+
+
+
+
+
+<!-- Premium SaaS 2026 visual layer; existing IDs and JS behavior are preserved -->
+<link rel="stylesheet" href="css/saas-2026.css?v=2026">
+</head>
+
+<body>
+
+<button type="button" class="menu-toggle" id="menuToggle" aria-label="Menu">☰</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<script>
+(function(){
+  function ready(fn){ if(document.readyState!=='loading') fn(); else document.addEventListener('DOMContentLoaded',fn); }
+  ready(function(){
+    var btn=document.getElementById('menuToggle');
+    var sb=document.querySelector('.sidebar');
+    var ov=document.getElementById('sidebarOverlay');
+    if(!btn||!sb) return;
+    function close(){ sb.classList.remove('open'); if(ov) ov.classList.remove('show'); }
+    function open(){ sb.classList.add('open'); if(ov) ov.classList.add('show'); }
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      if(sb.classList.contains('open')) close(); else open();
+    });
+    if(ov) ov.addEventListener('click', close);
+    sb.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', close); });
+  });
+})();
+</script>
+
+
+<div class="wrapper">
+
+<!-- =========================
+SIDEBAR START
+========================= -->
+
+<aside class="sidebar">
+
+<div class="logo">
+
+<h2>VO Recovery</h2>
+
+<p>Recovery Manager</p>
+
+</div>
+
+<ul class="menu">
+<li><a href="dashboard.html"><i class="fa-solid fa-house"></i><span>Dashboard</span></a></li>
+<li><a href="customers.html" class="active"><i class="fa-solid fa-users"></i><span>Customers</span></a></li>
+<li><a href="recovery.html"><i class="fa-solid fa-money-bill-wave"></i><span>Recovery</span></a></li>
+<li><a href="ptp.html"><i class="fa-solid fa-handshake"></i><span>Promise to Pay</span></a></li>
+<li><a href="escalations.html"><i class="fa-solid fa-arrow-up-right-dots"></i><span>Escalations</span></a></li>
+<li><a href="activity.html"><i class="fa-solid fa-phone-volume"></i><span>Activity Log</span></a></li>
+<li><a href="field-tracking.html"><i class="fa-solid fa-location-dot"></i><span>Field Tracking</span></a></li>
+<li><a href="reports.html"><i class="fa-solid fa-chart-column"></i><span>Reports</span></a></li>
+<li><a href="settings.html"><i class="fa-solid fa-gear"></i><span>Settings</span></a></li>
+<li><a href="#" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></a></li>
+</ul>
+
+</aside>
+
+<!-- =========================
+SIDEBAR END
+========================= -->
+
+<!-- =========================
+MAIN CONTENT START
+========================= -->
+
+<main class="main-content">
+
+<!-- =========================
+END OF PART 1
+========================= --><!-- =========================
+PART 2
+========================= -->
+
+<!-- =========================
+TOPBAR START
+========================= -->
+
+<header class="topbar">
+
+<div>
+
+<h1 class="page-title">
+
+Customer Management
+
+</h1>
+
+<p class="page-subtitle">
+
+Manage All Customer Information
+
+</p>
+
+</div>
+
+<div class="user-info">
+
+<i class="fa-solid fa-user-shield"></i>
+
+<span id="userRoleBadge">Administrator</span>
+
+</div>
+
+</header>
+
+<!-- =========================
+TOPBAR END
+========================= -->
+
+<!-- =========================
+CUSTOMER SECTION START
+========================= -->
+
+<section class="table-section fade">
+
+<div class="summary-bar">
+
+<div>
+
+<h2>
+
+Customer List
+
+</h2>
+
+<span>
+
+Add, Edit & Manage Customers
+
+</span>
+
+</div>
+
+<button
+class="add-btn"
+onclick="openModal()">
+
+<i class="fa-solid fa-user-plus"></i>
+
+Add Customer
+
+</button>
+
+<button type="button" class="add-btn" style="background:#16a34a;margin-left:8px;" onclick="downloadCustomerTemplate()">
+<i class="fa-solid fa-file-excel"></i> Download Excel Template
+</button>
+
+<label class="add-btn" style="background:#0ea5e9;margin-left:8px;display:inline-block;cursor:pointer;">
+<i class="fa-solid fa-upload"></i> Upload Excel
+<input type="file" accept=".xlsx,.xls,.csv" onchange="handleCustomerExcelUpload(event)" style="display:none;">
+</label>
+
+<button type="button" class="add-btn" style="background:#64748b;margin-left:8px;" onclick="exportCustomersToExcel()">
+<i class="fa-solid fa-download"></i> Export Excel</button>
+<button type="button" class="add-btn" style="background:linear-gradient(135deg,#128C7E,#25D366);margin-left:8px;" onclick="processWhatsAppReminders(true)"><i class="fa-brands fa-whatsapp"></i> Send Due Reminders
+</button>
+
+
+</div>
+
+<!-- =========================
+SEARCH BOX
+========================= -->
+
+<input
+
+type="text"
+
+id="searchCustomer"
+
+class="search-box"
+
+placeholder="Search Customer by Name, Mobile or Village..."
+
+onkeyup="searchCustomer()">
+
+<!-- =========================
+CUSTOMER TABLE
+========================= -->
+
+
+<!-- Aging filter bar -->
+<div id="agingFilterBar" class="customer-toolbar" style="margin:12px 0;display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+  <span style="font-weight:600;font-size:13px;color:#73879B;">Filter:</span>
+  <button type="button" class="add-btn" style="padding:8px 12px;font-size:12px;" onclick="setCustomerAgingFilter('all')">All</button>
+  <button type="button" class="add-btn" style="padding:8px 12px;font-size:12px;background:#0EA5E9;" onclick="setCustomerAgingFilter('0-30')">0–30</button>
+  <button type="button" class="add-btn" style="padding:8px 12px;font-size:12px;background:#F59E0B;" onclick="setCustomerAgingFilter('31-60')">31–60</button>
+  <button type="button" class="add-btn" style="padding:8px 12px;font-size:12px;background:#EA580C;" onclick="setCustomerAgingFilter('61-90')">61–90</button>
+  <button type="button" class="add-btn" style="padding:8px 12px;font-size:12px;background:#DC2626;" onclick="setCustomerAgingFilter('90+')">90+</button>
+  <button type="button" class="add-btn" style="padding:8px 12px;font-size:12px;background:#128C7E;" onclick="processWhatsAppReminders(true)"><i class="fa-brands fa-whatsapp"></i> WA Due</button>
+  <span id="agingFilterLabel" style="font-size:12px;color:#73879B;margin-left:8px;"></span>
+</div>
+
+<div class="table-responsive">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>ID</th>
+
+<th>Name</th>
+
+<th>Mobile</th>
+
+<th>Village</th>
+
+<th>Outstanding</th>
+
+<th>Aging</th>
+
+<th>Due / Follow-up</th>
+
+<th>Action / WhatsApp</th>
+
+</tr>
+
+</thead>
+
+<tbody id="customerBody">
+
+<!-- Customer Data From script.js -->
+
+</tbody>
+
+</table>
+
+</div>
+
+</section>
+
+<!-- =========================
+END OF PART 2
+========================= --><!-- =========================
+PART 3
+========================= -->
+
+<!-- =========================
+CUSTOMER MODAL START
+========================= -->
+
+<div id="customerModal" class="modal">
+
+<div class="modal-content">
+
+<span class="close" onclick="closeModal()">&times;</span>
+
+<h2>Add / Edit Customer</h2>
+
+<form id="customerForm">
+
+<div class="form-grid">
+
+<!-- Customer Name -->
+
+<div>
+
+<label>Customer Name</label>
+
+<input
+type="text"
+id="customerName"
+placeholder="Enter Customer Name"
+required>
+
+</div>
+
+<!-- Product Name *</label>
+<input type="text" id="productName" class="form-control" placeholder="e.g. Gold Chain, Ring" required>
+<label>Father / Husband Name -->
+
+<div>
+
+<label>Father / Husband Name</label>
+
+<input
+type="text"
+id="fatherName"
+placeholder="Enter Father / Husband Name">
+
+</div>
+
+<!-- Mobile -->
+
+<div>
+
+<label>Mobile Number</label>
+
+<input
+type="tel"
+id="mobile"
+maxlength="10"
+placeholder="9876543210"
+required>
+
+</div>
+
+<!-- Alternate Mobile -->
+
+<div>
+
+<label>Alternate Mobile</label>
+
+<input
+type="tel"
+id="altMobile"
+maxlength="10"
+placeholder="Alternate Mobile">
+
+</div>
+
+<!-- Village -->
+
+<div>
+
+<label>Village</label>
+
+<input
+type="text"
+id="village"
+placeholder="Village Name">
+
+</div>
+
+<!-- Taluka -->
+
+<div>
+
+<label>Taluka</label>
+
+<input
+type="text"
+id="taluka"
+placeholder="Taluka">
+
+</div>
+
+<!-- District -->
+
+<div>
+
+<label>District</label>
+
+<input
+type="text"
+id="district"
+placeholder="District">
+
+</div>
+
+<!-- Aadhaar -->
+
+<div>
+
+<label>Aadhaar Number</label>
+
+<input
+type="text"
+id="aadhaar"
+maxlength="12"
+placeholder="123456789012">
+
+</div>
+
+</div>
+
+<!-- =========================
+END OF PART 3
+========================= --><!-- =========================
+PART 4
+========================= -->
+
+<!-- Address -->
+
+<div class="full-width">
+
+<label>Address</label>
+
+<textarea
+id="address"
+rows="3"
+placeholder="Enter Complete Address"></textarea>
+
+</div>
+
+<!-- PAN Number -->
+
+<div>
+
+<label>PAN Number</label>
+
+<input
+type="text"
+id="pan"
+maxlength="10"
+placeholder="ABCDE1234F">
+
+</div>
+
+<!-- Bill Amount -->
+
+<div>
+
+<label>Bill Amount (₹)</label>
+
+<input
+type="number"
+id="billAmount"
+placeholder="Enter Bill Amount">
+
+</div>
+
+<!-- Down Payment -->
+
+<div>
+
+<label>Down Payment (₹)</label>
+
+<input
+type="number"
+id="downPayment"
+placeholder="Enter Down Payment">
+
+</div>
+
+<!-- Outstanding -->
+
+<div>
+
+<label>Outstanding Amount (₹)</label>
+
+<input
+type="number"
+id="outstanding"
+readonly
+placeholder="Auto Calculated">
+
+</div>
+
+<!-- Recovery Executive -->
+
+<div>
+
+<label>Recovery Executive</label>
+
+<select id="executive">
+<option value="">Select Executive</option>
+</select>
+
+</div>
+
+<!-- Follow-up Date -->
+
+<div>
+
+<label>Next Follow-up Date</label>
+
+<input
+type="date"
+id="followup">
+
+</div>
+
+<!-- Due Date (for aging) -->
+
+<div>
+
+<label>Payment Due Date <small style="font-weight:500;color:#73879B;">(Aging mate)</small></label>
+
+<input
+type="date"
+id="dueDate"
+title="Outstanding ni due date – aging bucket aa date par thi">
+
+</div>
+
+<!-- Customer Status -->
+
+<div>
+
+<label>Status</label>
+
+<select id="status">
+
+<option value="Active">Active</option>
+
+<option value="Pending">Pending</option>
+
+<option value="Closed">Closed</option>
+
+</select>
+
+</div>
+
+<!-- =========================
+END OF PART 4
+========================= --><!-- =========================
+PART 5
+========================= -->
+
+<!-- Customer Photo -->
+
+<div>
+
+<label>Customer Photo</label>
+
+<input
+type="file"
+id="customerPhoto"
+accept="image/*">
+
+</div>
+
+<!-- Aadhaar Photo -->
+
+<div>
+
+<label>Aadhaar Photo</label>
+
+<input
+type="file"
+id="aadhaarPhoto"
+accept="image/*">
+
+</div>
+
+<!-- PAN Photo -->
+
+<div>
+
+<label>PAN Photo</label>
+
+<input
+type="file"
+id="panPhoto"
+accept="image/*">
+
+</div>
+
+<!-- Recovery Priority -->
+
+<div>
+
+<label>Recovery Priority</label>
+
+<select id="priority">
+
+<option value="Low">🟢 Low</option>
+
+<option value="Medium">🟡 Medium</option>
+
+<option value="High">🟠 High</option>
+
+<option value="Urgent">🔴 Urgent</option>
+
+</select>
+
+</div>
+
+<!-- Remarks -->
+
+<div class="full-width">
+
+
+<label style="display:flex;align-items:center;gap:8px;margin-top:14px;text-transform:none;font-size:14px;letter-spacing:0;">
+<input type="checkbox" id="autoReminder" checked style="width:auto;">
+WhatsApp Auto Reminder ON
+</label>
+<small style="color:#9CA6B8;display:block;margin-bottom:8px;">Message on due / follow-up date, then every N days. Uncheck to turn off.</small>
+<label>Reminder every (days)</label>
+<input type="number" id="reminderInterval" min="1" max="30" value="3" class="form-control">
+
+<label>Remarks</label>
+
+<textarea
+
+id="remarks"
+
+rows="5"
+
+placeholder="Enter Customer Remarks...">
+
+</textarea>
+
+</div>
+
+</div>
+
+<!-- FORM GRID END -->
+
+<br>
+
+<div style="display:flex;gap:15px;flex-wrap:wrap;justify-content:center;">
+
+<button
+
+type="button"
+
+class="add-btn"
+
+onclick="saveCustomer()">
+
+<i class="fa-solid fa-floppy-disk"></i>
+
+Save Customer
+
+</button>
+
+<button
+
+type="reset"
+
+class="add-btn"
+
+style="background:#f59e0b;"
+
+onclick="clearCustomerForm()">
+
+<i class="fa-solid fa-rotate-left"></i>
+
+Reset
+
+</button>
+
+<button
+
+type="button"
+
+class="add-btn"
+
+style="background:#ef4444;"
+
+onclick="closeModal()">
+
+<i class="fa-solid fa-xmark"></i>
+
+Close
+
+</button>
+
+</div>
+
+<!-- =========================
+END OF PART 5
+========================= --><!-- =========================
+PART 6
+========================= -->
+
+</form>
+
+</div>
+
+</div>
+
+<!-- =========================
+CUSTOMER MODAL END
+========================= -->
+
+<!-- =========================
+CUSTOMER SUMMARY
+========================= -->
+
+<section class="content-box fade">
+
+<div class="summary-bar">
+
+<div>
+
+<h2>
+
+Customer Summary
+
+</h2>
+
+<span>
+
+Quick Overview
+
+</span>
+
+</div>
+
+</div>
+
+<div class="dashboard-grid">
+
+<div class="card blue">
+
+<i class="fa-solid fa-users"></i>
+
+<h3>Total Customers</h3>
+
+<h1 id="totalCustomers">
+
+0
+
+</h1>
+
+<small>Registered Customers</small>
+
+</div>
+
+<div class="card red">
+
+<i class="fa-solid fa-wallet"></i>
+
+<h3>Total Outstanding</h3>
+
+<h1 id="totalOutstanding">
+
+₹0
+
+</h1>
+
+<small>Total Pending Amount</small>
+
+</div>
+
+<div class="card orange">
+
+<i class="fa-solid fa-calendar-days"></i>
+
+<h3>Today's Follow-up</h3>
+
+<h1 id="todayFollowup">
+
+0
+
+</h1>
+
+<small>Customers to Contact</small>
+
+</div>
+
+<div class="card green">
+
+<i class="fa-solid fa-circle-check"></i>
+
+<h3>Active Customers</h3>
+
+<h1 id="activeCustomers">
+
+0
+
+</h1>
+
+<small>Currently Active</small>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- =========================
+FOOTER START
+========================= -->
+
+<footer class="footer">
+
+© 2026 BK Design Hub | VO Recovery Manager |
+Powered by <strong>BK Design Hub</strong>
+
+</footer>
+
+<!-- =========================
+END OF PART 6
+========================= --><!-- =========================
+PART 7
+========================= -->
+
+<!-- =========================
+MAIN CONTENT END
+========================= -->
+
+</main>
+
+<!-- =========================
+WRAPPER END
+========================= -->
+
+</div>
+
+<!-- =========================
+JAVASCRIPT
+========================= -->
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/db.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/app.js"></script>
+<script src="js/company.js"></script>
+<script src="js/excel-import.js"></script>
+
+<script>
+setInterval(function(){
+    if (typeof refreshProject === "function") refreshProject();
+}, 30000);
+if (typeof updateDashboard === "function") updateDashboard();
+</script>
+
+<script>
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){});}
+</script>
+
+</body>
+
+</html>
