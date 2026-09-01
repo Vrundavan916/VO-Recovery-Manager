@@ -621,11 +621,47 @@ function updateDashboard() {
         todayRecovery.innerHTML = "₹" + recoveryTotal.toLocaleString("en-IN");
     }
 
+    // Part 1 visual analytics — uses existing loaded data only
+    if (typeof renderDashboardCharts === "function") renderDashboardCharts();
+
     // Aging cards (async, non-blocking)
     if (typeof loadAgingDashboard === "function") {
         loadAgingDashboard().catch(function (e) { console.warn("aging", e); });
     }
 }
+
+
+
+// ================================
+// Part 1 Dashboard Charts (visual layer)
+// ================================
+let dashboardRecoveryChart = null;
+let dashboardPortfolioChart = null;
+function renderDashboardCharts() {
+    if (typeof Chart === "undefined") return;
+    const trendCanvas = document.getElementById("recoveryTrendChart");
+    const portfolioCanvas = document.getElementById("portfolioStatusChart");
+    if (!trendCanvas || !portfolioCanvas) return;
+    const recoveryMap = {};
+    (recoveries || []).forEach(function(r){
+        const key = r.date || "Unknown";
+        recoveryMap[key] = (recoveryMap[key] || 0) + Number(r.amount || 0);
+    });
+    const trendRows = Object.keys(recoveryMap).sort().slice(-7);
+    const labels = trendRows.map(function(d){ try { return new Date(d + "T00:00:00").toLocaleDateString("en-IN", {day:"2-digit",month:"short"}); } catch(e){ return d; } });
+    const values = trendRows.map(function(d){ return recoveryMap[d]; });
+    if (!labels.length) { labels.push("No data"); values.push(0); }
+    if (dashboardRecoveryChart) dashboardRecoveryChart.destroy();
+    dashboardRecoveryChart = new Chart(trendCanvas, {type:"line",data:{labels:labels,datasets:[{label:"Recovery",data:values,borderWidth:3,tension:.38,fill:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return " ₹" + Number(ctx.raw||0).toLocaleString("en-IN");}}}},scales:{y:{beginAtZero:true,ticks:{callback:function(v){return "₹"+Number(v).toLocaleString("en-IN",{notation:"compact",maximumFractionDigits:1});}},grid:{drawBorder:false}},x:{grid:{display:false}}}}});
+    const today = new Date().toISOString().split("T")[0];
+    const total = (customers || []).length;
+    const follow = (customers || []).filter(function(c){return c.followup === today;}).length;
+    const escalated = (customers || []).filter(function(c){return String(c.status||"").toLowerCase().includes("escalat");}).length;
+    const stable = Math.max(total - follow - escalated, 0);
+    if (dashboardPortfolioChart) dashboardPortfolioChart.destroy();
+    dashboardPortfolioChart = new Chart(portfolioCanvas,{type:"doughnut",data:{labels:["Stable","Follow-up today","Escalated"],datasets:[{data:[stable,follow,escalated],borderWidth:0,hoverOffset:5}]},options:{responsive:true,maintainAspectRatio:false,cutout:"68%",plugins:{legend:{position:"bottom",labels:{boxWidth:9,usePointStyle:true,padding:16}},tooltip:{callbacks:{label:function(ctx){return " "+ctx.label+": "+ctx.raw+" accounts";}}}}}});
+}
+window.renderDashboardCharts = renderDashboardCharts;
 
 function loadRecentCustomers() {
     const tbody = document.getElementById("recentCustomers");
