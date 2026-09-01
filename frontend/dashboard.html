@@ -16,13 +16,13 @@
 </script>
 
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0B5A47">
+<meta name="theme-color" content="#1A3D63">
 
 <meta charset="UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Dashboard | MOVIRA Recovery Manager</title>
+<title>Dashboard | VO Recovery Manager</title>
 
 <link rel="stylesheet" href="css/style.css?v=enterprise5">
 
@@ -44,9 +44,11 @@ SIDEBAR START
 <aside class="sidebar">
 
 <div class="logo">
-  <div class="vo-brand-logo"><img src="assets/logo.png" alt="MOVIRA Recovery Manager"></div>
-  <h2>MOVIRA</h2>
-  <p>Recovery Manager</p>
+
+<h2>VO Recovery</h2>
+
+<p>Recovery Manager</p>
+
 </div>
 
 <ul class="menu">
@@ -80,21 +82,26 @@ TOPBAR START
 
 <div>
 
-<div class="dashboard-heading-wrap">
-  <div>
-    <span class="dashboard-eyebrow"><i class="fa-solid fa-chart-line"></i> Recovery Overview</span>
-    <h1 class="page-title">Dashboard</h1>
-    <p class="page-subtitle">Welcome back! Here’s what’s happening with your recovery today.</p>
-  </div>
-  <div class="dashboard-date"><i class="fa-regular fa-calendar"></i><span id="dashboardToday">Today</span></div>
-</div>
+<h1 class="page-title">
+
+Dashboard
+
+</h1>
+
+<p class="page-subtitle">
+
+Welcome to VO Recovery Manager
+
+</p>
 
 </div>
 
-<div class="user-info vo-user-pill">
-  <div class="vo-user-avatar"><i class="fa-solid fa-user"></i></div>
-  <div class="vo-user-copy"><strong id="dashboardUserName">User</strong><span id="userRoleBadge">Administrator</span></div>
-  <i class="fa-solid fa-chevron-down vo-user-chevron"></i>
+<div class="user-info">
+
+<i class="fa-solid fa-user-shield"></i>
+
+<span id="userRoleBadge">Administrator</span>
+
 </div>
 
 </header>
@@ -107,7 +114,7 @@ TOPBAR END
 DASHBOARD CARDS START
 ========================= -->
 
-<div class="dashboard-grid vo-kpi-grid">
+<div class="dashboard-grid">
 
 <!-- Total Customers -->
 
@@ -595,7 +602,10 @@ FOOTER START
 ========================= -->
 
 <footer class="footer">
-© 2026 MOVIRA Recovery Manager · Powered by <strong>BK Design Hub</strong>
+
+© 2026 BK Design Hub | VO Recovery Manager |
+Powered by <strong>BK Design Hub</strong>
+
 </footer><!-- =========================
 MAIN CONTENT END
 ========================= -->
@@ -658,19 +668,6 @@ document.addEventListener("DOMContentLoaded", function(){
     bind("Today's Recovery","recovery");
     bind("Today Recovery","recovery");
   }, 800);
-});
-</script>
-
-<script>
-document.addEventListener("DOMContentLoaded", function(){
-  try {
-    const session = (typeof getSession === "function") ? getSession() : {};
-    const name = session.displayName || session.username || "User";
-    const el = document.getElementById("dashboardUserName");
-    if (el) el.textContent = name;
-    const dateEl = document.getElementById("dashboardToday");
-    if (dateEl) dateEl.textContent = new Intl.DateTimeFormat("en-IN", { day:"2-digit", month:"short", year:"numeric" }).format(new Date());
-  } catch(e) {}
 });
 </script>
 
