@@ -124,20 +124,11 @@ window.showToast = showToast;
     if (btn && btn.dataset.bound !== "1") {
       btn.dataset.bound = "1";
       btn.addEventListener("click", toggleMenu);
-      btn.addEventListener("touchend", function (e) {
-        // avoid double-fire with click on some devices
-        e.preventDefault();
-        toggleMenu(e);
-      }, { passive: false });
     }
 
     if (ov && ov.dataset.bound !== "1") {
       ov.dataset.bound = "1";
       ov.addEventListener("click", closeMenu);
-      ov.addEventListener("touchend", function (e) {
-        e.preventDefault();
-        closeMenu();
-      }, { passive: false });
     }
 
     // Links must navigate — close menu then follow href (mobile-safe)
