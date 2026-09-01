@@ -58,3 +58,39 @@ table{border:1px solid var(--p1line)!important;border-radius:13px!important;over
 
 /* Part 1 analytics */
 .dashboard-analytics{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(320px,.9fr);gap:16px;margin:0 0 20px}.analytics-panel{background:#fff;border:1px solid var(--p1line);border-radius:17px;padding:20px;box-shadow:0 8px 26px rgba(22,38,63,.055);min-width:0}.analytics-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.analytics-head .eyebrow{display:block;color:var(--p1t);font-size:9px;font-weight:800;letter-spacing:1.2px;margin-bottom:4px}.analytics-head h2{margin:0;color:var(--p1n);font-size:17px;font-weight:800}.analytics-head p{margin:4px 0 0;color:var(--p1muted);font-size:10px}.analytics-head>i{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;background:var(--p1soft);color:var(--p1t)}.chart-wrap{height:255px;margin-top:14px;position:relative}.doughnut-wrap{max-width:330px;margin-left:auto;margin-right:auto}@media(max-width:1180px){.dashboard-analytics{grid-template-columns:1fr}}@media(max-width:900px){.analytics-panel{padding:15px;border-radius:14px}.chart-wrap{height:230px}}
+
+/* Mobile sidebar fix: closed by default, opens only from menu button */
+@media (max-width: 900px) {
+  .sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    z-index: 10001 !important;
+    transform: translate3d(-105%,0,0) !important;
+    transition: transform .28s ease !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+  .sidebar.open {
+    transform: translate3d(0,0,0) !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+  .sidebar-overlay {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 10000 !important;
+    display: none !important;
+  }
+  .sidebar-overlay.show { display: block !important; }
+  .menu-toggle {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    position: fixed !important;
+    top: 12px !important;
+    left: 12px !important;
+    z-index: 10002 !important;
+  }
+}
