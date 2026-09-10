@@ -82,12 +82,9 @@ window.escapeHtml = escapeHtml;
 window.showToast = showToast;
 
 
-/* ========== Sidebar mobile drawer (single binder) ========== */
+/* ========== Sidebar drawer (hidden by default on every screen size —
+   opens only via the hamburger button; used to be mobile-only) ========== */
 (function bindSidebarToggle() {
-  function isMobile() {
-    return window.matchMedia("(max-width: 900px)").matches;
-  }
-
   function init() {
     var btn = document.getElementById("menuToggle");
     var sb = document.querySelector(".sidebar");
@@ -103,7 +100,6 @@ window.showToast = showToast;
     }
 
     function openMenu() {
-      if (!isMobile()) return;
       sb.classList.add("open");
       if (ov) ov.classList.add("show");
       document.documentElement.classList.add("sidebar-open");
@@ -116,7 +112,6 @@ window.showToast = showToast;
         e.preventDefault();
         e.stopPropagation();
       }
-      if (!isMobile()) return;
       if (sb.classList.contains("open")) closeMenu();
       else openMenu();
     }
@@ -131,25 +126,15 @@ window.showToast = showToast;
       ov.addEventListener("click", closeMenu);
     }
 
-    // Links must navigate — close menu then follow href (mobile-safe)
+    // Links must navigate — close menu then follow href
     function bindLinks() {
       sb.querySelectorAll("a[href]").forEach(function (a) {
         if (a.dataset.navBound === "1") return;
         a.dataset.navBound = "1";
         a.addEventListener("click", function (e) {
           var href = a.getAttribute("href") || "";
-          // ignore pure hash / empty
           if (!href || href === "#") return;
-          // logout or other JS handlers — still close
-          if (href.indexOf("javascript:") === 0) {
-            closeMenu();
-            return;
-          }
-          if (isMobile()) {
-            // Close first so UI doesn't stick; allow default navigation
-            closeMenu();
-          }
-          // default navigation continues
+          closeMenu();
         });
       });
     }
@@ -159,56 +144,8 @@ window.showToast = showToast;
     var obs = new MutationObserver(function () { bindLinks(); });
     obs.observe(sb, { childList: true, subtree: true });
 
-    // Desktop: never keep drawer state
-    window.addEventListener("resize", function () {
-      if (!isMobile()) closeMenu();
-    });
-
-    // Start closed on mobile
-    if (isMobile()) closeMenu();
-    else closeMenu();
-
-    /* ---- Desktop: icon-rail auto-hide + pin toggle ---- */
-    // Tooltip labels for the collapsed rail state
-    sb.querySelectorAll(".menu a").forEach(function (a) {
-      if (a.dataset.label) return;
-      var span = a.querySelector("span");
-      if (span) a.dataset.label = span.textContent.trim();
-    });
-
-    // Inject the pin/collapse button once
-    var logo = sb.querySelector(".logo");
-    var pinBtn = sb.querySelector(".sidebar-pin-btn");
-    if (logo && !pinBtn) {
-      pinBtn = document.createElement("button");
-      pinBtn.type = "button";
-      pinBtn.className = "sidebar-pin-btn";
-      pinBtn.setAttribute("aria-label", "Pin sidebar open");
-      pinBtn.innerHTML = '<i class="fa-solid fa-angles-right"></i>';
-      logo.style.position = "relative";
-      logo.appendChild(pinBtn);
-    }
-
-    function applyPinState(pinned) {
-      sb.classList.toggle("pinned", pinned);
-      try { localStorage.setItem("vo_sidebar_pinned", pinned ? "1" : "0"); } catch (e) {}
-    }
-
-    if (pinBtn && pinBtn.dataset.bound !== "1") {
-      pinBtn.dataset.bound = "1";
-      pinBtn.addEventListener("click", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        applyPinState(!sb.classList.contains("pinned"));
-      });
-    }
-
-    // Restore persisted pin state (desktop only)
-    if (!isMobile()) {
-      var savedPin = "0";
-      try { savedPin = localStorage.getItem("vo_sidebar_pinned") || "0"; } catch (e) {}
-      applyPinState(savedPin === "1");
-    }
+    // Always start closed
+    closeMenu();
   }
 
   if (document.readyState === "loading") {

@@ -90,6 +90,25 @@ async function sbLogin(username, password) {
                     shop = s;
                 }
             }
+
+            // IMPORTANT: the RPC path must enforce the same shop-status checks as
+            // the fallback path below — otherwise a deactivated / expired shop's
+            // users could still log in whenever app_login succeeds.
+            if (shop && shop.is_active === false && u.role !== "super_admin") {
+                return { error: "shop_inactive", message: "This shop is deactivated. Please contact Super Admin." };
+            }
+            if (shop && shop.license_expiry && u.role !== "super_admin") {
+                const st = (typeof computeSubStatus === "function")
+                    ? computeSubStatus(shop.license_expiry)
+                    : "unknown";
+                if (st === "expired") {
+                    return {
+                        error: "license_expired",
+                        message: "Shop ni license expire thai gayi che.\n\nLogin band che.\nSuper Admin Subscription page parthi renew kari shake."
+                    };
+                }
+            }
+
             return {
                 user: {
                     id: u.id,
