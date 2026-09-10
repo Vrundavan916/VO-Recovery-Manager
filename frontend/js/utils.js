@@ -161,3 +161,34 @@ window.showToast = showToast;
     init();
   }
 })();
+
+/* Premium ambient cursor effect — desktop pointer devices only. */
+(function () {
+  function initCursorFx() {
+    if (!window.matchMedia || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (document.querySelector('.cursor-ambient-glow')) return;
+
+    var glow = document.createElement('div');
+    glow.className = 'cursor-ambient-glow';
+    glow.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(glow);
+
+    var raf = 0, x = -500, y = -500;
+    function paint() {
+      raf = 0;
+      glow.style.left = x + 'px';
+      glow.style.top = y + 'px';
+    }
+    document.addEventListener('mousemove', function (e) {
+      x = e.clientX; y = e.clientY;
+      document.body.classList.add('cursor-fx-active');
+      if (!raf) raf = requestAnimationFrame(paint);
+    }, { passive: true });
+    document.addEventListener('mouseleave', function () {
+      document.body.classList.remove('cursor-fx-active');
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initCursorFx);
+  else initCursorFx();
+})();
