@@ -693,3 +693,35 @@ html body .sidebar-overlay.show {
     background: rgba(5, 12, 8, .28) !important;
   }
 }
+
+/* ================================================================
+   V8 SIDEBAR CLICK / STACKING FIX
+   The ambient-effect rule gave .wrapper its own z-index stacking context.
+   That trapped the fixed sidebar below the body-level overlay, so the
+   overlay captured taps even though the menu was visible. Keep wrapper
+   out of its own stacking context so: content < overlay < sidebar < toggle.
+   ================================================================ */
+html body > .wrapper {
+  z-index: auto !important;
+}
+html body .main-content {
+  position: relative !important;
+  z-index: 1 !important;
+}
+html body .sidebar-overlay {
+  z-index: 10010 !important;
+}
+html body .wrapper > .sidebar,
+html body .sidebar {
+  z-index: 10020 !important;
+  pointer-events: auto !important;
+}
+html body .sidebar .menu,
+html body .sidebar .menu li,
+html body .sidebar .menu a,
+html body .sidebar .menu a * {
+  pointer-events: auto !important;
+}
+html body #menuToggle.menu-toggle {
+  z-index: 10040 !important;
+}
