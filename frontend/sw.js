@@ -1,5 +1,5 @@
 // Bump this on every deploy so old caches get wiped automatically.
-const CACHE = 'bk-rm-v12-sidebar-full';
+const CACHE = 'bk-rm-v14-drawer-texture-v6';
 
 // Only truly static assets that rarely change go here.
 const ASSETS = ['./css/style.css', './assets/logo.png'];
@@ -20,7 +20,7 @@ self.addEventListener('activate', e => {
 // Falls back to cache only when offline. Static assets stay cache-first.
 self.addEventListener('fetch', e => {
   const url = e.request.url;
-  const isAppCode = url.endsWith('.html') || url.endsWith('.js');
+  const isAppCode = url.includes('.html') || url.includes('.js') || url.includes('.css');
 
   if (isAppCode) {
     e.respondWith(
