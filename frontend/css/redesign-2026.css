@@ -59,7 +59,7 @@ body > .wrapper, .wrapper{
   display: flex !important;
   flex-direction: column;
   z-index: 300;
-  transform: translateX(-100%);
+  transform: translateX(-100%) !important;
   transition: transform var(--vo-speed);
   overflow-x: hidden;
   overflow-y: auto;
@@ -244,6 +244,7 @@ body > .wrapper, .wrapper{
   background: rgba(8,10,16,.55) !important;
   backdrop-filter: blur(2px);
   z-index: 290;
+  display: block !important;
   opacity: 0;
   pointer-events: none;
   transition: opacity var(--vo-speed);
