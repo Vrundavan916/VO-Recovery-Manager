@@ -381,3 +381,71 @@ html body .main-content {
     visibility: visible !important;
   }
 }
+
+/* ================================================================
+   PREMIUM BACKGROUND + CURSOR FX v5
+   Subtle texture, soft green pointer glow, and refined card lift.
+   ================================================================ */
+html body {
+  background-color: #f5f7f5 !important;
+  background-image:
+    radial-gradient(circle at 15% 10%, rgba(22, 101, 52, .055), transparent 28%),
+    radial-gradient(circle at 85% 85%, rgba(15, 23, 42, .035), transparent 32%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E") !important;
+  background-attachment: fixed !important;
+}
+
+/* Keep content transparent enough for the texture to breathe. */
+html body .main-content { background: transparent !important; }
+
+.cursor-ambient-glow {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 340px;
+  height: 340px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  transform: translate3d(-50%, -50%, 0);
+  background: radial-gradient(circle, rgba(22, 163, 74, .105) 0%, rgba(22, 163, 74, .04) 35%, transparent 70%);
+  filter: blur(8px);
+  transition: opacity .22s ease;
+  will-change: left, top, opacity;
+}
+body.cursor-fx-active .cursor-ambient-glow { opacity: 1; }
+
+/* Ensure app UI remains above ambient effect. */
+body > *:not(.cursor-ambient-glow):not(.sidebar-overlay) { position: relative; z-index: 1; }
+.menu-toggle, .sidebar { position: fixed !important; }
+
+@media (hover: hover) and (pointer: fine) {
+  .card,
+  .stat-card,
+  .dashboard-card,
+  .glass-card,
+  .panel,
+  .section-card {
+    transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease !important;
+  }
+  .card:hover,
+  .stat-card:hover,
+  .dashboard-card:hover,
+  .glass-card:hover,
+  .panel:hover,
+  .section-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 34px rgba(15, 23, 42, .10) !important;
+    border-color: rgba(22, 101, 52, .20) !important;
+  }
+}
+
+/* Cursor FX is intentionally disabled for touch devices. */
+@media (hover: none), (pointer: coarse), (max-width: 900px) {
+  .cursor-ambient-glow { display: none !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cursor-ambient-glow { display: none !important; }
+}
