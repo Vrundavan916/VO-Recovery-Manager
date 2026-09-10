@@ -82,84 +82,56 @@ window.escapeHtml = escapeHtml;
 window.showToast = showToast;
 
 
-/* ========== Sidebar drawer (hidden by default on every screen size —
-   opens only via the hamburger button; used to be mobile-only) ========== */
-(function bindSidebarToggle() {
-  function init() {
-    var btn = document.getElementById("menuToggle");
-    var sb = document.querySelector(".sidebar");
-    var ov = document.getElementById("sidebarOverlay");
-    if (!sb) return;
+/* ========== Sidebar drawer V6: desktop + mobile, touch-safe ========== */
+(function () {
+  function initDrawerV6() {
+    var btn = document.getElementById('menuToggle');
+    var sb = document.querySelector('.sidebar');
+    var ov = document.getElementById('sidebarOverlay');
+    if (!btn || !sb) return;
 
-    function closeMenu() {
-      sb.classList.remove("open");
-      if (ov) ov.classList.remove("show");
-      document.documentElement.classList.remove("sidebar-open");
-      document.body.classList.remove("sidebar-open");
-      document.body.style.overflow = "";
-      if (btn) { btn.setAttribute("aria-expanded", "false"); btn.setAttribute("aria-label", "Open menu"); }
+    function setOpen(open) {
+      sb.classList.toggle('open', open);
+      if (ov) ov.classList.toggle('show', open);
+      document.documentElement.classList.toggle('sidebar-open', open);
+      document.body.classList.toggle('sidebar-open', open);
+      document.body.style.overflow = open ? 'hidden' : '';
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
     }
 
-    function openMenu() {
-      sb.classList.add("open");
-      if (ov) ov.classList.add("show");
-      document.documentElement.classList.add("sidebar-open");
-      document.body.classList.add("sidebar-open");
-      document.body.style.overflow = "hidden";
-      if (btn) { btn.setAttribute("aria-expanded", "true"); btn.setAttribute("aria-label", "Close menu"); }
-    }
+    // Never inherit a stale open state after navigation/back-cache restore.
+    setOpen(false);
 
-    function toggleMenu(e) {
-      if (e) {
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      setOpen(!sb.classList.contains('open'));
+    }, false);
+
+    if (ov) {
+      ov.addEventListener('click', function (e) {
         e.preventDefault();
-        e.stopPropagation();
-      }
-      if (sb.classList.contains("open")) closeMenu();
-      else openMenu();
+        setOpen(false);
+      }, false);
     }
 
-    if (btn && btn.dataset.bound !== "1") {
-      btn.dataset.bound = "1";
-      btn.addEventListener("click", toggleMenu);
-    }
+    // Do NOT prevent default on links: navigation/logout must keep working.
+    sb.addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('a');
+      if (!a) return;
+      window.setTimeout(function(){ setOpen(false); }, 0);
+    }, false);
 
-    if (ov && ov.dataset.bound !== "1") {
-      ov.dataset.bound = "1";
-      ov.addEventListener("click", closeMenu);
-    }
-
-    // Links must navigate — close menu then follow href
-    function bindLinks() {
-      sb.querySelectorAll("a[href]").forEach(function (a) {
-        if (a.dataset.navBound === "1") return;
-        a.dataset.navBound = "1";
-        a.addEventListener("click", function (e) {
-          var href = a.getAttribute("href") || "";
-          if (!href || href === "#") return;
-          closeMenu();
-        });
-      });
-    }
-    bindLinks();
-
-    // Re-bind when Super Admin injects extra links
-    var obs = new MutationObserver(function () { bindLinks(); });
-    obs.observe(sb, { childList: true, subtree: true });
-
-    // Keyboard support: Escape closes the drawer.
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && sb.classList.contains("open")) closeMenu();
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') setOpen(false);
     });
 
-    // Always start closed
-    closeMenu();
+    window.addEventListener('pageshow', function () { setOpen(false); });
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
-  } else {
-    init();
-  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initDrawerV6, {once:true});
+  else initDrawerV6();
 })();
 
 /* Premium ambient cursor effect — desktop pointer devices only. */
