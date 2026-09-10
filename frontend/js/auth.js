@@ -214,6 +214,23 @@ async function login() {
             showLoginError(result.message || result.error);
             return;
         }
+        // Maintenance gate: allow Super Admin, block every other user while maintenance is ON.
+        if (result.user.role !== "super_admin") {
+            try {
+                const maintenance = await sbGetMaintenanceStatus();
+                if (maintenance && maintenance.enabled === true) {
+                    try { clearSession(); } catch (_) {}
+                    sessionStorage.setItem("bk_maintenance_message", maintenance.message || "Amara system ma have update chalu che. Thoda time ma pacha aavo.");
+                    window.location.replace("maintenance.html");
+                    return;
+                }
+            } catch (maintenanceErr) {
+                console.error("Maintenance check failed during login", maintenanceErr);
+                showLoginError("System status check failed. Please try again.");
+                return;
+            }
+        }
+
         setSession(result.user, result.shop, remember, result.sessionToken || result.token || "");
         if (result.user.role === "super_admin") {
             window.location.href = "super-dashboard.html";
@@ -230,6 +247,64 @@ async function login() {
         }
     }
 }
+
+
+// Global maintenance guard for users who were already logged in before maintenance was enabled.
+async function enforceMaintenanceGate(options) {
+    options = options || {};
+    const page = String(window.location.pathname || "").toLowerCase();
+    if (page.includes("maintenance.html")) return false;
+
+    const session = (typeof getSession === "function") ? getSession() : null;
+    // Only a real logged-in Super Admin bypasses maintenance.
+    if (session && session.isLoggedIn && session.role === "super_admin") return false;
+
+    // Login page remains visible so Super Admin can sign in, but normal-user
+    // credentials are blocked separately in login().
+    if (page.includes("login.html") && !options.forceOnLogin) return false;
+
+    try {
+        if (typeof sbGetMaintenanceStatus !== "function") {
+            throw new Error("Maintenance status function unavailable");
+        }
+        const maintenance = await sbGetMaintenanceStatus();
+        if (maintenance && maintenance.enabled === true) {
+            try {
+                sessionStorage.setItem("bk_maintenance_message", maintenance.message || "Amara system ma have update chalu che. Thoda time ma pacha aavo.");
+            } catch (_) {}
+            // Clear normal-user session so Back button cannot reopen protected pages.
+            try { if (typeof clearSession === "function") clearSession(); } catch (_) {}
+            window.location.replace("maintenance.html");
+            return true;
+        }
+    } catch (e) {
+        console.error("Maintenance gate check failed", e);
+        // Protected pages fail closed for non-super-admin users. This prevents
+        // an RLS/network/status-read failure from silently bypassing maintenance.
+        if (!page.includes("login.html")) {
+            try { sessionStorage.setItem("bk_maintenance_message", "System status verify nathi thai rahyu. Thoda time pachi fari try karo."); } catch (_) {}
+            try { if (typeof clearSession === "function") clearSession(); } catch (_) {}
+            window.location.replace("maintenance.html");
+            return true;
+        }
+    }
+    return false;
+}
+
+// Hard global maintenance gate: run independently of app.js so every protected
+// HTML page is checked even if that page's normal application init changes/fails.
+(function installGlobalMaintenanceGate(){
+    const run = async function(){
+        const page = String(window.location.pathname || "").toLowerCase();
+        if (page.includes("maintenance.html") || page.includes("login.html")) return;
+        try { await enforceMaintenanceGate(); } catch (e) { console.error(e); }
+    };
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run, { once:true });
+    else setTimeout(run, 0);
+    // Re-check when user returns to the tab and periodically while logged in.
+    document.addEventListener("visibilitychange", function(){ if (!document.hidden) run(); });
+    setInterval(run, 15000);
+})();
 
 function checkLogin() {
     const page = window.location.pathname;
@@ -506,6 +581,7 @@ async function submitForgotPassword() {
 window.sbLogin = sbLogin;
 window.login = login;
 window.checkLogin = checkLogin;
+window.enforceMaintenanceGate = enforceMaintenanceGate;
 window.injectSuperAdminNav = typeof injectSuperAdminNav === "function" ? injectSuperAdminNav : undefined;
 window.applyRoleRestrictions = typeof applyRoleRestrictions === "function" ? applyRoleRestrictions : undefined;
 window.logout = logout;

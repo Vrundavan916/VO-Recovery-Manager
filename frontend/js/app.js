@@ -1761,6 +1761,13 @@ window.addEventListener("load", async function () {
 
     checkLogin();
 
+    // If Super Admin switched maintenance ON, immediately remove normal users
+    // from every protected page before loading customer/recovery data.
+    if (typeof enforceMaintenanceGate === "function") {
+        const redirectedForMaintenance = await enforceMaintenanceGate();
+        if (redirectedForMaintenance) return;
+    }
+
     const session = getSession();
     if (!session.isLoggedIn && !window.location.pathname.includes("login.html")) return;
 
