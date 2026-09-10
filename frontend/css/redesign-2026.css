@@ -449,3 +449,228 @@ body > *:not(.cursor-ambient-glow):not(.sidebar-overlay) { position: relative; z
 @media (prefers-reduced-motion: reduce) {
   .cursor-ambient-glow { display: none !important; }
 }
+
+/* ================================================================
+   V6 RELIABLE DRAWER + VISIBLE TEXTURE PATCH
+   Desktop + mobile: hidden by default, clear/clickable nav, strong layering.
+   ================================================================ */
+:root{
+  --drawer-v6-w: 286px;
+  --drawer-v6-bg1: #132019;
+  --drawer-v6-bg2: #1c2c23;
+  --drawer-v6-gold: #d3b06b;
+  --drawer-v6-text: #f7f8f6;
+}
+
+html, body { overflow-x: hidden !important; }
+
+/* Texture sits ABOVE page surfaces but never blocks clicks. */
+body::after{
+  content: "" !important;
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 5000 !important;
+  pointer-events: none !important;
+  opacity: .28 !important;
+  background-image:
+    radial-gradient(circle at 18% 12%, rgba(35,120,74,.16) 0 1px, transparent 1.7px),
+    radial-gradient(circle at 82% 72%, rgba(184,154,98,.13) 0 1px, transparent 1.8px),
+    repeating-linear-gradient(115deg, rgba(15,23,42,.018) 0 1px, transparent 1px 5px) !important;
+  background-size: 34px 34px, 43px 43px, 9px 9px !important;
+  mix-blend-mode: multiply;
+}
+
+/* Drawer always starts off canvas. */
+html body .sidebar,
+body .wrapper > .sidebar{
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: fixed !important;
+  inset: 0 auto 0 0 !important;
+  width: min(86vw, var(--drawer-v6-w)) !important;
+  height: 100dvh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  transform: translate3d(-105%,0,0) !important;
+  transition: transform .26s cubic-bezier(.2,.8,.2,1) !important;
+  z-index: 10020 !important;
+  background: linear-gradient(165deg,var(--drawer-v6-bg1),var(--drawer-v6-bg2)) !important;
+  border-right: 1px solid rgba(211,176,107,.24) !important;
+  box-shadow: 14px 0 42px rgba(0,0,0,.28) !important;
+  isolation: isolate !important;
+  pointer-events: auto !important;
+}
+html body .sidebar.open,
+body.sidebar-open .sidebar{
+  transform: translate3d(0,0,0) !important;
+}
+
+/* Clear header / menu items. */
+html body .sidebar .logo{
+  min-height: 70px !important;
+  padding: 18px 18px !important;
+  border-bottom: 1px solid rgba(255,255,255,.10) !important;
+}
+html body .sidebar .menu,
+html body .sidebar ul.menu{
+  position: relative !important;
+  z-index: 3 !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 12px 10px 28px !important;
+  margin: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  pointer-events: auto !important;
+}
+html body .sidebar .menu li{
+  display: block !important;
+  width: 100% !important;
+  min-height: 46px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+html body .sidebar .menu a{
+  display: flex !important;
+  align-items: center !important;
+  gap: 13px !important;
+  width: 100% !important;
+  min-height: 46px !important;
+  padding: 11px 14px !important;
+  border-radius: 11px !important;
+  box-sizing: border-box !important;
+  color: var(--drawer-v6-text) !important;
+  background: rgba(255,255,255,.035) !important;
+  border: 1px solid transparent !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  line-height: 1.25 !important;
+  text-decoration: none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  touch-action: manipulation !important;
+  -webkit-tap-highlight-color: rgba(211,176,107,.18) !important;
+}
+html body .sidebar .menu a i{
+  width: 22px !important;
+  min-width: 22px !important;
+  color: var(--drawer-v6-gold) !important;
+  font-size: 15px !important;
+  opacity: 1 !important;
+}
+html body .sidebar .menu a span{
+  display: inline !important;
+  color: inherit !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  white-space: nowrap !important;
+}
+html body .sidebar .menu a:hover,
+html body .sidebar .menu a:focus-visible{
+  background: rgba(255,255,255,.105) !important;
+  border-color: rgba(211,176,107,.20) !important;
+  color: #fff !important;
+  outline: none !important;
+}
+html body .sidebar .menu a.active,
+html body .sidebar .menu a[aria-current="page"]{
+  background: linear-gradient(90deg,rgba(211,176,107,.24),rgba(211,176,107,.08)) !important;
+  border-color: rgba(211,176,107,.32) !important;
+  box-shadow: inset 3px 0 0 var(--drawer-v6-gold) !important;
+  color: #fff !important;
+}
+
+/* Overlay below drawer, above app; texture above overlay is harmless/pointerless. */
+html body .sidebar-overlay{
+  display: block !important;
+  visibility: visible !important;
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 10010 !important;
+  background: rgba(5,12,8,.58) !important;
+  backdrop-filter: blur(2px) !important;
+  -webkit-backdrop-filter: blur(2px) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: opacity .22s ease !important;
+}
+html body .sidebar-overlay.show{
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* Hamburger is always accessible and above texture/drawer. */
+html body #menuToggle.menu-toggle{
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  position: fixed !important;
+  top: max(12px, env(safe-area-inset-top)) !important;
+  left: 12px !important;
+  z-index: 10040 !important;
+  width: 44px !important;
+  height: 44px !important;
+  padding: 0 !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 1px solid rgba(211,176,107,.38) !important;
+  border-radius: 12px !important;
+  background: #142018 !important;
+  color: #fff !important;
+  font-size: 0 !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,.24) !important;
+  cursor: pointer !important;
+  touch-action: manipulation !important;
+}
+html body #menuToggle.menu-toggle::before{
+  content: "" !important;
+  width: 20px !important;
+  height: 14px !important;
+  display: block !important;
+  background:
+    linear-gradient(#fff,#fff) 0 0/20px 2px no-repeat,
+    linear-gradient(#fff,#fff) 0 6px/20px 2px no-repeat,
+    linear-gradient(#fff,#fff) 0 12px/20px 2px no-repeat !important;
+  border-radius: 2px !important;
+}
+body.sidebar-open #menuToggle.menu-toggle::before{
+  width: 18px !important;
+  height: 18px !important;
+  background:
+    linear-gradient(#fff,#fff) center/18px 2px no-repeat,
+    linear-gradient(#fff,#fff) center/18px 2px no-repeat !important;
+  transform: rotate(45deg) !important;
+}
+body.sidebar-open #menuToggle.menu-toggle::after{
+  content: "" !important;
+  position: absolute !important;
+  width: 18px !important;
+  height: 2px !important;
+  background: #fff !important;
+  transform: rotate(-45deg) !important;
+}
+
+/* App never gets pushed sideways on desktop. */
+html body .main,
+html body .main-content,
+html body .content,
+html body .page-content,
+html body .wrapper > main{
+  margin-left: 0 !important;
+  width: 100% !important;
+}
+
+@media (max-width: 600px){
+  body::after{ opacity: .20 !important; }
+  html body .sidebar .menu a{ min-height: 50px !important; font-size: 14.5px !important; }
+}
