@@ -97,6 +97,7 @@ window.showToast = showToast;
       document.documentElement.classList.remove("sidebar-open");
       document.body.classList.remove("sidebar-open");
       document.body.style.overflow = "";
+      if (btn) { btn.setAttribute("aria-expanded", "false"); btn.setAttribute("aria-label", "Open menu"); }
     }
 
     function openMenu() {
@@ -105,6 +106,7 @@ window.showToast = showToast;
       document.documentElement.classList.add("sidebar-open");
       document.body.classList.add("sidebar-open");
       document.body.style.overflow = "hidden";
+      if (btn) { btn.setAttribute("aria-expanded", "true"); btn.setAttribute("aria-label", "Close menu"); }
     }
 
     function toggleMenu(e) {
@@ -143,6 +145,11 @@ window.showToast = showToast;
     // Re-bind when Super Admin injects extra links
     var obs = new MutationObserver(function () { bindLinks(); });
     obs.observe(sb, { childList: true, subtree: true });
+
+    // Keyboard support: Escape closes the drawer.
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && sb.classList.contains("open")) closeMenu();
+    });
 
     // Always start closed
     closeMenu();
