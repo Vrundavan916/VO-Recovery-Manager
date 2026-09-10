@@ -1,0 +1,325 @@
+/* ==========================================================================
+   VO RECOVERY MANAGER — 2026 LAYOUT REDESIGN
+   Loaded LAST (after style.css / saas-2026.css / page css) so it wins.
+   Goal: modern sidebar with desktop auto-collapse + hover flyout,
+   a polished mobile off-canvas drawer, and a cleaner overall shell.
+   Does not require changing page content — only the shared shell
+   (sidebar / topbar / wrapper) markup that already exists on every page.
+   ========================================================================== */
+
+:root{
+  --vo-blue:        #4F6EF7;
+  --vo-blue-dark:   #3B4FD9;
+  --vo-blue-soft:   #EEF1FF;
+  --vo-ink:         #10151F;
+  --vo-sidebar:     #10151F;
+  --vo-sidebar-2:   #171E2C;
+  --vo-sidebar-hov: #1E2740;
+  --vo-sidebar-txt: rgba(255,255,255,.72);
+  --vo-sidebar-txt-active: #ffffff;
+  --vo-border:      #E7E9F2;
+  --vo-bg:          #F4F6FB;
+  --vo-card:        #ffffff;
+  --vo-text:        #171B24;
+  --vo-text-soft:   #6B7182;
+  --vo-shadow:      0 10px 30px rgba(16,21,31,.07);
+  --vo-shadow-sm:   0 2px 10px rgba(16,21,31,.05);
+  --vo-radius:      16px;
+
+  --vo-rail-w:      78px;   /* collapsed / icon-rail width  */
+  --vo-full-w:      252px;  /* expanded width                */
+  --vo-topbar-h:    68px;
+  --vo-speed:       .22s cubic-bezier(.4,0,.2,1);
+}
+
+/* ---------------------------------------------------------------------- */
+/*  BASE SHELL                                                            */
+/* ---------------------------------------------------------------------- */
+body{
+  background: var(--vo-bg) !important;
+}
+
+body > .wrapper,
+.wrapper{
+  display: flex !important;
+  align-items: stretch;
+  min-height: 100vh;
+}
+
+/* ---------------------------------------------------------------------- */
+/*  SIDEBAR — desktop: icon rail by default, hover / pin to expand        */
+/* ---------------------------------------------------------------------- */
+.sidebar{
+  position: fixed !important;
+  top: 0; left: 0; bottom: 0;
+  width: var(--vo-rail-w) !important;
+  background: linear-gradient(180deg, var(--vo-sidebar) 0%, var(--vo-sidebar-2) 100%) !important;
+  display: flex !important;
+  flex-direction: column;
+  z-index: 200;
+  transition: width var(--vo-speed);
+  overflow-x: hidden;
+  overflow-y: auto;
+  border-right: none !important;
+  box-shadow: var(--vo-shadow);
+}
+.sidebar::-webkit-scrollbar{ width: 4px; }
+.sidebar::-webkit-scrollbar-thumb{ background: rgba(255,255,255,.15); border-radius: 4px; }
+
+/* hover flyout when collapsed (not pinned open) */
+@media (min-width: 901px){
+  .sidebar:hover,
+  .sidebar.pinned{
+    width: var(--vo-full-w) !important;
+  }
+}
+.sidebar.pinned{ width: var(--vo-full-w) !important; }
+
+/* logo block */
+.sidebar .logo{
+  display: flex !important;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 16px !important;
+  min-height: var(--vo-topbar-h);
+  border-bottom: 1px solid rgba(255,255,255,.08) !important;
+  white-space: nowrap;
+  background: transparent !important;
+}
+.sidebar .logo::before{
+  content: "";
+  flex: 0 0 40px;
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--vo-blue), var(--vo-blue-dark));
+  box-shadow: 0 6px 16px rgba(79,110,247,.45);
+}
+.sidebar .logo img{
+  position: absolute;
+  left: 26px;
+  width: 26px; height: 26px;
+  object-fit: contain;
+  border-radius: 6px;
+  filter: brightness(0) invert(1);
+}
+.sidebar .logo h2{
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  color: #fff !important;
+  margin: 0 !important;
+  opacity: 0;
+  transition: opacity var(--vo-speed);
+}
+.sidebar .logo p{
+  font-size: 11px !important;
+  color: var(--vo-sidebar-txt) !important;
+  margin: 0 !important;
+  opacity: 0;
+  transition: opacity var(--vo-speed);
+}
+.sidebar:hover .logo h2, .sidebar.pinned .logo h2,
+.sidebar:hover .logo p,  .sidebar.pinned .logo p{ opacity: 1; }
+
+/* pin / collapse toggle button, injected into the sidebar header */
+.sidebar-pin-btn{
+  position: absolute;
+  top: 22px;
+  right: -14px;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--vo-blue);
+  color: #fff;
+  border: 3px solid var(--vo-bg);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  font-size: 11px;
+  transition: transform var(--vo-speed), background var(--vo-speed);
+  z-index: 5;
+}
+.sidebar-pin-btn:hover{ background: var(--vo-blue-dark); }
+.sidebar.pinned .sidebar-pin-btn i{ transform: rotate(180deg); }
+@media (max-width: 900px){ .sidebar-pin-btn{ display: none !important; } }
+
+/* nav list */
+.sidebar .menu{
+  list-style: none !important;
+  padding: 14px 10px !important;
+  margin: 0 !important;
+  flex: 1;
+}
+.sidebar .menu li{ list-style: none !important; margin: 3px 0 !important; }
+.sidebar .menu a,
+.sidebar a.active, .sidebar a{
+  display: flex !important;
+  align-items: center;
+  gap: 14px;
+  padding: 11px 14px !important;
+  border-radius: 12px !important;
+  color: var(--vo-sidebar-txt) !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  text-decoration: none !important;
+  white-space: nowrap;
+  position: relative;
+  transition: background var(--vo-speed), color var(--vo-speed);
+}
+.sidebar .menu a i{
+  flex: 0 0 20px;
+  width: 20px; text-align: center;
+  font-size: 15px;
+}
+.sidebar .menu a span{
+  opacity: 0;
+  transition: opacity var(--vo-speed);
+}
+.sidebar:hover .menu a span, .sidebar.pinned .menu a span{ opacity: 1; }
+
+.sidebar .menu a:hover{
+  background: var(--vo-sidebar-hov) !important;
+  color: #fff !important;
+}
+.sidebar .menu a.active,
+.sidebar .menu a[aria-current="page"]{
+  background: var(--vo-blue) !important;
+  color: #fff !important;
+  box-shadow: 0 6px 16px rgba(79,110,247,.35);
+}
+.sidebar .menu a.active::before{ display: none !important; }
+
+/* tooltip label when collapsed on desktop */
+@media (min-width: 901px){
+  .sidebar:not(:hover):not(.pinned) .menu a{ justify-content: center; }
+  .sidebar:not(:hover):not(.pinned) .menu a span{ display: none; }
+  .sidebar:not(:hover):not(.pinned) .menu a:hover::after{
+    content: attr(data-label);
+    position: absolute;
+    left: calc(100% + 10px);
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--vo-ink);
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    white-space: nowrap;
+    box-shadow: var(--vo-shadow);
+    pointer-events: none;
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+/*  MAIN CONTENT — shifts with the icon rail, not the expanded sidebar    */
+/* ---------------------------------------------------------------------- */
+.main-content,
+.wrapper > .main,
+.wrapper > main,
+.wrapper > .content{
+  margin-left: var(--vo-rail-w) !important;
+  width: calc(100% - var(--vo-rail-w)) !important;
+  flex: 1;
+  min-height: 100vh;
+  transition: margin-left var(--vo-speed), width var(--vo-speed);
+  background: transparent !important;
+}
+
+/* topbar polish */
+.topbar{
+  position: sticky !important;
+  top: 0;
+  z-index: 50;
+  background: rgba(244,246,251,.85) !important;
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--vo-border) !important;
+  padding: 14px 26px !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--vo-topbar-h);
+}
+.topbar .page-title{ color: var(--vo-text) !important; }
+.topbar .page-subtitle{ color: var(--vo-text-soft) !important; }
+.topbar .user-info{
+  background: var(--vo-card) !important;
+  border: 1px solid var(--vo-border) !important;
+  border-radius: 30px !important;
+  padding: 8px 16px !important;
+  box-shadow: var(--vo-shadow-sm);
+}
+
+/* generic card / table polish so the new shell feels consistent */
+.card, .dashboard-card, .stat-card, .panel, .table-wrapper, .table-card{
+  border-radius: var(--vo-radius) !important;
+  border: 1px solid var(--vo-border) !important;
+  box-shadow: var(--vo-shadow-sm) !important;
+}
+
+/* ---------------------------------------------------------------------- */
+/*  MOBILE HAMBURGER — restyled, always visible on small screens          */
+/* ---------------------------------------------------------------------- */
+.menu-toggle{
+  position: fixed !important;
+  top: 14px; left: 14px;
+  z-index: 260;
+  width: 42px; height: 42px;
+  border-radius: 12px !important;
+  background: var(--vo-ink) !important;
+  color: #fff !important;
+  border: none !important;
+  display: none;
+  align-items: center; justify-content: center;
+  font-size: 18px;
+  box-shadow: var(--vo-shadow);
+}
+@media (max-width: 900px){ .menu-toggle{ display: flex !important; } }
+
+/* ---------------------------------------------------------------------- */
+/*  MOBILE LAYOUT — off-canvas drawer + backdrop                          */
+/* ---------------------------------------------------------------------- */
+@media (max-width: 900px){
+  .sidebar{
+    width: min(84vw, 300px) !important;
+    transform: translateX(-100%);
+    transition: transform var(--vo-speed);
+    box-shadow: var(--vo-shadow-lg, 0 20px 50px rgba(0,0,0,.35));
+  }
+  .sidebar.open{ transform: translateX(0) !important; }
+
+  /* on mobile the sidebar always shows full labels, no hover state */
+  .sidebar .logo h2, .sidebar .logo p,
+  .sidebar .menu a span{ opacity: 1 !important; display: inline !important; }
+  .sidebar .menu a{ justify-content: flex-start !important; }
+
+  .main-content,
+  .wrapper > .main,
+  .wrapper > main,
+  .wrapper > .content{
+    margin-left: 0 !important;
+    width: 100% !important;
+    padding-top: calc(var(--vo-topbar-h) + 10px) !important;
+  }
+
+  .topbar{
+    padding-left: 64px !important; /* room for the fixed hamburger */
+  }
+
+  .sidebar-overlay{
+    position: fixed !important;
+    inset: 0;
+    background: rgba(10,13,20,.55) !important;
+    backdrop-filter: blur(2px);
+    z-index: 199;
+    display: none;
+  }
+  .sidebar-overlay.show{ display: block !important; }
+}
+
+/* small phones: tighten paddings a touch further */
+@media (max-width: 480px){
+  .topbar{ padding: 12px 14px 12px 60px !important; }
+  .topbar .page-subtitle{ display: none; }
+  .dashboard-grid, .stats-grid{ grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .sidebar, .main-content, .menu a span, .logo h2, .logo p{ transition: none !important; }
+}
