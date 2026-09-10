@@ -7,6 +7,8 @@
   <meta name="description" content="VO Recovery Manager — sign in." />
   <link rel="manifest" href="manifest.json" />
   <title>Sign in | VO Recovery Manager</title>
+  <meta name="color-scheme" content="light only" />
+  <meta name="supported-color-schemes" content="light" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -37,8 +39,10 @@
       --shadow-sm: 0 8px 24px rgba(13,27,42,.08);
     }
     *{ box-sizing:border-box; }
+    html{ color-scheme: light only; }
     html,body{ height:100%; }
     body{
+      color-scheme: light only;
       margin:0;
       font-family:'Inter', system-ui, sans-serif;
       color:var(--ink);
@@ -140,6 +144,7 @@
       color:var(--dusty-400); font-size:14px; pointer-events:none;
     }
     .field-wrap input{
+      color-scheme: light;
       width:100%; height:48px;
       border:1.5px solid var(--pale-200);
       background:var(--pale-100);
