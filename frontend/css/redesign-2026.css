@@ -308,3 +308,76 @@ body > .wrapper, .wrapper{
 @media (prefers-reduced-motion: reduce){
   .sidebar, .main-content, .card, .menu a{ transition: none !important; animation: none !important; }
 }
+
+/* ================================================================
+   SIDEBAR DRAWER FINAL FIX v4
+   Keep hamburger visible on desktop + mobile. Older theme files use
+   visibility:hidden on desktop, so override every hiding property.
+   ================================================================ */
+html body .menu-toggle,
+body > .menu-toggle,
+.menu-toggle#menuToggle {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  position: fixed !important;
+  top: 14px !important;
+  left: 14px !important;
+  z-index: 99999 !important;
+  width: 44px !important;
+  height: 44px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: #0B1020 !important;
+  color: #ffffff !important;
+  border: 0 !important;
+  border-radius: 12px !important;
+  font-size: 22px !important;
+  line-height: 1 !important;
+  cursor: pointer !important;
+}
+
+html body .sidebar {
+  transform: translate3d(-110%, 0, 0) !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  z-index: 99997 !important;
+}
+html body .sidebar.open {
+  transform: translate3d(0, 0, 0) !important;
+}
+
+html body .sidebar-overlay {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  z-index: 99996 !important;
+}
+html body .sidebar-overlay.show {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+html body .main-content {
+  margin-left: 0 !important;
+  width: 100% !important;
+}
+
+@media (min-width: 901px) {
+  html body .menu-toggle,
+  body > .menu-toggle,
+  .menu-toggle#menuToggle {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+  html body .sidebar-overlay,
+  html body .sidebar-overlay.show {
+    visibility: visible !important;
+  }
+}
