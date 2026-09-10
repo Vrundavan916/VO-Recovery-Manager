@@ -167,6 +167,48 @@ window.showToast = showToast;
     // Start closed on mobile
     if (isMobile()) closeMenu();
     else closeMenu();
+
+    /* ---- Desktop: icon-rail auto-hide + pin toggle ---- */
+    // Tooltip labels for the collapsed rail state
+    sb.querySelectorAll(".menu a").forEach(function (a) {
+      if (a.dataset.label) return;
+      var span = a.querySelector("span");
+      if (span) a.dataset.label = span.textContent.trim();
+    });
+
+    // Inject the pin/collapse button once
+    var logo = sb.querySelector(".logo");
+    var pinBtn = sb.querySelector(".sidebar-pin-btn");
+    if (logo && !pinBtn) {
+      pinBtn = document.createElement("button");
+      pinBtn.type = "button";
+      pinBtn.className = "sidebar-pin-btn";
+      pinBtn.setAttribute("aria-label", "Pin sidebar open");
+      pinBtn.innerHTML = '<i class="fa-solid fa-angles-right"></i>';
+      logo.style.position = "relative";
+      logo.appendChild(pinBtn);
+    }
+
+    function applyPinState(pinned) {
+      sb.classList.toggle("pinned", pinned);
+      try { localStorage.setItem("vo_sidebar_pinned", pinned ? "1" : "0"); } catch (e) {}
+    }
+
+    if (pinBtn && pinBtn.dataset.bound !== "1") {
+      pinBtn.dataset.bound = "1";
+      pinBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        applyPinState(!sb.classList.contains("pinned"));
+      });
+    }
+
+    // Restore persisted pin state (desktop only)
+    if (!isMobile()) {
+      var savedPin = "0";
+      try { savedPin = localStorage.getItem("vo_sidebar_pinned") || "0"; } catch (e) {}
+      applyPinState(savedPin === "1");
+    }
   }
 
   if (document.readyState === "loading") {
