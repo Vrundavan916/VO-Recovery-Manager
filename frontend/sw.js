@@ -1,5 +1,5 @@
 // Bump this on every deploy so old caches get wiped automatically.
-const CACHE = 'bk-rm-v14-drawer-texture-v6';
+const CACHE = 'bk-rm-v18-hard-maintenance-v11';
 
 // Only truly static assets that rarely change go here.
 const ASSETS = ['./css/style.css', './assets/logo.png'];
@@ -21,20 +21,12 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const url = e.request.url;
   const isAppCode = url.includes('.html') || url.includes('.js') || url.includes('.css');
-
   if (isAppCode) {
-    e.respondWith(
-      fetch(e.request)
-        .then(res => {
-          const copy = res.clone();
-          caches.open(CACHE).then(c => c.put(e.request, copy));
-          return res;
-        })
-        .catch(() => caches.match(e.request).then(r => r || caches.match('./login.html')))
-    );
-  } else {
-    e.respondWith(
-      caches.match(e.request).then(r => r || fetch(e.request))
-    );
+    // Always use the deployed code. Never serve stale maintenance/auth logic.
+    e.respondWith(fetch(e.request, { cache: 'no-store' }));
+    return;
   }
+  e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
 });
+
+// v11 final suite: HTML/JS/CSS use network-first/no stale UI.
