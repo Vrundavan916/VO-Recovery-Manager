@@ -10,3 +10,5 @@ Premium dashboard refinement.
 - Updated internal APP_INFO version to `Rc.0.05`.
 
 Login/session behavior and database logic were intentionally left unchanged.
+
+- Recovery Trend now shows a rolling 30-day daily recovery series, including zero-recovery days.
