@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS settings (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     shop_id UUID UNIQUE REFERENCES shops(id) ON DELETE CASCADE,
     company_name TEXT,
-    software_name TEXT DEFAULT 'BK Recovery Manager',
+    software_name TEXT DEFAULT 'Recountix',
     phone TEXT,
     email TEXT,
     address TEXT,

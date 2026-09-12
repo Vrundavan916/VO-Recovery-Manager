@@ -1,5 +1,5 @@
 -- ============================================================
--- BK Recovery Manager → Professional Collection SaaS
+-- Recountix → Professional Collection SaaS
 -- Migration: Aging | PTP | Agents | Reminders | Payments |
 --            Legal | Escalation | Receipts | ERP Sync
 -- Safe to re-run (IF NOT EXISTS / ADD COLUMN IF NOT EXISTS)
