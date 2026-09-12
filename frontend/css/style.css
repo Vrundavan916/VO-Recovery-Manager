@@ -1,5 +1,5 @@
 /* =========================================================
-   BK Recovery Manager – Premium Enterprise UI
+   Recountix – Premium Enterprise UI
    Theme: Light · Navy Primary · Clean SaaS
    Compatible with existing HTML / JS (no class/ID changes)
 ========================================================= */
@@ -1235,7 +1235,7 @@ html, body {
 
 /* =========================================================
    SIDEBAR FULL HEIGHT — all menu items visible (scroll)
-   Fix: starting ma ochha options / click pachi badha aave
+   Fix: show fewer options initially and reveal all options after interaction
 ========================================================= */
 .sidebar {
   position: fixed !important;
@@ -2620,7 +2620,7 @@ html, body { direction: ltr !important; }
 
 
 /* =========================================================
-   BK RECOVERY MANAGER — PROFESSIONAL MULTI-COLOUR JEWELLERY UI
+   RECOUNTIX — PROFESSIONAL MULTI-COLOUR JEWELLERY UI
    Final visual override
    Existing HTML / JS / class names preserved
    ========================================================= */

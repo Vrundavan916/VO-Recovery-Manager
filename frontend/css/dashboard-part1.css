@@ -1,4 +1,4 @@
-/* PART 1 FINAL — Dashboard only. Brand: VO Recovery. Palette: Navy + Teal + White. */
+/* PART 1 FINAL — Dashboard only. Brand: Recountix. Palette: Navy + Teal + White. */
 :root{--p1n:#16263f;--p1n2:#0f1d31;--p1t:#0c8f83;--p1t2:#17aa9b;--p1soft:#e8f7f4;--p1bg:#f5f8fa;--p1line:#e1e8ed;--p1ink:#17222d;--p1muted:#74818c}
 html,body{background:var(--p1bg)!important;color:var(--p1ink)!important}
 body{overflow-x:hidden!important}
