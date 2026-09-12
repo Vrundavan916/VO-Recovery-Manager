@@ -1,5 +1,5 @@
 /* ==========================================================
-   VO RECOVERY MANAGER - Supabase Data Layer
+   RECOUNTIX - Supabase Data Layer
    CRUD for customers, recoveries, users, shops, settings
 ========================================================== */
 
@@ -337,7 +337,7 @@ async function sbGetSettings(shopId) {
     }
     return {
         company: data.company_name || "",
-        softwareName: data.software_name || "BK Recovery Manager",
+        softwareName: data.software_name || "Recountix",
         phone: data.phone || "",
         email: data.email || "",
         address: data.address || "",
@@ -355,7 +355,7 @@ async function sbSaveSettings(shopId, settingsObj) {
     const payload = {
         shop_id: shopId,
         company_name: settingsObj.company || "",
-        software_name: settingsObj.softwareName || "BK Recovery Manager",
+        software_name: settingsObj.softwareName || "Recountix",
         phone: settingsObj.phone || "",
         email: settingsObj.email || "",
         address: settingsObj.address || "",
@@ -541,7 +541,7 @@ async function sbRegisterShop(form) {
     await sb.from("settings").upsert({
         shop_id: shop.id,
         company_name: companyName,
-        software_name: "BK Recovery Manager",
+        software_name: "Recountix",
         phone: contact || null,
         email: email || null,
         address: address || null
@@ -644,7 +644,7 @@ async function sbAddShop(form) {
     await sb.from("settings").upsert({
         shop_id: shop.id,
         company_name: name,
-        software_name: "BK Recovery Manager",
+        software_name: "Recountix",
         phone: payload.contact_number,
         email: payload.email,
         address: payload.address

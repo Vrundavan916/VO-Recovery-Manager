@@ -1,4 +1,4 @@
-/* VO Recovery Manager – Final Combined Suite */
+/* Recountix – Final Combined Suite */
 (function(){
 'use strict';
 const money=n=>'₹'+Number(n||0).toLocaleString('en-IN');
@@ -8,7 +8,7 @@ function session(){try{return typeof getSession==='function'?getSession():{role:
 function toast(title,msg){let st=document.querySelector('.vo-toast-stack');if(!st){st=document.createElement('div');st.className='vo-toast-stack';document.body.appendChild(st)}const t=document.createElement('div');t.className='vo-toast';t.innerHTML='<b>'+esc(title)+'</b><small>'+esc(msg||'')+'</small>';st.appendChild(t);setTimeout(()=>t.remove(),4200)}
 window.voToast=toast;
 function nums(m){return String(m||'').replace(/\D/g,'').slice(-10)}
-function waUrl(c){const m=nums(c.mobile);const text=`Namaste ${c.name||''}, aapka pending amount ${money(c.outstanding)} hai. Kripya payment/follow-up ke liye sampark kare.`;return m?'https://wa.me/91'+m+'?text='+encodeURIComponent(text):'#'}
+function waUrl(c){const m=nums(c.mobile);const text=`Hello ${c.name||''}, your pending amount is ${money(c.outstanding)}. Please contact us regarding payment or follow-up.`;return m?'https://wa.me/91'+m+'?text='+encodeURIComponent(text):'#'}
 function applyRoleUI(){const role=String(session().role||'user').toLowerCase();document.body.dataset.role=role;document.querySelectorAll('.menu a').forEach(a=>{const h=(a.getAttribute('href')||'').toLowerCase();if((role==='user'||role==='agent'||role==='field_agent')&&(h.includes('settings.html')||h.includes('companies.html')||h.includes('subscription.html')))a.closest('li')?.classList.add('vo-role-hidden')});}
 function metrics(){const list=(typeof customers!=='undefined'&&Array.isArray(customers))?customers:[];const rec=(typeof recoveries!=='undefined'&&Array.isArray(recoveries))?recoveries:[];const t=day();let overdue=0,follow=0,out=0;list.forEach(c=>{out+=Number(c.outstanding||0);const f=String(c.followup||c.dueDate||'').slice(0,10);if(f===t)follow++;if(f&&f<t&&Number(c.outstanding||0)>0)overdue++});let recovered=rec.filter(r=>String(r.date||r.recovery_date||'').slice(0,10)===t).reduce((a,r)=>a+Number(r.amount||0),0);return{list,rec,t,overdue,follow,out,recovered}}
 async function ptpMetrics(){try{if(typeof sbGetPtp!=='function')return{today:0,broken:0,rows:[]};const sid=session().shopId||null;if(!sid)return{today:0,broken:0,rows:[]};const rows=await sbGetPtp(sid,'all');const t=day();return{today:rows.filter(x=>String(x.promised_date).slice(0,10)===t&&String(x.status||'open')==='open').length,broken:rows.filter(x=>String(x.promised_date).slice(0,10)<t&&String(x.status||'open')==='open').length,rows}}catch(e){return{today:0,broken:0,rows:[]}}}

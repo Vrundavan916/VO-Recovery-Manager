@@ -1,5 +1,5 @@
 /* ==========================================================
-   VO RECOVERY MANAGER
+   RECOUNTIX
    app.js – Core application logic (customers, recovery, reports, settings)
 ==========================================================*/
 
@@ -328,7 +328,7 @@ function loadCustomers() {
                 style="display:inline-flex;align-items:center;gap:4px;background:#25D366;color:#fff;border:none;border-radius:16px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer;margin:2px;box-shadow:0 2px 8px rgba(37,211,102,.4);">
                 💬 WA Due
                </button>`
-            : `<button type="button" disabled title="Mobile number joiye"
+            : `<button type="button" disabled title="Mobile number required"
                 style="display:inline-flex;background:#94a3b8;color:#fff;border:none;border-radius:16px;padding:6px 10px;font-size:11px;margin:2px;opacity:.7;">
                 💬 No Mob
                </button>`;
@@ -488,9 +488,9 @@ function buildWhatsAppReminderMessage(customer) {
         "After payment, contact the shop for receipt / update.",
         phone ? ("📞 " + phone) : "",
         "",
-        "Dhanyavaad,",
+        "Thank you,",
         shopName,
-        "_Powered by BK Recovery Manager_"
+        "_Powered by Recountix_"
     ].filter(Boolean);
     return lines.join("\n");
 }
@@ -652,7 +652,7 @@ function renderDashboardCharts() {
     const values = trendRows.map(function(d){ return recoveryMap[d]; });
     if (!labels.length) { labels.push("No data"); values.push(0); }
     if (dashboardRecoveryChart) dashboardRecoveryChart.destroy();
-    dashboardRecoveryChart = new Chart(trendCanvas, {type:"line",data:{labels:labels,datasets:[{label:"Recovery",data:values,borderWidth:3,tension:.38,fill:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return " ₹" + Number(ctx.raw||0).toLocaleString("en-IN");}}}},scales:{y:{beginAtZero:true,ticks:{callback:function(v){return "₹"+Number(v).toLocaleString("en-IN",{notation:"compact",maximumFractionDigits:1});}},grid:{drawBorder:false}},x:{grid:{display:false}}}}});
+    dashboardRecoveryChart = new Chart(trendCanvas, {type:"line",data:{labels:labels,datasets:[{label:"Recovery",data:values,borderColor:"#0B6B59",backgroundColor:"#0B6B59",borderWidth:2.5,tension:.42,fill:false,pointRadius:values.length === 1 ? 4 : 2.5,pointHoverRadius:5,pointBackgroundColor:"#ffffff",pointBorderColor:"#0B6B59",pointBorderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,interaction:{intersect:false,mode:"index"},plugins:{legend:{display:false},tooltip:{displayColors:false,backgroundColor:"#10251f",titleColor:"#d9eee7",bodyColor:"#ffffff",padding:10,cornerRadius:10,callbacks:{label:function(ctx){return "Recovery  ₹" + Number(ctx.raw||0).toLocaleString("en-IN");}}}},scales:{y:{beginAtZero:true,border:{display:false},ticks:{color:"#7a8984",padding:8,callback:function(v){return "₹"+Number(v).toLocaleString("en-IN",{notation:"compact",maximumFractionDigits:1});}},grid:{color:"rgba(15,107,79,.08)",drawTicks:false}},x:{border:{display:false},ticks:{color:"#7a8984",padding:8},grid:{display:false}}}}});
     const today = new Date().toISOString().split("T")[0];
     const total = (customers || []).length;
     const follow = (customers || []).filter(function(c){return c.followup === today;}).length;
@@ -1097,7 +1097,7 @@ function exportReport() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "BK-Recovery-Report.csv";
+    a.download = "Recountix-Recovery-Report.csv";
     a.click();
     URL.revokeObjectURL(url);
 }
@@ -1410,7 +1410,7 @@ async function loadUserList() {
 }
 
 function getCompanyName() {
-    return settings.company || getSession().shopName || "BK Recovery Manager";
+    return settings.company || getSession().shopName || "Recountix";
 }
 
 // ================================
@@ -1579,7 +1579,7 @@ async function addExecutive() {
     if (typeof settings !== "object" || !settings) settings = {};
     if (!Array.isArray(settings.executives)) settings.executives = getExecutivesList();
     if (settings.executives.some(e => e.toLowerCase() === name.toLowerCase())) {
-        alert("Aa executive pehla thi che");
+        alert("This executive already exists.");
         return;
     }
     settings.executives.push(name);
@@ -1589,7 +1589,7 @@ async function addExecutive() {
         loadExecutiveListUI();
         fillExecutiveDropdowns();
         try { applyShopBranding(); } catch (e) {}
-        alert("Sales Executive add thai gayo.");
+        alert("Sales Executive added successfully.");
     } catch (e) {
         console.error(e);
         alert("Save failed: " + (e.message || e));
@@ -1597,7 +1597,7 @@ async function addExecutive() {
 }
 
 async function removeExecutive(index) {
-    if (!confirm("Aa executive remove karvu?")) return;
+    if (!confirm("Remove this executive?")) return;
     const shopId = (typeof currentShopId === "function") ? currentShopId() : null;
     if (!shopId) {
         alert("No shop context.");
@@ -1633,7 +1633,7 @@ function applyShopBranding() {
     const logoUrl = (typeof settings !== "undefined" && settings.logoDataUrl)
         || "assets/logo.png";
     const software = (typeof settings !== "undefined" && settings.softwareName)
-        || "Recovery Manager";
+        || "Recountix";
 
     // Sidebar logo block
     const logoBox = document.querySelector(".sidebar .logo");
@@ -1658,13 +1658,8 @@ function applyShopBranding() {
             logoBox.appendChild(h2);
         }
         // Short title for sidebar
-        if (session.role === "super_admin" && !session.shopId) {
-            h2.textContent = "BK Recovery";
-        } else if (company) {
-            // max ~18 chars for sidebar
-            h2.textContent = company.length > 18 ? company.slice(0, 16) + "…" : company;
-            h2.title = company;
-        }
+        h2.textContent = "Recountix";
+        h2.title = "Recountix";
 
         let p = logoBox.querySelector("p");
         if (!p) {
@@ -1674,7 +1669,7 @@ function applyShopBranding() {
         if (session.role === "super_admin" && !session.shopId) {
             p.textContent = "Super Admin";
         } else {
-            p.textContent = company || software;
+            p.textContent = company || "Beyond What’s Due.";
         }
     }
 
@@ -1704,7 +1699,7 @@ function applyShopBranding() {
 
     // Document title
     if (company && session.role !== "super_admin") {
-        document.title = company + " | Recovery Manager";
+        document.title = company + " | Recountix";
     }
 }
 
@@ -1798,9 +1793,9 @@ function refreshProject() {
 }
 
 const APP_INFO = {
-    name: "BK Recovery Manager",
-    version: "3.0.0",
-    company: "BK Recovery Manager",
+    name: "Recountix",
+    version: "Rc.0.05",
+    company: "Recountix",
     developer: "BK Design Hub"
 };
 
@@ -1945,7 +1940,7 @@ function printCleanReport() {
         var shop = "";
         try { if (typeof getSession === "function") shop = getSession().shopName || ""; } catch(e) {}
         var sn = document.getElementById("cprShopName");
-        if (sn) sn.textContent = shop || (typeof settings !== "undefined" && settings && settings.company) || "BK Recovery Manager";
+        if (sn) sn.textContent = shop || (typeof settings !== "undefined" && settings && settings.company) || "Recountix";
         var dl = document.getElementById("cprDateLine");
         if (dl) dl.textContent = "Printed: " + new Date().toLocaleString("en-IN");
         var fl = document.getElementById("cprFilterLine");
@@ -2068,7 +2063,7 @@ function renderAgingSummary(s) {
     if (tbody) {
         const rows = s.rows || [];
         if (!rows.length) {
-            tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;color:#64748b;'>Due date + outstanding vali entries j aging ma aave. Customer ma Payment Due Date set karo.</td></tr>";
+            tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;color:#64748b;'>Only entries with an outstanding balance and due date appear in aging. Set a Payment Due Date for the customer.</td></tr>";
         } else {
             tbody.innerHTML = rows.slice(0, 50).map((r, i) => {
                 const badge = agingBadgeHtml(r.bucket, r.days);
@@ -2349,12 +2344,12 @@ async function openPaymentLinkForCustomer(index) {
     const upi = getShopUpiId();
     const amount = Number(c.outstanding || 0);
     if (amount <= 0) {
-        alert("Outstanding ₹0 — payment link ni jarur nathi.");
+        alert("Outstanding balance is ₹0 — no payment link is required.");
         return;
     }
     let upiId = upi;
     if (!upiId) {
-        upiId = prompt("Shop UPI ID enter karo (e.g. shop@oksbi):\n\n(Settings ma save kari shako)", "");
+        upiId = prompt("Enter the shop UPI ID (e.g. shop@oksbi):\n\n(You can save it in Settings)", "");
         if (!upiId) return;
         try {
             if (typeof settings === "undefined" || !settings) window.settings = {};
@@ -2369,10 +2364,10 @@ async function openPaymentLinkForCustomer(index) {
     const upiUrl = buildUpiPayUrl(upiId.trim(), shopName, amount, note);
     const text =
         "Namaste " + (c.name || "") + ",\n\n" +
-        "Apnu outstanding: ₹" + amount.toLocaleString("en-IN") + "\n" +
+        "Your outstanding balance: ₹" + amount.toLocaleString("en-IN") + "\n" +
         "Shop: " + shopName + "\n" +
         "UPI: " + upiId.trim() + "\n\n" +
-        "Pay kari ne receipt jarur rakhjo.\n" +
+        "Please keep the receipt after making the payment.\n" +
         "Thank you.";
 
     // save row (best effort)
@@ -2396,20 +2391,20 @@ async function openPaymentLinkForCustomer(index) {
         ? ("https://wa.me/91" + mobile.slice(-10) + "?text=" + encodeURIComponent(text + "\n\nUPI app: " + upiUrl))
         : null;
 
-    if (wa && confirm("WhatsApp par payment request moklvi?\n\nOK = WhatsApp\nCancel = UPI link copy")) {
+    if (wa && confirm("Send the payment request on WhatsApp?\n\nOK = WhatsApp\nCancel = Copy UPI link")) {
         window.open(wa, "_blank");
     } else {
         try {
             await navigator.clipboard.writeText(text + "\n" + upiUrl);
-            alert("Payment message + UPI link copy thai gayu.\n\nUPI: " + upiId);
+            alert("Payment message and UPI link copied.\n\nUPI: " + upiId);
         } catch (e) {
-            prompt("Copy karo:", text + "\n" + upiUrl);
+            prompt("Copy:", text + "\n" + upiUrl);
         }
     }
 }
 
 function printRecoveryReceipt(opts) {
-    const shop = (typeof getSession === "function" && getSession().shopName) || "BK Recovery Manager";
+    const shop = (typeof getSession === "function" && getSession().shopName) || "Recountix";
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Receipt</title>
     <style>
       body{font-family:system-ui,sans-serif;padding:24px;max-width:420px;margin:auto;color:#111}
@@ -2464,7 +2459,7 @@ async function afterRecoveryReceipt(recovery, cust, newOut) {
         console.warn("receipt save", e);
         if (!receiptNo) receiptNo = "R-" + Date.now();
     }
-    if (confirm("Receipt print / open karvu?")) {
+    if (confirm("Print or open the receipt?")) {
         printRecoveryReceipt({
             receiptNo: receiptNo,
             date: recovery.date,
@@ -2572,10 +2567,10 @@ async function saveActivityForm() {
     const type = (document.getElementById("actType") || {}).value || "call";
     const outcome = (document.getElementById("actOutcome") || {}).value || "";
     const notes = ((document.getElementById("actNotes") || {}).value || "").trim();
-    if (!customerId) { alert("Customer select karo"); return; }
-    if (!notes && !outcome) { alert("Notes or outcome enter karo"); return; }
+    if (!customerId) { alert("Please select a customer."); return; }
+    if (!notes && !outcome) { alert("Please enter notes or an outcome."); return; }
     const session = getSession();
-    if (!session.shopId) { alert("Shop context nathi"); return; }
+    if (!session.shopId) { alert("Shop context is unavailable."); return; }
 
     let gps_lat = null, gps_lng = null;
     if (document.getElementById("actCaptureGps") && document.getElementById("actCaptureGps").checked) {
@@ -2588,7 +2583,7 @@ async function saveActivityForm() {
             gps_lng = pos.coords.longitude;
         } catch (e) {
             console.warn("GPS", e);
-            if (!confirm("GPS nathi malyu. Without location save?")) return;
+            if (!confirm("GPS location was not found. Save without location?")) return;
         }
     }
 
@@ -2944,7 +2939,7 @@ async function loadFieldTracking() {
         setN("fieldCountGps", activities.filter(a => a.gps_lat != null && (a.created_at || "").toString().slice(0, 10) === today).length);
 
         if (!agents.length) {
-            tbody.innerHTML = "<tr><td colspan='6'>Koi field employee nathi. Settings ma Executive add karo athva User ne field agent banavo.</td></tr>";
+            tbody.innerHTML = "<tr><td colspan='6'>No field employees found. Add an Executive in Settings or assign a user as a field agent.</td></tr>";
         } else {
             tbody.innerHTML = agents.map((a, i) => {
                 if (a.path && a.path.length) {
@@ -2975,7 +2970,7 @@ async function loadFieldTracking() {
         if (actBody) {
             const todayActs = activities.filter(a => (a.created_at || "").toString().slice(0, 10) === today);
             if (!todayActs.length) {
-                actBody.innerHTML = "<tr><td colspan='6'>Aaje koi field activity nathi</td></tr>";
+                actBody.innerHTML = "<tr><td colspan='6'>No field activity today.</td></tr>";
             } else {
                 actBody.innerHTML = todayActs.map((a, i) => {
                     const cust = (customers || []).find(c => String(c.id) === String(a.customer_id));
@@ -3012,9 +3007,9 @@ async function fieldCheckIn() {
     const customerId = (document.getElementById("fieldCheckinCustomer") || {}).value;
     const notes = ((document.getElementById("fieldCheckinNotes") || {}).value || "").trim();
     const type = (document.getElementById("fieldCheckinType") || {}).value || "visit";
-    if (!customerId) { alert("Customer select karo"); return; }
+    if (!customerId) { alert("Please select a customer."); return; }
     const session = getSession();
-    if (!session.shopId) { alert("Shop login joi e"); return; }
+    if (!session.shopId) { alert("Shop login is required"); return; }
 
     let gps_lat = null, gps_lng = null;
     try {
@@ -3025,7 +3020,7 @@ async function fieldCheckIn() {
         gps_lat = pos.coords.latitude;
         gps_lng = pos.coords.longitude;
     } catch (e) {
-        if (!confirm("GPS nathi malyu. Without location check-in?")) return;
+        if (!confirm("GPS location was not found. Check in without location?")) return;
     }
 
     try {
@@ -3081,7 +3076,7 @@ async function loadEmployeeLinkGenerator() {
         const users = await sbGetUsers(session.shopId);
         const list = (users || []).filter(u => u.role !== "super_admin");
         if (!list.length) {
-            tbody.innerHTML = "<tr><td colspan='5'>No users. Settings / company ma user add karo.</td></tr>";
+            tbody.innerHTML = "<tr><td colspan='5'>No users found. Add a user in Settings or Company Management.</td></tr>";
             return;
         }
         tbody.innerHTML = list.map((u, i) => {
@@ -3137,7 +3132,7 @@ async function saveAgentCheckinCreds(userId) {
 function copyAgentCheckinLink(userId) {
     const codeEl = document.getElementById("code_" + userId);
     const code = (codeEl && codeEl.value || "").trim();
-    if (!code) { alert("Pehla agent code save karo"); return; }
+    if (!code) { alert("Please save the agent code first."); return; }
     const link = buildEmployeeCheckinLink(code);
     if (navigator.clipboard) navigator.clipboard.writeText(link);
     else prompt("Copy link", link);
@@ -3152,11 +3147,11 @@ function shareAgentCheckinWa(userId) {
     if (!code) { alert("Agent code required"); return; }
     const link = buildEmployeeCheckinLink(code);
     const text =
-        "BK Recovery — Field Check-in\n\n" +
+        "Recountix — Field Check-in\n\n" +
         "Link: " + link + "\n" +
         "Agent code: " + code + "\n" +
         (pin ? ("PIN: " + pin + "\n") : "") +
-        "\nApp login ni jarur nathi. Location allow karjo.";
+        "\nNo app login is required. Please allow location access.";
     window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank");
 }
 
@@ -3200,7 +3195,7 @@ function showEmployeePath(name, path) {
     const list = Array.isArray(path) ? path.slice().sort((a, b) => String(a.at).localeCompare(String(b.at))) : [];
     if (title) title.textContent = (name || "Employee") + " — places visited (" + list.length + ")";
     if (!list.length) {
-        body.innerHTML = "<tr><td colspan='5'>GPS stops nathi — check-in with location joi e</td></tr>";
+        body.innerHTML = "<tr><td colspan='5'>No GPS stops found — a check-in with location is required.</td></tr>";
     } else {
         body.innerHTML = list.map((p, i) => {
             const t = (p.at || "").toString().slice(0, 16).replace("T", " ");
@@ -3260,7 +3255,7 @@ async function showEmployeeMovementHistory(agentKey, agentLabel) {
         list = list.slice(0, 50);
 
         if (!list.length) {
-            tbody.innerHTML = "<tr><td colspan='5'>Aa employee ni koi check-in activity nathi</td></tr>";
+            tbody.innerHTML = "<tr><td colspan='5'>This employee has no check-in activity.</td></tr>";
             return;
         }
 
@@ -3299,7 +3294,7 @@ async function showEmployeeMovementHistory(agentKey, agentLabel) {
             }
             mapLinks.innerHTML = html;
         } else if (mapLinks) {
-            mapLinks.innerHTML = "<span style='color:#64748b'>GPS vali check-in nathi — places map nathi bani</span>";
+            mapLinks.innerHTML = "<span style='color:#64748b'>No GPS-enabled check-ins found — the places map cannot be generated.</span>";
         }
 
         try { panel.scrollIntoView({ behavior: "smooth", block: "start" }); } catch (e) {}

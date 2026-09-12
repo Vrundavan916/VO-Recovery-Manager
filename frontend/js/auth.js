@@ -34,8 +34,8 @@ function validatePasswordStrength(password, role) {
         return {
             ok: false,
             message: isSuper
-                ? ("Super Admin password minimum " + min + " characters joi e.")
-                : ("Password minimum " + min + " characters joi e.")
+                ? ("Super Admin password must be at least " + min + " characters.")
+                : ("Password must be at least " + min + " characters.")
         };
     }
     if (isSuper) {
@@ -45,12 +45,12 @@ function validatePasswordStrength(password, role) {
         if (!hasLetter || !hasNumber || !hasSpecial) {
             return {
                 ok: false,
-                message: "Super Admin password ma letter + number + special character (e.g. @#$) joi e."
+                message: "Super Admin password must include a letter, a number, and a special character (e.g. @#$)."
             };
         }
         const weak = ["1234", "123456", "password", "admin", "superadmin", "admin@123"];
         if (weak.some(function (w) { return p.toLowerCase().indexOf(w) >= 0; })) {
-            return { ok: false, message: "Password too weak / common. Strong password choose karo." };
+            return { ok: false, message: "Password is too weak or common. Please choose a stronger password." };
         }
     }
     return { ok: true };
@@ -61,7 +61,7 @@ window.isHashedPassword = isHashedPassword;
 window.validatePasswordStrength = validatePasswordStrength;
 
 /* ==========================================================
-   BK Recovery Manager – Authentication
+   Recountix – Authentication
 ========================================================== */
 
 async function sbLogin(username, password) {
@@ -104,7 +104,7 @@ async function sbLogin(username, password) {
                 if (st === "expired") {
                     return {
                         error: "license_expired",
-                        message: "Shop ni license expire thai gayi che.\n\nLogin band che.\nSuper Admin Subscription page parthi renew kari shake."
+                        message: "The shop license has expired.\n\nLogin is disabled.\nA Super Admin can renew it from the Subscription page."
                     };
                 }
             }
@@ -175,7 +175,7 @@ async function sbLogin(username, password) {
             if (st === "expired" && data.role !== "super_admin") {
                 return {
                     error: "license_expired",
-                    message: "Shop ni license expire thai gayi che.\n\nLogin band che.\nSuper Admin Subscription page parthi renew kari shake."
+                    message: "The shop license has expired.\n\nLogin is disabled.\nA Super Admin can renew it from the Subscription page."
                 };
             }
         }
@@ -220,7 +220,7 @@ async function login() {
                 const maintenance = await sbGetMaintenanceStatus();
                 if (maintenance && maintenance.enabled === true) {
                     try { clearSession(); } catch (_) {}
-                    sessionStorage.setItem("bk_maintenance_message", maintenance.message || "Amara system ma have update chalu che. Thoda time ma pacha aavo.");
+                    sessionStorage.setItem("bk_maintenance_message", maintenance.message || "Our system is currently being updated. Please try again shortly.");
                     window.location.replace("maintenance.html");
                     return;
                 }
@@ -270,7 +270,7 @@ async function enforceMaintenanceGate(options) {
         const maintenance = await sbGetMaintenanceStatus();
         if (maintenance && maintenance.enabled === true) {
             try {
-                sessionStorage.setItem("bk_maintenance_message", maintenance.message || "Amara system ma have update chalu che. Thoda time ma pacha aavo.");
+                sessionStorage.setItem("bk_maintenance_message", maintenance.message || "Our system is currently being updated. Please try again shortly.");
             } catch (_) {}
             // Clear normal-user session so Back button cannot reopen protected pages.
             try { if (typeof clearSession === "function") clearSession(); } catch (_) {}
@@ -282,7 +282,7 @@ async function enforceMaintenanceGate(options) {
         // Protected pages fail closed for non-super-admin users. This prevents
         // an RLS/network/status-read failure from silently bypassing maintenance.
         if (!page.includes("login.html")) {
-            try { sessionStorage.setItem("bk_maintenance_message", "System status verify nathi thai rahyu. Thoda time pachi fari try karo."); } catch (_) {}
+            try { sessionStorage.setItem("bk_maintenance_message", "The system status could not be verified. Please try again later."); } catch (_) {}
             try { if (typeof clearSession === "function") clearSession(); } catch (_) {}
             window.location.replace("maintenance.html");
             return true;
@@ -393,20 +393,11 @@ function applyRoleRestrictions() {
             if (!header.querySelector(".vo-topbar-brand")) {
                 const brand = document.createElement("div");
                 brand.className = "vo-topbar-brand";
-                brand.innerHTML = '<img src="assets/logo.png" alt="BK Recovery"><div class="vo-topbar-brand-name">BK RECOVERY<small>RECOVERY MANAGER</small></div>';
+                brand.innerHTML = '<img src="assets/logo.png" alt="Recountix"><div class="vo-topbar-brand-name">RECOUNTIX<small>BEYOND WHAT&apos;S DUE.</small></div>';
                 header.insertBefore(brand, header.firstChild);
             }
-            if (!header.querySelector(".vo-topbar-user")) {
-                const user = document.createElement("div");
-                user.className = "vo-topbar-user";
-                user.innerHTML = '<i class="fa-solid fa-user-circle"></i><span><b class="name"></b><small class="role"></small></span>';
-                header.appendChild(user);
-            }
-            const chip = header.querySelector(".vo-topbar-user");
-            if (chip) {
-                chip.querySelector(".name").textContent = name;
-                chip.querySelector(".role").textContent = session.role === "super_admin" ? "Super Admin" : (session.role === "admin" ? "Administrator" : "User");
-            }
+            // Keep top headers clean and premium: no role/name chips in the upper bar.
+            header.querySelectorAll(".vo-topbar-user, .user-info").forEach(function(el){ el.remove(); });
         });
     } catch (e) { console.warn("Final identity UI failed", e); }
     const role = session.role || "user";

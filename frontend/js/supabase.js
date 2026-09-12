@@ -1,5 +1,5 @@
 /* ==========================================================
-   BK Recovery Manager – Supabase Client & Session
+   Recountix – Supabase Client & Session
    Production SaaS Edition
 ========================================================== */
 

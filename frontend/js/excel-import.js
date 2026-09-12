@@ -1,5 +1,5 @@
 /* ==========================================================
-   BK Recovery Manager - Excel Template + Bulk Import
+   Recountix - Excel Template + Bulk Import
    Requires SheetJS (xlsx) from CDN
    Now writes to Supabase
 ========================================================== */
@@ -23,7 +23,7 @@ const CUSTOMER_EXCEL_HEADERS = [
 
 function downloadCustomerTemplate() {
     if (typeof XLSX === "undefined") {
-        alert("Excel library load નથી થઈ. Internet check કરો.");
+        alert("The Excel library could not be loaded. Please check your internet connection.");
         return;
     }
 
@@ -51,7 +51,7 @@ function downloadCustomerTemplate() {
     ws["!cols"] = CUSTOMER_EXCEL_HEADERS.map(() => ({ wch: 22 }));
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Customers");
-    XLSX.writeFile(wb, "BK-Customer-Import-Template.xlsx");
+    XLSX.writeFile(wb, "Recountix-Customer-Import-Template.xlsx");
 }
 
 function parseExcelDate(val) {
@@ -101,7 +101,7 @@ function rowToCustomer(row) {
 
     const name = get(["Customer Name", "customer name", "Name", "name", "Customer"], 0);
     const mobile = get(["Mobile", "mobile", "Mobile Number", "Phone", "Mobile No", "Mobile No."], 2);
-    if (!name || !mobile) return { error: !name && !mobile ? "Name & Mobile khali che" : (!name ? "Name khali che" : "Mobile khali che") };
+    if (!name || !mobile) return { error: !name && !mobile ? "Name and Mobile are required" : (!name ? "Name is required" : "Mobile is required") };
 
     const bill = parseFloat(get(["Bill Amount", "bill amount", "Bill", "Total Bill"], 8)) || 0;
     const down = parseFloat(get(["Down Payment", "down payment", "Down"], 9)) || 0;
@@ -151,7 +151,7 @@ function importCustomersFromExcel(file, options) {
                 const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
 
                 if (!rows.length) {
-                    reject(new Error("Excel માં data નથી"));
+                    reject(new Error("The Excel file contains no data."));
                     return;
                 }
 
@@ -168,7 +168,7 @@ function importCustomersFromExcel(file, options) {
                 });
 
                 if (!imported.length) {
-                    reject(new Error("Valid customer rows મળ્યા નથી. Template headers check કરો.\n\n" + skipReasons.join("\n")));
+                    reject(new Error("No valid customer rows were found. Please check the template headers.\n\n" + skipReasons.join("\n")));
                     return;
                 }
 
@@ -195,7 +195,7 @@ function importCustomersFromExcel(file, options) {
                     const unique = [];
                     imported.forEach(c => {
                         if (existingMobiles.has(String(c.mobile))) {
-                            skipReasons.push("Mobile " + c.mobile + " (" + c.name + "): pehla thi database ma che (duplicate)");
+                            skipReasons.push("Mobile " + c.mobile + " (" + c.name + "): already exists in the database (duplicate)");
                         } else {
                             unique.push(c);
                             existingMobiles.add(String(c.mobile));
@@ -223,7 +223,7 @@ function handleCustomerExcelUpload(event) {
     const file = event.target.files && event.target.files[0];
     if (!file) return;
 
-    const mode = confirm("OK = નવા customers ADD (append)\nCancel = બધા REPLACE (note: replace inserts new rows)")
+    const mode = confirm("OK = ADD new customers (append)\nCancel = REPLACE all customers (note: replace inserts new rows)")
         ? "append"
         : "replace";
 
@@ -246,12 +246,12 @@ function handleCustomerExcelUpload(event) {
 
 function exportCustomersToExcel() {
     if (typeof XLSX === "undefined") {
-        alert("Excel library load નથી થઈ.");
+        alert("The Excel library could not be loaded.");
         return;
     }
     const list = window.customers || [];
     if (!list.length) {
-        alert("Export કરવા customers નથી.");
+        alert("There are no customers to export.");
         return;
     }
     const rows = [CUSTOMER_EXCEL_HEADERS];
@@ -276,7 +276,7 @@ function exportCustomersToExcel() {
     const ws = XLSX.utils.aoa_to_sheet(rows);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Customers");
-    XLSX.writeFile(wb, "BK-Customers-Export.xlsx");
+    XLSX.writeFile(wb, "Recountix-Customers-Export.xlsx");
 }
 
 window.downloadCustomerTemplate = downloadCustomerTemplate;

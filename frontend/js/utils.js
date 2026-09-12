@@ -1,5 +1,5 @@
 /* ==========================================================
-   BK Recovery Manager – Utilities
+   Recountix – Utilities
 ========================================================== */
 
 function formatCurrency(amount) {

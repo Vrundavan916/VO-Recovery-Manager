@@ -1,5 +1,5 @@
 /* ==========================================================
-   VO RECOVERY MANAGER - Super Admin Pages
+   RECOUNTIX - Super Admin Pages
    super-dashboard.html / companies.html / subscription.html
 ========================================================== */
 
