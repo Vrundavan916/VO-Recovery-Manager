@@ -1175,3 +1175,12 @@ async function sbSetFieldAgent(userId, isField) {
     return data;
 }
 window.sbSetFieldAgent = sbSetFieldAgent;
+
+
+// Recountix Ad Manager
+async function sbGetActiveAds(shopId){const sb=getSupabase();if(!sb)return[];const now=new Date().toISOString();let q=sb.from('ads').select('*').eq('is_active',true).lte('start_at',now).gte('end_at',now).order('created_at',{ascending:false});const {data,error}=await q;if(error){console.warn('Ads unavailable',error.message);return[]}return(data||[]).filter(a=>a.target_type==='all'||(a.target_type==='shop'&&String(a.target_shop_id)===String(shopId||'')));}
+async function sbGetAds(){const sb=getSupabase();const {data,error}=await sb.from('ads').select('*, shops(name)').order('created_at',{ascending:false});if(error)throw error;return data||[];}
+async function sbSaveAd(ad){const sb=getSupabase();const row={title:ad.title,description:ad.description||'',image_url:ad.image_url||null,link_url:ad.link_url||null,cta_text:ad.cta_text||'Learn More',target_type:ad.target_type||'all',target_shop_id:ad.target_type==='shop'?(ad.target_shop_id||null):null,start_at:ad.start_at,end_at:ad.end_at,is_active:!!ad.is_active};let r=ad.id?await sb.from('ads').update(row).eq('id',ad.id).select().single():await sb.from('ads').insert(row).select().single();if(r.error)throw r.error;return r.data;}
+async function sbDeleteAd(id){const {error}=await getSupabase().from('ads').delete().eq('id',id);if(error)throw error;}
+async function sbTrackAdClick(id){try{await getSupabase().rpc('increment_ad_click',{ad_id:id});}catch(e){}}
+window.sbGetActiveAds=sbGetActiveAds;window.sbGetAds=sbGetAds;window.sbSaveAd=sbSaveAd;window.sbDeleteAd=sbDeleteAd;window.sbTrackAdClick=sbTrackAdClick;
