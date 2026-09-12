@@ -21,7 +21,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Field Tracking | VO Recovery Manager</title>
+<title>Field Tracking | Recountix</title>
 <link rel="stylesheet" href="css/style.css?v=enterprise5">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 <link rel="stylesheet" href="css/saas-2026.css?v=2026c">
@@ -33,7 +33,7 @@
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 <div class="wrapper">
 <aside class="sidebar">
-  <div class="logo"><h2>VO Recovery</h2><p>Recovery Manager</p></div>
+  <div class="logo"><h2>Recountix</h2><p>Beyond What’s Due.</p></div>
   <ul class="menu">
 <li><a href="dashboard.html"><i class="fa-solid fa-house"></i><span>Dashboard</span></a></li>
 <li><a href="customers.html"><i class="fa-solid fa-users"></i><span>Customers</span></a></li>
@@ -60,14 +60,14 @@
     <div class="summary-bar">
       <div>
         <h2><i class="fa-solid fa-link"></i> Employee link (login vagar)</h2>
-        <span>Staff ne full site login ni jarur nathi — only check-in page</span>
+        <span>Staff do not need full-site login access — only the check-in page.</span>
       </div>
     </div>
     <p style="font-size:14px;color:#475569;margin:8px 0;">
       Share: <code id="publicCheckinUrl">checkin.html</code>
       <button type="button" class="add-btn" style="padding:6px 12px;margin-left:8px;" onclick="copyCheckinLink()">Copy link</button>
     </p>
-    <p style="font-size:13px;color:#64748b;">Setup: Supabase ma user par <b>agent_code</b> + <b>field_pin</b> set karo (SQL). Employee code + PIN thi check-in kare.</p>
+    <p style="font-size:13px;color:#64748b;">Setup: Set <b>agent_code</b> and <b>field_pin</b> for the user in Supabase (SQL). Employees can check in with their code and PIN.</p>
   </section>
   <script>
   (function(){
@@ -84,7 +84,7 @@
       var text = t.textContent;
       if (navigator.clipboard) navigator.clipboard.writeText(text);
       else prompt("Copy", text);
-      alert("Link copied — WhatsApp thi employee ne moklo");
+      alert("Link copied — send it to the employee via WhatsApp.");
     };
   })();
   </script>
@@ -100,7 +100,7 @@
     <div class="summary-bar">
       <div>
         <h2><i class="fa-solid fa-link"></i> Generate employee tracking links</h2>
-        <span>Code + PIN save → Copy link / WhatsApp — employee ne full login ni jarur nathi</span>
+        <span>Save Code + PIN → Copy link / WhatsApp. The employee does not need a full login.</span>
       </div>
       <button type="button" class="add-btn" onclick="loadEmployeeLinkGenerator()"><i class="fa-solid fa-rotate"></i> Refresh</button>
     </div>
@@ -119,8 +119,8 @@
       </table>
     </div>
     <p style="font-size:12px;color:#64748b;margin-top:10px;">
-      Link example: <code>…/checkin.html?code=MUKESH01</code> — employee PIN enter kari check-in kare.
-      Columns <code>agent_code</code> / <code>field_pin</code> Supabase users table ma joi e.
+      Link example: <code>…/checkin.html?code=MUKESH01</code> — the employee enters the PIN to check in.
+      The <code>agent_code</code> and <code>field_pin</code> columns are required in the Supabase users table.
     </p>
   </section>
 <section class="content-box fade">
@@ -190,7 +190,7 @@
     <div class="summary-bar">
       <div>
         <h2 id="employeePathTitle">Employee movement</h2>
-        <span>Time order ma jya-jya check-in / GPS thayu</span>
+        <span>Check-ins and GPS activity shown in chronological order.</span>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <button type="button" class="add-btn" id="employeePathMapBtn" style="display:none;">
@@ -220,7 +220,7 @@
     <div class="summary-bar">
       <div>
         <h2 id="movementHistoryTitle">Movement history</h2>
-        <span>Employee kahan-kahan gaya — check-in places + route</span>
+        <span>Employee route — check-in locations and travel path</span>
       </div>
       <button type="button" class="add-btn" onclick="document.getElementById('movementHistoryPanel').style.display='none'">Close</button>
     </div>

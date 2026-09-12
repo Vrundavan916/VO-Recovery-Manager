@@ -1,6 +1,6 @@
 {
-  "name": "BK Recovery Manager",
-  "short_name": "BK Recovery",
+  "name": "Recountix",
+  "short_name": "Recountix",
   "start_url": "./login.html",
   "display": "standalone",
   "background_color": "#0B1020",
@@ -11,5 +11,6 @@
       "sizes": "192x192",
       "type": "image/png"
     }
-  ]
+  ],
+  "description": "Smart recovery and receivables management — Beyond What's Due."
 }

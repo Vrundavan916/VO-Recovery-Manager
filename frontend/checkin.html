@@ -7,7 +7,7 @@
 <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#1A3D63">
-<title>Field Check-in | VO Recovery</title>
+<title>Field Check-in | Recountix</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 <style>
   :root { --p:#1A3D63; --g:#16a34a; --bg:#f1f5f9; }
@@ -38,11 +38,11 @@
 </head>
 <body>
 <div class="wrap">
-  <div class="logo"><i class="fa-solid fa-location-dot"></i> BK Field Check-in</div>
+  <div class="logo"><i class="fa-solid fa-location-dot"></i> Recountix Field Check-in</div>
   <div class="card">
     <div class="step">Employee — no full login</div>
     <h1>Field Check-in</h1>
-    <p class="sub">Agent code + PIN thi location + visit log. Website admin login jaruri nathi.</p>
+    <p class="sub">Log location and visits using an agent code and PIN. A full admin login is not required.</p>
 
     <label>Agent code *</label>
     <input id="agentCode" placeholder="e.g. MUKESH01" autocomplete="username">
@@ -57,7 +57,7 @@
   <div class="card" id="checkinPanel" style="display:none;">
     <div class="step">Visit details</div>
     <h1 id="agentHello">Hello</h1>
-    <p class="sub">Customer select kari Check-in dabavo — GPS capture thase.</p>
+    <p class="sub">Select a customer and tap Check-in — GPS location will be captured.</p>
 
     <label>Customer *</label>
     <select id="customerSel"><option value="">Loading…</option></select>
@@ -190,7 +190,7 @@ async function submitCheckin() {
   if (!agent) { show(msg, "err", "Unlock first"); return; }
   const customerId = document.getElementById("customerSel").value;
   if (!customerId) { show(msg, "err", "Select customer"); return; }
-  if (gps.lat == null && !confirm("GPS nathi. Without location submit?")) return;
+  if (gps.lat == null && !confirm("GPS is unavailable. Submit without location?")) return;
 
   const notes = (document.getElementById("notes").value || "").trim();
   const type = document.getElementById("actType").value || "visit";
