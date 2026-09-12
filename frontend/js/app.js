@@ -642,15 +642,29 @@ function renderDashboardCharts() {
     const trendCanvas = document.getElementById("recoveryTrendChart");
     const portfolioCanvas = document.getElementById("portfolioStatusChart");
     if (!trendCanvas || !portfolioCanvas) return;
+    // Rolling 30-day recovery trend: today + previous 29 calendar days.
+    // Zero-recovery days are included so the line always represents a true 30-day window.
     const recoveryMap = {};
     (recoveries || []).forEach(function(r){
-        const key = r.date || "Unknown";
+        const key = String(r.date || "").slice(0, 10);
+        if (!key) return;
         recoveryMap[key] = (recoveryMap[key] || 0) + Number(r.amount || 0);
     });
-    const trendRows = Object.keys(recoveryMap).sort().slice(-7);
-    const labels = trendRows.map(function(d){ try { return new Date(d + "T00:00:00").toLocaleDateString("en-IN", {day:"2-digit",month:"short"}); } catch(e){ return d; } });
-    const values = trendRows.map(function(d){ return recoveryMap[d]; });
-    if (!labels.length) { labels.push("No data"); values.push(0); }
+    const trendRows = [];
+    const trendToday = new Date();
+    trendToday.setHours(0, 0, 0, 0);
+    for (let offset = 29; offset >= 0; offset--) {
+        const d = new Date(trendToday);
+        d.setDate(trendToday.getDate() - offset);
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        const dd = String(d.getDate()).padStart(2, "0");
+        trendRows.push({ key: `${yyyy}-${mm}-${dd}`, date: d });
+    }
+    const labels = trendRows.map(function(row){
+        return row.date.toLocaleDateString("en-IN", {day:"2-digit", month:"short"});
+    });
+    const values = trendRows.map(function(row){ return recoveryMap[row.key] || 0; });
     if (dashboardRecoveryChart) dashboardRecoveryChart.destroy();
     dashboardRecoveryChart = new Chart(trendCanvas, {type:"line",data:{labels:labels,datasets:[{label:"Recovery",data:values,borderColor:"#0B6B59",backgroundColor:"#0B6B59",borderWidth:2.5,tension:.42,fill:false,pointRadius:values.length === 1 ? 4 : 2.5,pointHoverRadius:5,pointBackgroundColor:"#ffffff",pointBorderColor:"#0B6B59",pointBorderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,interaction:{intersect:false,mode:"index"},plugins:{legend:{display:false},tooltip:{displayColors:false,backgroundColor:"#10251f",titleColor:"#d9eee7",bodyColor:"#ffffff",padding:10,cornerRadius:10,callbacks:{label:function(ctx){return "Recovery  ₹" + Number(ctx.raw||0).toLocaleString("en-IN");}}}},scales:{y:{beginAtZero:true,border:{display:false},ticks:{color:"#7a8984",padding:8,callback:function(v){return "₹"+Number(v).toLocaleString("en-IN",{notation:"compact",maximumFractionDigits:1});}},grid:{color:"rgba(15,107,79,.08)",drawTicks:false}},x:{border:{display:false},ticks:{color:"#7a8984",padding:8},grid:{display:false}}}}});
     const today = new Date().toISOString().split("T")[0];
