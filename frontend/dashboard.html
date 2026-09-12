@@ -111,6 +111,8 @@ Welcome to Recountix
 TOPBAR END
 ========================= -->
 
+<section id="recountixAdSlot" class="rx-ad-slot" hidden aria-label="Sponsored promotion"></section>
+
 <!-- =========================
 DASHBOARD CARDS START
 ========================= -->
@@ -196,7 +198,7 @@ PART 1 ANALYTICS — VISUAL ONLY
 ========================= -->
 <section class="dashboard-analytics fade" aria-label="Recovery analytics">
   <article class="analytics-panel analytics-trend">
-    <div class="analytics-head"><div><span class="eyebrow">PERFORMANCE</span><h2>Recovery Trend</h2><p>Recent collection activity</p></div><i class="fa-solid fa-chart-line"></i></div>
+    <div class="analytics-head"><div><span class="eyebrow">PERFORMANCE</span><h2>Recovery Trend</h2><p>Last 30 days collection performance</p></div><i class="fa-solid fa-chart-line"></i></div>
     <div class="chart-wrap"><canvas id="recoveryTrendChart"></canvas></div>
   </article>
   <article class="analytics-panel analytics-status">
@@ -689,6 +691,7 @@ document.addEventListener("DOMContentLoaded", function(){
 <script>
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){});}
 </script>
+<script src="js/ad-banner.js?v=rc005-ads"></script>
 <script src="js/final-suite.js?v=11-final"></script>
 </body>
 
