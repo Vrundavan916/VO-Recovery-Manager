@@ -1,4 +1,4 @@
-# BK Recovery Manager
+# Recountix
 
 **Version:** 3.0.0 – Production SaaS (Supabase Multi-Tenant)
 
@@ -22,8 +22,8 @@ Only Super Admin can onboard new companies. No public registration.
 | Username   | Password | Role        | Shop                    |
 |------------|----------|-------------|-------------------------|
 | superadmin | 1234     | Super Admin | All shops               |
-| admin      | 1234     | Admin       | BK Recovery Manager     |
-| vo_user    | 1234     | User        | BK Recovery Manager     |
+| admin      | 1234     | Admin       | Recountix     |
+| vo_user    | 1234     | User        | Recountix     |
 | rj_admin   | 1234     | Admin       | Raj Jewellers           |
 | gp_admin   | 1234     | Admin       | Golden Palace Jewellers |
 
@@ -74,4 +74,4 @@ database/
 
 ## Developed by
 
-**BK Design Hub** · BK Recovery Manager Commercial Edition
+**BK Design Hub** · Recountix Commercial Edition

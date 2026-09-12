@@ -1,4 +1,4 @@
-# Supabase Setup – BK Recovery Manager SaaS
+# Supabase Setup – Recountix SaaS
 
 ## 1) Run SQL
 
@@ -22,7 +22,7 @@
 ## 4) Default logins
 
 - superadmin / 1234 → all shops  
-- admin / 1234 → BK Recovery Manager  
+- admin / 1234 → Recountix  
 - rj_admin / 1234 → Raj Jewellers  
 - gp_admin / 1234 → Golden Palace Jewellers  
 
