@@ -48,17 +48,23 @@
 .sidebar:after{content:"Rc.0.05";display:block;margin:14px 16px 18px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.46);font-size:10px;letter-spacing:.16em;text-align:center;}
 @media(max-width:900px){.topbar,.header-bar,.page-header{min-height:64px!important}.analytics-trend .chart-wrap{height:245px!important}.dashboard-grid .card:hover{transform:none!important}.sidebar:after{margin-bottom:74px;}}
 
-/* Recountix premium sponsored banner — Rc.0.05 fixed media ratio */
+/* Recountix sponsored banner — Rc.0.05 full-image render fix */
 .rx-ad-slot{margin:0 0 22px}
 .rx-ad-card{position:relative;display:flex;align-items:stretch;min-height:150px;border:1px solid rgba(16,86,69,.12);border-radius:20px;background:linear-gradient(120deg,#fff 0%,#f7fbf9 100%);box-shadow:0 14px 36px rgba(20,45,38,.08);overflow:hidden;text-decoration:none;color:inherit}
 .rx-ad-copy{position:relative;z-index:2;display:flex;flex-direction:column;justify-content:center;flex:1;min-width:0;padding:24px 28px}
 .rx-ad-label{display:inline-flex;align-self:flex-start;padding:4px 8px;border-radius:999px;background:#edf7f3;color:#17694f;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
 .rx-ad-title{margin:9px 0 5px;font-size:21px;line-height:1.15;font-weight:850;color:#173e34;letter-spacing:-.02em}
 .rx-ad-text{margin:0;color:#6a7d77;font-size:13px;line-height:1.5;max-width:680px}
-.rx-ad-cta{align-self:center;margin:0 18px 0 0;position:relative;z-index:2;padding:10px 15px;border-radius:10px;background:#17694f;color:#fff;font-size:12px;font-weight:800;white-space:nowrap}
-.rx-ad-media{flex:0 0 42%;min-width:360px;max-width:620px;position:relative;overflow:hidden;background:#eef5f2}
-.rx-ad-image{display:block;width:100%;height:100%;min-height:150px;object-fit:cover;object-position:center}
-.rx-ad-card.has-image .rx-ad-media:before{content:"";position:absolute;inset:0;box-shadow:inset 1px 0 0 rgba(255,255,255,.55);z-index:1;pointer-events:none}
+.rx-ad-cta{align-self:center;margin:0 18px 0 0;position:relative;z-index:3;padding:10px 15px;border-radius:10px;background:#17694f;color:#fff;font-size:12px;font-weight:800;white-space:nowrap}
+.rx-ad-media{display:none;position:absolute;inset:0;overflow:hidden;background:#eef5f2}
+.rx-ad-image{display:block;width:100%;height:100%;object-fit:cover;object-position:center}
+.rx-ad-overlay-label{position:absolute;left:14px;top:14px;z-index:4;padding:5px 9px;border-radius:999px;background:rgba(9,49,39,.78);backdrop-filter:blur(8px);color:#fff;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;box-shadow:0 4px 14px rgba(0,0,0,.12)}
+.rx-ad-card.image-ready{display:block;aspect-ratio:4/1;min-height:0;background:#eef5f2}
+.rx-ad-card.image-ready .rx-ad-media{display:block}
+.rx-ad-card.image-ready .rx-ad-copy,.rx-ad-card.image-ready .rx-ad-cta{display:none}
+.rx-ad-card.image-ready:hover .rx-ad-image{transform:scale(1.006)}
+.rx-ad-image{transition:transform .28s ease}
 .rx-ad-admin-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.rx-ad-admin-grid .full{grid-column:1/-1}.rx-ad-admin-grid input,.rx-ad-admin-grid select,.rx-ad-admin-grid textarea{width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid #dce7e2;border-radius:10px;font:inherit;background:#fff}.rx-ad-admin-grid label{font-size:12px;font-weight:700;color:#52665f;display:block;margin-bottom:5px}.rx-ad-image-note{display:block;margin-top:6px;color:#81908b;font-size:11px;line-height:1.45}
-@media(max-width:900px){.rx-ad-card{min-height:132px}.rx-ad-media{flex-basis:40%;min-width:270px}.rx-ad-image{min-height:132px}.rx-ad-copy{padding:19px 21px}.rx-ad-title{font-size:18px}.rx-ad-cta{margin-right:12px}}
-@media(max-width:700px){.rx-ad-card{display:grid;grid-template-columns:1fr;min-height:0}.rx-ad-copy{order:2;padding:16px 17px 18px}.rx-ad-media{order:1;width:100%;max-width:none;min-width:0;aspect-ratio:4/1}.rx-ad-image{width:100%;height:100%;min-height:0;object-fit:cover}.rx-ad-cta{position:absolute;right:14px;bottom:14px;margin:0}.rx-ad-card.has-image .rx-ad-copy{padding-right:112px}.rx-ad-title{font-size:17px}.rx-ad-text{font-size:12px}.rx-ad-admin-grid{grid-template-columns:1fr}.rx-ad-admin-grid .full{grid-column:auto}}
+@media(max-width:900px){.rx-ad-card.image-ready{aspect-ratio:4/1}.rx-ad-copy{padding:19px 21px}.rx-ad-title{font-size:18px}.rx-ad-cta{margin-right:12px}}
+@media(max-width:700px){.rx-ad-card.image-ready{aspect-ratio:4/1;border-radius:14px}.rx-ad-overlay-label{left:9px;top:9px;font-size:8px;padding:4px 7px}.rx-ad-admin-grid{grid-template-columns:1fr}.rx-ad-admin-grid .full{grid-column:auto}}
+
